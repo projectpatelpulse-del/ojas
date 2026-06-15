@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn scp /Users/gdfgdfgdfgdfgdf/Desktop/ojas/backend/vps_cmds.sh root@72.61.172.182:/tmp/vps_cmds.sh
+expect {
+    "Are you sure you want to continue connecting" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "R@dhe7906342450\r"
+    }
+}
+expect eof
+
+spawn ssh root@72.61.172.182 "bash /tmp/vps_cmds.sh"
+expect {
+    "password:" {
+        send "R@dhe7906342450\r"
+    }
+}
+expect eof

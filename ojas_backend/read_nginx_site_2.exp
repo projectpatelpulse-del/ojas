@@ -1,0 +1,9 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn ssh root@72.61.172.182 "cat /etc/nginx/sites-available/api.samajwaditechforce"
+expect {
+    "password:" {
+        send "R@dhe7906342450\r"
+    }
+}
+expect eof

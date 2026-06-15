@@ -1,0 +1,27 @@
+Ojas — VPS 72.61.172.182 (production layout on this server)
+
+Storefront (ecom) — same app on / and /ecom/:
+  http://72.61.172.182/
+  http://72.61.172.182/ecom/
+
+Admin panel:
+  http://72.61.172.182/admin/
+
+Vendor panel:
+  http://72.61.172.182/vendor/
+
+API (use trailing /api/ in clients if you see 301 from /api):
+  http://72.61.172.182/api/
+  Example JSON: http://72.61.172.182/api/
+
+Socket.IO (browser connects to origin; path /socket.io/):
+  ws via http://72.61.172.182 (Flutter ApiService strips /api from base URL)
+
+Direct Node (bypass nginx — optional / debugging):
+  http://72.61.172.182:5001/api/
+
+Vendor SSO after “Become vendor” login:
+  http://72.61.172.182/vendor/#/?token=<jwt>
+
+Inner nginx (Hostinger): ecom static on :3011, admin :3010, vendor :3012; public vhost
+`/etc/nginx/sites-available/ojas-main` proxies to those + Node :5001 for /api and /socket.io.

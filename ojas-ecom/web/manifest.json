@@ -1,0 +1,23 @@
+{
+    "name": "ojas_user",
+    "short_name": "ojas_user",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0175C2",
+    "theme_color": "#0175C2",
+    "description": "A new Flutter project.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/7590/7590132.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/7590/7590132.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

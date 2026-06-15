@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh root@72.61.172.182 "ssh -p 443 -o StrictHostKeyChecking=no -R 80:localhost:5001 a.pinggy.io 2>&1 | tee /tmp/pinggy.log"
+expect {
+    "password:" {
+        send "R@dhe7906342450\r"
+    }
+}
+expect {
+    "https://" {
+        # This will stay connected for a bit
+        sleep 5
+    }
+}
+expect eof

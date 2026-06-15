@@ -1,0 +1,8 @@
+{
+  "name": "ojas-admin",
+  "version": "1.0.0",
+  "description": "Ojas Admin Panel",
+  "scripts": {
+    "build": "sh build.sh"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "outputDirectory": "build/web",
+  "installCommand": "chmod +x build.sh && ./build.sh",
+  "buildCommand": "echo 'Build already handled by installCommand'",
+  "rewrites": [
+    {
+      "source": "/product/:id",
+      "destination": "/api/product-preview?id=:id"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

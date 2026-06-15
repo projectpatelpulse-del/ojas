@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn ssh root@72.61.172.182 "ls /etc/nginx/sites-available"
+expect {
+    "Are you sure you want to continue connecting" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "R@dhe7906342450\r"
+    }
+}
+expect eof

@@ -1,0 +1,38 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Patelpulse/ojas#readme",
+  "bugs": {
+    "url": "https://github.com/Patelpulse/ojas/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Patelpulse/ojas.git"
+  },
+  "license": "ISC",
+  "author": "gaurav and arbaj",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node scripts/seedProducts.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@imagekit/nodejs": "^7.3.0",
+    "axios": "^1.15.2",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.8.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.3",
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.7",
+    "nodemon": "^3.1.14",
+    "socket.io": "^4.8.3"
+  }
+}

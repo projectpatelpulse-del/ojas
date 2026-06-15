@@ -1,0 +1,22 @@
+#!/usr/bin/expect -f
+set timeout 60
+set script_path "/Users/gdfgdfgdfgdfgdf/Desktop/ojas/backend/vps_cmds.sh"
+
+spawn ssh root@72.61.172.182 "bash -s"
+expect {
+    "Are you sure you want to continue connecting" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "R@dhe7906342450\r"
+    }
+}
+# Send the content of vps_cmds.sh
+set f [open $script_path r]
+while {[gets $f line] != -1} {
+    send "$line\r"
+}
+close $f
+send "\x04"
+expect eof

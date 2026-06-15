@@ -1,0 +1,50 @@
+#!/usr/bin/expect -f
+set timeout 30
+set nginx_config {server {
+    listen 80;
+    server_name api.samajwaditechforce.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name api.samajwaditechforce.com;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://localhost:5003;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /ojas/ {
+        proxy_pass http://localhost:5001/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/api.samajwaditechforce.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.samajwaditechforce.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+}
+
+spawn ssh root@72.61.172.182 "cat > /etc/nginx/sites-available/api.samajwaditechforce"
+expect "password:"
+send "R@dhe7906342450\r"
+send -- "$nginx_config"
+send "\x04"
+expect eof
+
+spawn ssh root@72.61.172.182 "nginx -t && systemctl reload nginx"
+expect "password:"
+send "R@dhe7906342450\r"
+expect eof
