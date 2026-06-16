@@ -21,6 +21,21 @@ class AppSettings {
   final String youtubeLink;
   final String linkedinLink;
 
+  // Trending Section & Service Cards
+  final String trendingCategories;
+  final String serviceCard1Title;
+  final String serviceCard1Subtitle;
+  final String serviceCard1Icon;
+  final String serviceCard2Title;
+  final String serviceCard2Subtitle;
+  final String serviceCard2Icon;
+  final String serviceCard3Title;
+  final String serviceCard3Subtitle;
+  final String serviceCard3Icon;
+  final String serviceCard4Title;
+  final String serviceCard4Subtitle;
+  final String serviceCard4Icon;
+
   AppSettings({
     required this.marketplaceName,
     required this.tagline,
@@ -43,6 +58,19 @@ class AppSettings {
     required this.twitterLink,
     required this.youtubeLink,
     required this.linkedinLink,
+    required this.trendingCategories,
+    required this.serviceCard1Title,
+    required this.serviceCard1Subtitle,
+    required this.serviceCard1Icon,
+    required this.serviceCard2Title,
+    required this.serviceCard2Subtitle,
+    required this.serviceCard2Icon,
+    required this.serviceCard3Title,
+    required this.serviceCard3Subtitle,
+    required this.serviceCard3Icon,
+    required this.serviceCard4Title,
+    required this.serviceCard4Subtitle,
+    required this.serviceCard4Icon,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -68,6 +96,19 @@ class AppSettings {
       twitterLink: json['twitterLink'] ?? '',
       youtubeLink: json['youtubeLink'] ?? '',
       linkedinLink: json['linkedinLink'] ?? '',
+      trendingCategories: json['trendingCategories'] ?? 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games',
+      serviceCard1Title: json['serviceCard1Title'] ?? 'FREE DELIVERY',
+      serviceCard1Subtitle: json['serviceCard1Subtitle'] ?? 'From ₹89.00',
+      serviceCard1Icon: json['serviceCard1Icon'] ?? 'https://cdn-icons-png.flaticon.com/512/709/709790.png',
+      serviceCard2Title: json['serviceCard2Title'] ?? 'ORDER PROTECTION',
+      serviceCard2Subtitle: json['serviceCard2Subtitle'] ?? 'Refund/Resent 120 Day',
+      serviceCard2Icon: json['serviceCard2Icon'] ?? 'https://cdn-icons-png.flaticon.com/512/1161/1161388.png',
+      serviceCard3Title: json['serviceCard3Title'] ?? 'PAYMENT SECURITY',
+      serviceCard3Subtitle: json['serviceCard3Subtitle'] ?? 'SSL Secure Payment',
+      serviceCard3Icon: json['serviceCard3Icon'] ?? 'https://cdn-icons-png.flaticon.com/512/1069/1069159.png',
+      serviceCard4Title: json['serviceCard4Title'] ?? '24/7 SUPPORT',
+      serviceCard4Subtitle: json['serviceCard4Subtitle'] ?? 'Dedicated Support',
+      serviceCard4Icon: json['serviceCard4Icon'] ?? 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
     );
   }
 
@@ -94,6 +135,19 @@ class AppSettings {
       twitterLink: '',
       youtubeLink: '',
       linkedinLink: '',
+      trendingCategories: 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games',
+      serviceCard1Title: 'FREE DELIVERY',
+      serviceCard1Subtitle: 'From ₹89.00',
+      serviceCard1Icon: 'https://cdn-icons-png.flaticon.com/512/709/709790.png',
+      serviceCard2Title: 'ORDER PROTECTION',
+      serviceCard2Subtitle: 'Refund/Resent 120 Day',
+      serviceCard2Icon: 'https://cdn-icons-png.flaticon.com/512/1161/1161388.png',
+      serviceCard3Title: 'PAYMENT SECURITY',
+      serviceCard3Subtitle: 'SSL Secure Payment',
+      serviceCard3Icon: 'https://cdn-icons-png.flaticon.com/512/1069/1069159.png',
+      serviceCard4Title: '24/7 SUPPORT',
+      serviceCard4Subtitle: 'Dedicated Support',
+      serviceCard4Icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
     );
   }
 }

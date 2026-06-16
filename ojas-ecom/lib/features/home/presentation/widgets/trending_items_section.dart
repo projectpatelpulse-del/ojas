@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
+import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
 import 'package:ojas_user/features/home/presentation/widgets/service_card.dart';
@@ -24,9 +25,20 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final settingsController = SettingsController.instance;
     return ListenableBuilder(
-      listenable: HomeController.instance,
+      listenable: Listenable.merge([HomeController.instance, settingsController]),
       builder: (context, _) {
+        final settings = settingsController.settings;
+        final List<String> categories = settings.trendingCategories
+            .split(',')
+            .map((e) => e.trim())
+            .toList();
+        
+        if (!categories.contains('All')) {
+          categories.insert(0, 'All');
+        }
+
         var products = HomeController.instance.homeProducts;
 
         // Apply filtering
@@ -74,7 +86,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: CategoryFilter(
-                        categories: const ['All', 'Pet Supplies', 'Jewelry', 'Parts', 'Books', 'Toys'],
+                        categories: categories,
                         selectedCategory: _selectedCategory,
                         onCategoryChanged: (cat) {
                           setState(() {
@@ -101,7 +113,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                     ),
                     const Spacer(),
                     CategoryFilter(
-                      categories: const ['All', 'Pet Supplies', 'Jewelry & Accessories', 'Industrial Parts & Tools', 'Books & Stationery', 'Toys & Games'],
+                      categories: categories,
                       selectedCategory: _selectedCategory,
                       onCategoryChanged: (cat) {
                         setState(() {
@@ -126,26 +138,26 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                         mainAxisExtent: 150,
                       ),
                       physics: const NeverScrollableScrollPhysics(),
-                      children: const [
+                      children: [
                         ServiceCard(
-                          title: 'FREE DELIVERY',
-                          subtitle: 'From ₹89.00',
-                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/709/709790.png',
+                          title: settings.serviceCard1Title,
+                          subtitle: settings.serviceCard1Subtitle,
+                          iconUrl: settings.serviceCard1Icon,
                         ),
                         ServiceCard(
-                          title: 'ORDER PROTECTION',
-                          subtitle: '120 Day',
-                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/1161/1161388.png',
+                          title: settings.serviceCard2Title,
+                          subtitle: settings.serviceCard2Subtitle,
+                          iconUrl: settings.serviceCard2Icon,
                         ),
                         ServiceCard(
-                          title: 'PAYMENT SECURITY',
-                          subtitle: 'SSL Secure',
-                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/1069/1069159.png',
+                          title: settings.serviceCard3Title,
+                          subtitle: settings.serviceCard3Subtitle,
+                          iconUrl: settings.serviceCard3Icon,
                         ),
                         ServiceCard(
-                          title: '24/7 SUPPORT',
-                          subtitle: 'Dedicated',
-                          iconUrl: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
+                          title: settings.serviceCard4Title,
+                          subtitle: settings.serviceCard4Subtitle,
+                          iconUrl: settings.serviceCard4Icon,
                         ),
                       ],
                     ),
@@ -166,26 +178,26 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                           crossAxisSpacing: 16,
                           childAspectRatio: 1.3,
                           physics: const NeverScrollableScrollPhysics(),
-                          children: const [
+                          children: [
                             ServiceCard(
-                              title: 'FREE DELIVERY',
-                              subtitle: 'From ₹89.00',
-                              iconUrl: 'https://cdn-icons-png.flaticon.com/512/709/709790.png',
+                              title: settings.serviceCard1Title,
+                              subtitle: settings.serviceCard1Subtitle,
+                              iconUrl: settings.serviceCard1Icon,
                             ),
                             ServiceCard(
-                              title: 'ORDER PROTECTION',
-                              subtitle: 'Refund/Resent 120 Day',
-                              iconUrl: 'https://cdn-icons-png.flaticon.com/512/1161/1161388.png',
+                              title: settings.serviceCard2Title,
+                              subtitle: settings.serviceCard2Subtitle,
+                              iconUrl: settings.serviceCard2Icon,
                             ),
                             ServiceCard(
-                              title: 'PAYMENT SECURITY',
-                              subtitle: 'SSL Secure Payment',
-                              iconUrl: 'https://cdn-icons-png.flaticon.com/512/1069/1069159.png',
+                              title: settings.serviceCard3Title,
+                              subtitle: settings.serviceCard3Subtitle,
+                              iconUrl: settings.serviceCard3Icon,
                             ),
                             ServiceCard(
-                              title: '24/7 SUPPORT',
-                              subtitle: 'Dedicated Support',
-                              iconUrl: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
+                              title: settings.serviceCard4Title,
+                              subtitle: settings.serviceCard4Subtitle,
+                              iconUrl: settings.serviceCard4Icon,
                             ),
                           ],
                         ),

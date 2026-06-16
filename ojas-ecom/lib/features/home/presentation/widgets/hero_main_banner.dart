@@ -59,40 +59,41 @@ class HeroMainBanner extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             /// BADGE
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 14 : 18,
-                vertical: isMobile ? 7 : 9,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF01B6B),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                badgeText.toUpperCase(),
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: isMobile ? 10 : 12,
-                  letterSpacing: 0.5,
+            if (badgeText.trim().isNotEmpty) ...[
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 14 : 18,
+                  vertical: isMobile ? 7 : 9,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF01B6B),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  badgeText.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 10 : 12,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-            ),
+              SizedBox(height: isMobile ? 18 : 28),
+            ],
 
-            SizedBox(height: isMobile ? 18 : 28),
+            // /// CATEGORY
+            // Text(
+            //   'OFFICE FURNITURE',
+            //   style: GoogleFonts.inter(
+            //     color: Colors.white70,
+            //     fontSize: isMobile ? 11 : 16,
+            //     fontWeight: FontWeight.w600,
+            //     letterSpacing: 1.4,
+            //   ),
+            // ),
 
-            /// CATEGORY
-            Text(
-              'OFFICE FURNITURE',
-              style: GoogleFonts.inter(
-                color: Colors.white70,
-                fontSize: isMobile ? 11 : 16,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.4,
-              ),
-            ),
-
-            SizedBox(height: isMobile ? 10 : 14),
+            // SizedBox(height: isMobile ? 10 : 14),
 
             /// TITLE
             Text(

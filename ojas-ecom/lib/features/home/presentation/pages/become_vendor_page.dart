@@ -227,24 +227,14 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
       Navigator.pop(context); // Remove loading
 
       if (response.statusCode == 201) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Success'),
-            content: Text(
-              data['message'] ?? 'Application submitted successfully!',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _toggleMode(true);
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+        String? otp;
+        if (data != null && data is Map) {
+          final vendorData = data['data'];
+          if (vendorData != null && vendorData is Map) {
+            otp = vendorData['whatsappOtp']?.toString();
+          }
+        }
+        _showOTPDialog(_phoneController.text, otp);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -258,6 +248,126 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
+  }
+
+  void _showOTPDialog(String phone, String? otp) {
+    final TextEditingController otpController = TextEditingController();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Verify WhatsApp OTP', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Enter the 6-digit OTP sent to your WhatsApp number +91 $phone'),
+            if (otp != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF01B6B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'OTP: $otp',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFF01B6B),
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: otpController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              decoration: const InputDecoration(
+                hintText: 'Enter OTP',
+                counterText: '',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final otpVal = otpController.text.trim();
+              if (otpVal.length != 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid 6-digit OTP')),
+                );
+                return;
+              }
+
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+                ),
+              );
+
+              try {
+                final response = await http.post(
+                  Uri.parse('${ApiService.baseUrl}/vendor/verify-otp'),
+                  headers: {'Content-Type': 'application/json'},
+                  body: jsonEncode({'phone': phone, 'otp': otpVal}),
+                );
+                
+                Navigator.pop(context); // Close loading dialog
+
+                if (response.statusCode == 200) {
+                  Navigator.pop(context); // Close OTP dialog
+                  
+                  // Show success dialog
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Success'),
+                      content: const Text(
+                        'WhatsApp number verified successfully! Please wait for admin approval.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Close success dialog
+                            _toggleMode(true); // Toggle to login mode
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  final data = jsonDecode(response.body);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Verification failed: ${data['message'] ?? 'Unknown error'}')),
+                  );
+                }
+              } catch (e) {
+                Navigator.pop(context); // Close loading dialog
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Verification failed: $e')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF01B6B),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Verify'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loginVendor() async {

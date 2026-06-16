@@ -46,6 +46,21 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _whatsappTokenController = TextEditingController();
   final TextEditingController _geminiKeyController = TextEditingController();
   
+  // Trending Section & Service Cards
+  final TextEditingController _trendingCategoriesController = TextEditingController();
+  final TextEditingController _card1TitleController = TextEditingController();
+  final TextEditingController _card1SubtitleController = TextEditingController();
+  final TextEditingController _card1IconController = TextEditingController();
+  final TextEditingController _card2TitleController = TextEditingController();
+  final TextEditingController _card2SubtitleController = TextEditingController();
+  final TextEditingController _card2IconController = TextEditingController();
+  final TextEditingController _card3TitleController = TextEditingController();
+  final TextEditingController _card3SubtitleController = TextEditingController();
+  final TextEditingController _card3IconController = TextEditingController();
+  final TextEditingController _card4TitleController = TextEditingController();
+  final TextEditingController _card4SubtitleController = TextEditingController();
+  final TextEditingController _card4IconController = TextEditingController();
+  
   bool _enableAnnouncement = false;
   bool _isLoading = true;
   String? _logoUrl;
@@ -95,6 +110,21 @@ class _SettingsPageState extends State<SettingsPage> {
         _emailPassController.text = data['emailPass'] ?? '';
         _whatsappTokenController.text = data['whatsappToken'] ?? '';
         _geminiKeyController.text = data['geminiApiKey'] ?? '';
+        
+        _trendingCategoriesController.text = data['trendingCategories'] ?? '';
+        _card1TitleController.text = data['serviceCard1Title'] ?? '';
+        _card1SubtitleController.text = data['serviceCard1Subtitle'] ?? '';
+        _card1IconController.text = data['serviceCard1Icon'] ?? '';
+        _card2TitleController.text = data['serviceCard2Title'] ?? '';
+        _card2SubtitleController.text = data['serviceCard2Subtitle'] ?? '';
+        _card2IconController.text = data['serviceCard2Icon'] ?? '';
+        _card3TitleController.text = data['serviceCard3Title'] ?? '';
+        _card3SubtitleController.text = data['serviceCard3Subtitle'] ?? '';
+        _card3IconController.text = data['serviceCard3Icon'] ?? '';
+        _card4TitleController.text = data['serviceCard4Title'] ?? '';
+        _card4SubtitleController.text = data['serviceCard4Subtitle'] ?? '';
+        _card4IconController.text = data['serviceCard4Icon'] ?? '';
+
         _logoUrl = data['logo'];
         _faviconUrl = data['favicon'];
         if (_faviconUrl != null && _faviconUrl!.isNotEmpty) {
@@ -142,6 +172,21 @@ class _SettingsPageState extends State<SettingsPage> {
         'emailPass': _emailPassController.text,
         'whatsappToken': _whatsappTokenController.text,
         'geminiApiKey': _geminiKeyController.text,
+        
+        'trendingCategories': _trendingCategoriesController.text,
+        'serviceCard1Title': _card1TitleController.text,
+        'serviceCard1Subtitle': _card1SubtitleController.text,
+        'serviceCard1Icon': _card1IconController.text,
+        'serviceCard2Title': _card2TitleController.text,
+        'serviceCard2Subtitle': _card2SubtitleController.text,
+        'serviceCard2Icon': _card2IconController.text,
+        'serviceCard3Title': _card3TitleController.text,
+        'serviceCard3Subtitle': _card3SubtitleController.text,
+        'serviceCard3Icon': _card3IconController.text,
+        'serviceCard4Title': _card4TitleController.text,
+        'serviceCard4Subtitle': _card4SubtitleController.text,
+        'serviceCard4Icon': _card4IconController.text,
+
         'logo': _logoUrl,
         'favicon': _faviconUrl,
       });
@@ -374,6 +419,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                     _buildLegalPagesCard(),
                                     const SizedBox(height: 24),
                                     _buildSocialMediaCard(),
+                                    const SizedBox(height: 24),
+                                    _buildTrendingSectionSettingsCard(),
                                     const SizedBox(height: 24),
                                     _buildSecureConfigCard(),
                                     const SizedBox(height: 40),
@@ -707,6 +754,118 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 20),
           _buildTextField('LinkedIn URL', _linkedinController),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendingSectionSettingsCard() {
+    return _buildCardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Trending Section & Service Cards',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage categories and service card features displayed on the homepage.',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey.shade500,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.trending_up, color: Color(0xFF8B5CF6), size: 24),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildTextField(
+            'Trending Categories (Comma Separated)',
+            _trendingCategoriesController,
+          ),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+          Text(
+            'Service Cards (Home Page Header)',
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Card 1
+          Text('Service Card 1', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: _buildTextField('Title', _card1TitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Subtitle', _card1SubtitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Icon URL', _card1IconController)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Card 2
+          Text('Service Card 2', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: _buildTextField('Title', _card2TitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Subtitle', _card2SubtitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Icon URL', _card2IconController)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Card 3
+          Text('Service Card 3', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: _buildTextField('Title', _card3TitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Subtitle', _card3SubtitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Icon URL', _card3IconController)),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Card 4
+          Text('Service Card 4', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: _buildTextField('Title', _card4TitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Subtitle', _card4SubtitleController)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildTextField('Icon URL', _card4IconController)),
+            ],
+          ),
         ],
       ),
     );

@@ -22,8 +22,8 @@ class SettingsController with ChangeNotifier {
     await fetchSettings();
     
     // Listen for real-time settings updates
-    SocketService.instance.on('settings', (data) {
-      if (data['data'] != null) {
+    SocketService.instance.on('admin_data_updated', (data) {
+      if (data['type'] == 'settings' && data['data'] != null) {
         _settings = AppSettings.fromJson(data['data']);
         _updateBrowserMetadata();
         notifyListeners();

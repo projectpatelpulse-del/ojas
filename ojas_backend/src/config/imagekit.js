@@ -9,3 +9,4 @@ const imagekit = new ImageKitClass({
 });
 
 module.exports = imagekit;
+// Trigger restart to reload .env config

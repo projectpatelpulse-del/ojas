@@ -119,6 +119,58 @@ const settingSchema = new mongoose.Schema({
   geminiApiKey: {
     type: String,
     default: ''
+  },
+  trendingCategories: {
+    type: String,
+    default: 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games'
+  },
+  serviceCard1Title: {
+    type: String,
+    default: 'FREE DELIVERY'
+  },
+  serviceCard1Subtitle: {
+    type: String,
+    default: 'From ₹89.00'
+  },
+  serviceCard1Icon: {
+    type: String,
+    default: 'https://cdn-icons-png.flaticon.com/512/709/709790.png'
+  },
+  serviceCard2Title: {
+    type: String,
+    default: 'ORDER PROTECTION'
+  },
+  serviceCard2Subtitle: {
+    type: String,
+    default: 'Refund/Resent 120 Day'
+  },
+  serviceCard2Icon: {
+    type: String,
+    default: 'https://cdn-icons-png.flaticon.com/512/1161/1161388.png'
+  },
+  serviceCard3Title: {
+    type: String,
+    default: 'PAYMENT SECURITY'
+  },
+  serviceCard3Subtitle: {
+    type: String,
+    default: 'SSL Secure Payment'
+  },
+  serviceCard3Icon: {
+    type: String,
+    default: 'https://cdn-icons-png.flaticon.com/512/1069/1069159.png'
+  },
+  serviceCard4Title: {
+    type: String,
+    default: '24/7 SUPPORT'
+  },
+  serviceCard4Subtitle: {
+    type: String,
+    default: 'Dedicated Support'
+  },
+  serviceCard4Icon: {
+    type: String,
+    default: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png'
   }
 }, {
   timestamps: true

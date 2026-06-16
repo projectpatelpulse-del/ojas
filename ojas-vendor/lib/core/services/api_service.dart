@@ -5,14 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   final Dio _dio = Dio();
   static const String _prodUrl = 'https://api.ojasindia.com/api';
-  static const String _devUrl = 'https://api.ojasindia.com/api';
-  // static const String _devUrl = 'http://localhost:5001/api';
+  // static const String _devUrl = 'https://api.ojasindia.com/api';
+  static const String _devUrl = 'http://localhost:5001/api';
   static String get baseUrl => kDebugMode ? _devUrl : _prodUrl;
 
   ApiService() {
     _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 10);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
+    _dio.options.connectTimeout = const Duration(seconds: 60);
+    _dio.options.receiveTimeout = const Duration(seconds: 60);
 
     _dio.interceptors.add(
       InterceptorsWrapper(

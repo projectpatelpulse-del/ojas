@@ -23,6 +23,19 @@ const defaultSettings = {
   youtubeLink: "",
   linkedinLink: "",
   defaultCommission: 10,
+  trendingCategories: 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games',
+  serviceCard1Title: 'FREE DELIVERY',
+  serviceCard1Subtitle: 'From ₹89.00',
+  serviceCard1Icon: 'https://cdn-icons-png.flaticon.com/512/709/709790.png',
+  serviceCard2Title: 'ORDER PROTECTION',
+  serviceCard2Subtitle: 'Refund/Resent 120 Day',
+  serviceCard2Icon: 'https://cdn-icons-png.flaticon.com/512/1161/1161388.png',
+  serviceCard3Title: 'PAYMENT SECURITY',
+  serviceCard3Subtitle: 'SSL Secure Payment',
+  serviceCard3Icon: 'https://cdn-icons-png.flaticon.com/512/1069/1069159.png',
+  serviceCard4Title: '24/7 SUPPORT',
+  serviceCard4Subtitle: 'Dedicated Support',
+  serviceCard4Icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
 };
 
 // Helper to get or create the singleton setting document
@@ -96,7 +109,21 @@ const updateSettings = async (req, res) => {
       delhiveryToken,
       emailUser,
       emailPass,
-      whatsappToken
+      whatsappToken,
+      geminiApiKey,
+      trendingCategories,
+      serviceCard1Title,
+      serviceCard1Subtitle,
+      serviceCard1Icon,
+      serviceCard2Title,
+      serviceCard2Subtitle,
+      serviceCard2Icon,
+      serviceCard3Title,
+      serviceCard3Subtitle,
+      serviceCard3Icon,
+      serviceCard4Title,
+      serviceCard4Subtitle,
+      serviceCard4Icon
     } = req.body;
 
     let setting = await getOrCreateSetting();
@@ -123,6 +150,24 @@ const updateSettings = async (req, res) => {
     if (twitterLink !== undefined) setting.twitterLink = twitterLink;
     if (youtubeLink !== undefined) setting.youtubeLink = youtubeLink;
     if (linkedinLink !== undefined) setting.linkedinLink = linkedinLink;
+    if (geminiApiKey !== undefined) setting.geminiApiKey = geminiApiKey;
+    if (trendingCategories !== undefined) setting.trendingCategories = trendingCategories;
+    
+    if (serviceCard1Title !== undefined) setting.serviceCard1Title = serviceCard1Title;
+    if (serviceCard1Subtitle !== undefined) setting.serviceCard1Subtitle = serviceCard1Subtitle;
+    if (serviceCard1Icon !== undefined) setting.serviceCard1Icon = serviceCard1Icon;
+    
+    if (serviceCard2Title !== undefined) setting.serviceCard2Title = serviceCard2Title;
+    if (serviceCard2Subtitle !== undefined) setting.serviceCard2Subtitle = serviceCard2Subtitle;
+    if (serviceCard2Icon !== undefined) setting.serviceCard2Icon = serviceCard2Icon;
+    
+    if (serviceCard3Title !== undefined) setting.serviceCard3Title = serviceCard3Title;
+    if (serviceCard3Subtitle !== undefined) setting.serviceCard3Subtitle = serviceCard3Subtitle;
+    if (serviceCard3Icon !== undefined) setting.serviceCard3Icon = serviceCard3Icon;
+    
+    if (serviceCard4Title !== undefined) setting.serviceCard4Title = serviceCard4Title;
+    if (serviceCard4Subtitle !== undefined) setting.serviceCard4Subtitle = serviceCard4Subtitle;
+    if (serviceCard4Icon !== undefined) setting.serviceCard4Icon = serviceCard4Icon;
     
     // Sensitive fields
     if (paymentGatewayKey !== undefined) setting.paymentGatewayKey = paymentGatewayKey;
