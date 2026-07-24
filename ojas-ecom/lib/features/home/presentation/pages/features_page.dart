@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/features/home/presentation/widgets/featured_header.dart';
@@ -8,6 +9,7 @@ import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/features/home/data/models/banner_model.dart';
 
 class FeaturesPage extends StatelessWidget {
   const FeaturesPage({super.key});
@@ -32,11 +34,11 @@ class FeaturesPage extends StatelessWidget {
                 padding: const EdgeInsets.all(100.0),
                 child: Column(
                   children: [
-                    const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+                    const Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.grey),
                     const SizedBox(height: 16),
                     Text(
                       'No featured products found.',
-                      style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey),
+                      style: GoogleFonts.outfit(fontSize: 18, color: AppColors.grey),
                     ),
                   ],
                 ),
@@ -88,7 +90,7 @@ class FeaturesPage extends StatelessWidget {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(success ? 'Added to cart!' : 'Failed. Please login.'),
-                              backgroundColor: success ? Colors.green : Colors.red,
+                              backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 2),
                             ));
@@ -98,6 +100,51 @@ class FeaturesPage extends StatelessWidget {
                     },
                   ),
                 SizedBox(height: isMobile ? 40 : 60),
+                // Builder(
+                //   builder: (context) {
+                //     final allBanners = HomeController.instance.banners;
+                //     final whyChooseBanners = allBanners
+                //         .where((b) => b.type == 'why_choose')
+                //         .toList();
+                // 
+                //     if (whyChooseBanners.isNotEmpty &&
+                //         whyChooseBanners[0].imageUrl.isNotEmpty) {
+                //       final banner = whyChooseBanners[0];
+                //       return Padding(
+                //         padding: const EdgeInsets.symmetric(vertical: 20.0),
+                //         child: MouseRegion(
+                //           cursor: SystemMouseCursors.click,
+                //           child: GestureDetector(
+                //             onTap: () {
+                //               if (banner.link.isNotEmpty) {
+                //                 Navigator.pushNamed(context, banner.link);
+                //               }
+                //             },
+                //             child: ClipRRect(
+                //               borderRadius: BorderRadius.circular(16),
+                //               child: Container(
+                //                 width: double.infinity,
+                //                 height: isMobile ? 180 : (isTablet ? 280 : 360),
+                //                 decoration: const BoxDecoration(
+                //                   color: Colors.transparent,
+                //                 ),
+                //                 child: Image.network(
+                //                   banner.imageUrl,
+                //                   fit: BoxFit.contain,
+                //                   errorBuilder: (context, error, stackTrace) {
+                //                     return const WhyChooseSection();
+                //                   },
+                //                 ),
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //       );
+                //     }
+                // 
+                //     return const WhyChooseSection();
+                //   },
+                // ),
                 const WhyChooseSection(),
                 const SizedBox(height: 100),
               ],

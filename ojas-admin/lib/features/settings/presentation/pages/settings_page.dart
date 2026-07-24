@@ -31,6 +31,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _returnRefundController = TextEditingController();
   final TextEditingController _termsController = TextEditingController();
   final TextEditingController _privacyController = TextEditingController();
+  final TextEditingController _aboutUsController = TextEditingController();
   // New: Social links
   final TextEditingController _fbController = TextEditingController();
   final TextEditingController _instaController = TextEditingController();
@@ -44,7 +45,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _emailUserController = TextEditingController();
   final TextEditingController _emailPassController = TextEditingController();
   final TextEditingController _whatsappTokenController = TextEditingController();
+  final TextEditingController _whatsappNumberController = TextEditingController();
   final TextEditingController _geminiKeyController = TextEditingController();
+  final TextEditingController _navigationMenuItemsController = TextEditingController();
+  final TextEditingController _homeSectionsActiveController = TextEditingController();
   
   // Trending Section & Service Cards
   final TextEditingController _trendingCategoriesController = TextEditingController();
@@ -62,6 +66,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _card4IconController = TextEditingController();
   
   bool _enableAnnouncement = false;
+  bool _showTrendingProducts = true;
+  bool _showTrendingB2BBanner = true;
   bool _isLoading = true;
   String? _logoUrl;
   String? _faviconUrl;
@@ -96,6 +102,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _returnRefundController.text = data['returnRefundPolicy'] ?? '';
         _termsController.text = data['termsConditions'] ?? '';
         _privacyController.text = data['privacyPolicy'] ?? '';
+        _aboutUsController.text = data['aboutUsContent'] ?? '';
         // New: Social links
         _fbController.text = data['facebookLink'] ?? '';
         _instaController.text = data['instagramLink'] ?? '';
@@ -109,7 +116,12 @@ class _SettingsPageState extends State<SettingsPage> {
         _emailUserController.text = data['emailUser'] ?? '';
         _emailPassController.text = data['emailPass'] ?? '';
         _whatsappTokenController.text = data['whatsappToken'] ?? '';
+        _whatsappNumberController.text = data['whatsappNumber'] ?? '';
         _geminiKeyController.text = data['geminiApiKey'] ?? '';
+        _navigationMenuItemsController.text = data['navigationMenuItems'] ?? '';
+        _homeSectionsActiveController.text = data['homeSectionsActive'] ?? '';
+        _showTrendingProducts = data['showTrendingProducts'] ?? true;
+        _showTrendingB2BBanner = data['showTrendingB2BBanner'] ?? true;
         
         _trendingCategoriesController.text = data['trendingCategories'] ?? '';
         _card1TitleController.text = data['serviceCard1Title'] ?? '';
@@ -158,6 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'returnRefundPolicy': _returnRefundController.text,
         'termsConditions': _termsController.text,
         'privacyPolicy': _privacyController.text,
+        'aboutUsContent': _aboutUsController.text,
         // New: Social links
         'facebookLink': _fbController.text,
         'instagramLink': _instaController.text,
@@ -171,7 +184,12 @@ class _SettingsPageState extends State<SettingsPage> {
         'emailUser': _emailUserController.text,
         'emailPass': _emailPassController.text,
         'whatsappToken': _whatsappTokenController.text,
+        'whatsappNumber': _whatsappNumberController.text,
         'geminiApiKey': _geminiKeyController.text,
+        'navigationMenuItems': _navigationMenuItemsController.text,
+        'homeSectionsActive': _homeSectionsActiveController.text,
+        'showTrendingProducts': _showTrendingProducts,
+        'showTrendingB2BBanner': _showTrendingB2BBanner,
         
         'trendingCategories': _trendingCategoriesController.text,
         'serviceCard1Title': _card1TitleController.text,
@@ -414,6 +432,10 @@ class _SettingsPageState extends State<SettingsPage> {
                                     const SizedBox(height: 24),
                                     _buildAnnouncementCard(),
                                     const SizedBox(height: 24),
+                                    _buildNavigationSettingsCard(),
+                                    const SizedBox(height: 24),
+                                    _buildHomeSectionsSettingsCard(),
+                                    const SizedBox(height: 24),
                                     _buildContactInfoCard(),
                                     const SizedBox(height: 24),
                                     _buildLegalPagesCard(),
@@ -623,6 +645,164 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildNavigationSettingsCard() {
+    final activeItems = _navigationMenuItemsController.text
+        .split(',')
+        .map((e) => e.trim().toUpperCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+
+    Widget buildMenuToggle(String title) {
+      final isSelected = activeItems.contains(title);
+      return SwitchListTile(
+        title: Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+        value: isSelected,
+        activeColor: const Color(0xFF8B5CF6),
+        onChanged: (val) {
+          setState(() {
+            if (val) {
+              activeItems.add(title);
+            } else {
+              activeItems.remove(title);
+            }
+            // Preserve the original ordering if possible or just join them
+            final List<String> ordered = ['HOME', 'FEATURES', 'DEALS', 'SHOP', 'BLOG']
+                .where((item) => activeItems.contains(item))
+                .toList();
+            _navigationMenuItemsController.text = ordered.join(', ');
+          });
+        },
+      );
+    }
+
+    return _buildCardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Navigation Menu Management', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                    const SizedBox(height: 4),
+                    Text('Toggle tabs active/inactive to manage what pages are visible in the navbar.', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.navigation_outlined, color: Colors.indigo, size: 24),
+            ],
+          ),
+          const SizedBox(height: 16),
+          buildMenuToggle('HOME'),
+          buildMenuToggle('FEATURES'),
+          buildMenuToggle('DEALS'),
+          buildMenuToggle('SHOP'),
+          buildMenuToggle('BLOG'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeSectionsSettingsCard() {
+    final activeSections = _homeSectionsActiveController.text
+        .split(',')
+        .map((e) => e.trim().toUpperCase())
+        .where((e) => e.isNotEmpty)
+        .toSet();
+
+    Widget buildSectionToggle(String sectionKey, String label) {
+      final isSelected = activeSections.contains(sectionKey);
+      return SwitchListTile(
+        title: Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+        value: isSelected,
+        activeColor: const Color(0xFF8B5CF6),
+        onChanged: (val) {
+          setState(() {
+            if (val) {
+              activeSections.add(sectionKey);
+            } else {
+              activeSections.remove(sectionKey);
+            }
+            final List<String> ordered = [
+              'HERO',
+              'DAILY_DEALS',
+              'SUMMER_SALE',
+              'TRENDING',
+              'PROMO_GRID',
+              'BECOME_VENDOR',
+              'JUST_FOR_YOU',
+              'LATEST_PRODUCTS',
+              'ADS_SUBSCRIBE',
+            ].where((sec) => activeSections.contains(sec)).toList();
+            _homeSectionsActiveController.text = ordered.join(', ');
+          });
+        },
+      );
+    }
+
+    return _buildCardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Home Sections Management', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                    const SizedBox(height: 4),
+                    Text('Toggle sections active/inactive to manage what content areas are displayed on the home page.', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Icon(Icons.dashboard_customize_outlined, color: Colors.teal, size: 24),
+            ],
+          ),
+          const SizedBox(height: 16),
+          buildSectionToggle('HERO', 'Hero Banner (includes Gift Strip)'),
+          buildSectionToggle('DAILY_DEALS', 'Daily Deals Section'),
+          buildSectionToggle('SUMMER_SALE', 'Summer Sale Banner'),
+          buildSectionToggle('TRENDING', 'Trending Items Section'),
+          buildSectionToggle('PROMO_GRID', 'Promo Grid Section'),
+          buildSectionToggle('BECOME_VENDOR', 'Become Vendor Banner'),
+          buildSectionToggle('JUST_FOR_YOU', 'Just For You Section'),
+          buildSectionToggle('LATEST_PRODUCTS', 'Latest Products Section'),
+          buildSectionToggle('ADS_SUBSCRIBE', 'Ads & Subscribe Section'),
+          const Divider(height: 32),
+          SwitchListTile(
+            title: Text('Show Products in Trending Section', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
+            subtitle: Text('Show/hide actual items grid inside the trending items area', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+            value: _showTrendingProducts,
+            activeColor: const Color(0xFF8B5CF6),
+            onChanged: (val) {
+              setState(() {
+                _showTrendingProducts = val;
+              });
+            },
+          ),
+          SwitchListTile(
+            title: Text('Show B2B Gifting Partner Banner in Trending', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
+            subtitle: Text('Show/hide custom B2B gifting banner image layout inside the trending items area', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+            value: _showTrendingB2BBanner,
+            activeColor: const Color(0xFF8B5CF6),
+            onChanged: (val) {
+              setState(() {
+                _showTrendingB2BBanner = val;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildContactInfoCard() {
     return _buildCardWrapper(
       child: Column(
@@ -654,7 +834,13 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildTextField('Address', _contactAddressController),
+          Row(
+            children: [
+              Expanded(flex: 2, child: _buildTextField('Address', _contactAddressController)),
+              const SizedBox(width: 20),
+              Expanded(flex: 1, child: _buildTextField('WhatsApp FAB Number', _whatsappNumberController)),
+            ],
+          ),
         ],
       ),
     );
@@ -688,6 +874,8 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildTextField('Terms & Conditions', _termsController, maxLines: 10),
           const SizedBox(height: 20),
           _buildTextField('Privacy Policy', _privacyController, maxLines: 10),
+          const SizedBox(height: 20),
+          _buildTextField('About Us Content', _aboutUsController, maxLines: 10),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),

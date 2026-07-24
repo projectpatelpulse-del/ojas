@@ -222,21 +222,22 @@ class _LoginPageState extends State<LoginPage> {
                         fillColor: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          'Forgot Password?',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6366F1),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // const SizedBox(height: 12),
+                    // Align(
+                    //   alignment: Alignment.centerRight,
+                    //   child: TextButton(
+                    //     onPressed: () {},
+                    //     child: Text(
+                    //       'Forgot Password?',
+                    //       style: GoogleFonts.inter(
+                    //         fontSize: 14,
+                    //         fontWeight: FontWeight.w600,
+                    //         color: const Color(0xFF6366F1),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                   
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,

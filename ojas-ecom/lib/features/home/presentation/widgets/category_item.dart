@@ -30,7 +30,7 @@ class _CategoryItemState extends State<CategoryItem> {
               color: _isHovered ? AppColors.primaryBlue.withOpacity(0.1) : AppColors.bgSecondaryLight,
               borderRadius: BorderRadius.circular(_isHovered ? 24 : 16),
               border: Border.all(
-                color: _isHovered ? AppColors.primaryBlue : Colors.transparent,
+                color: _isHovered ? AppColors.primaryBlue : AppColors.transparent,
                 width: 2,
               ),
             ),

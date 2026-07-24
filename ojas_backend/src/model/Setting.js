@@ -67,6 +67,10 @@ const settingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  aboutUsContent: {
+    type: String,
+    default: ''
+  },
   // Social Media Links
   facebookLink: {
     type: String,
@@ -116,9 +120,33 @@ const settingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  whatsappNumber: {
+    type: String,
+    default: ''
+  },
   geminiApiKey: {
     type: String,
     default: ''
+  },
+  openAiApiKey: {
+    type: String,
+    default: ''
+  },
+  navigationMenuItems: {
+    type: String,
+    default: 'HOME, FEATURES, DEALS, SHOP, BLOG'
+  },
+  homeSectionsActive: {
+    type: String,
+    default: 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE'
+  },
+  showTrendingProducts: {
+    type: Boolean,
+    default: true
+  },
+  showTrendingB2BBanner: {
+    type: Boolean,
+    default: true
   },
   trendingCategories: {
     type: String,

@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -44,7 +45,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E1B4B),
+                    color: AppColors.primaryIndigo,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -133,7 +134,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             color: Color(0xFFFFEBEE),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.security, color: const Color(0xFFF01B6B), size: isMobile ? 32 : 40),
+          child: Icon(Icons.security, color: AppColors.primaryPink, size: isMobile ? 32 : 40),
         ),
         const SizedBox(height: 24),
         Text(
@@ -142,7 +143,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF1E1B4B),
+            color: AppColors.primaryIndigo,
           ),
         ),
         const SizedBox(height: 16),
@@ -151,13 +152,13 @@ class PrivacyPolicyPage extends StatelessWidget {
           child: Text(
             'Your privacy is important to us. This policy explains how we collect and protect your information.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: isMobile ? 15 : 18, color: Colors.grey[600], height: 1.6),
+            style: GoogleFonts.inter(fontSize: isMobile ? 15 : 18, color: AppColors.grey[600], height: 1.6),
           ),
         ),
         const SizedBox(height: 24),
         Text(
           'Last updated: November 6, 2024',
-          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
+          style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[400]),
         ),
       ],
     );
@@ -168,14 +169,14 @@ class PrivacyPolicyPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Table of Contents', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B))),
+          Text('Table of Contents', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
           const SizedBox(height: 32),
           Wrap(
             spacing: 20,
@@ -199,9 +200,9 @@ class PrivacyPolicyPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xFFF01B6B)),
+          Icon(icon, size: 18, color: AppColors.primaryPink),
           const SizedBox(width: 12),
-          Text(text, style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFFF01B6B))),
+          Text(text, style: GoogleFonts.inter(fontSize: 14, color: AppColors.primaryPink)),
         ],
       ),
     );
@@ -212,16 +213,16 @@ class PrivacyPolicyPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B))),
+          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
           const SizedBox(height: 24),
-          Text(content, style: GoogleFonts.inter(fontSize: 16, color: Colors.grey[700], height: 1.6)),
+          Text(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
         ],
       ),
     );
@@ -232,9 +233,9 @@ class PrivacyPolicyPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,10 +245,10 @@ class PrivacyPolicyPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: const Color(0xFFFFEBEE), borderRadius: BorderRadius.circular(10)),
-                child: Icon(icon, color: const Color(0xFFF01B6B), size: 24),
+                child: Icon(icon, color: AppColors.primaryPink, size: 24),
               ),
               const SizedBox(width: 20),
-              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)))),
+              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
             ],
           ),
           const SizedBox(height: 32),
@@ -256,9 +257,9 @@ class PrivacyPolicyPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(sub.title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                    Text(sub.title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.black87)),
                     const SizedBox(height: 12),
-                    Text(sub.content, style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600], height: 1.6)),
+                    Text(sub.content, style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[600], height: 1.6)),
                   ],
                 ),
               )),
@@ -272,21 +273,21 @@ class PrivacyPolicyPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Contact Us About Privacy',
-            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)),
+            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo),
           ),
           const SizedBox(height: 16),
           Text(
             'If you have questions about our privacy practices, contact us below:',
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600], height: 1.6),
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[600], height: 1.6),
           ),
           const SizedBox(height: 48),
           if (isMobile)
@@ -323,11 +324,11 @@ class PrivacyPolicyPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFFF01B6B), size: 24),
+          Icon(icon, color: AppColors.primaryPink, size: 24),
           const SizedBox(height: 16),
-          Text(title, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(title, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87)),
           const SizedBox(height: 8),
-          Text(value, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[600], height: 1.4)),
+          Text(value, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: AppColors.grey[600], height: 1.4)),
         ],
       ),
     );
@@ -338,7 +339,7 @@ class PrivacyPolicyPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60, horizontal: isMobile ? 20 : 40),
       decoration: BoxDecoration(
-        color: const Color(0xFFF01B6B),
+        color: AppColors.primaryPink,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -346,13 +347,13 @@ class PrivacyPolicyPage extends StatelessWidget {
           Text(
             'Related Information',
             textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: Colors.white),
+            style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.white),
           ),
           const SizedBox(height: 16),
           Text(
             'Learn more about our policies',
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 18, color: Colors.white.withOpacity(0.9)),
+            style: GoogleFonts.inter(fontSize: 18, color: AppColors.white.withOpacity(0.9)),
           ),
           const SizedBox(height: 40),
           Wrap(
@@ -376,8 +377,8 @@ class PrivacyPolicyPage extends StatelessWidget {
       icon: Icon(icon, size: 18),
       label: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white.withOpacity(0.15),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.white.withOpacity(0.15),
+        foregroundColor: AppColors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 0,

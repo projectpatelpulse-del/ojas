@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -134,7 +135,7 @@ class _RegisterFormState extends State<RegisterForm> {
         setState(() => _isLoading = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.message), backgroundColor: Colors.red),
+            SnackBar(content: Text(response.message), backgroundColor: AppColors.errorRed),
           );
         }
       }
@@ -207,10 +208,10 @@ class _RegisterFormState extends State<RegisterForm> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFE91E63),
+                        color: AppColors.accentOrange,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 16),
+                      child: const Icon(Icons.camera_alt_outlined, color: AppColors.white, size: 16),
                     ),
                   ),
                 ],
@@ -303,7 +304,7 @@ class _RegisterFormState extends State<RegisterForm> {
                   value: _agreedToTerms,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   side: const BorderSide(color: Color(0xFF94A3B8)),
-                  activeColor: const Color(0xFFE91E63),
+                  activeColor: AppColors.accentOrange,
                   onChanged: (v) => setState(() => _agreedToTerms = v!),
                 ),
               ),
@@ -316,13 +317,13 @@ class _RegisterFormState extends State<RegisterForm> {
                     children: [
                       TextSpan(
                         text: 'Terms of Service',
-                        style: GoogleFonts.inter(color: const Color(0xFFE91E63), fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(color: AppColors.accentOrange, fontWeight: FontWeight.w600),
                         recognizer: _termsRecognizer,
                       ),
                       const TextSpan(text: ' and '),
                       TextSpan(
                         text: 'Privacy Policy',
-                        style: GoogleFonts.inter(color: const Color(0xFFE91E63), fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(color: AppColors.accentOrange, fontWeight: FontWeight.w600),
                         recognizer: _privacyRecognizer,
                       ),
                     ],
@@ -340,13 +341,13 @@ class _RegisterFormState extends State<RegisterForm> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleRegister,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE91E63),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accentOrange,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
               ),
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -367,7 +368,7 @@ class _RegisterFormState extends State<RegisterForm> {
               Text('Already have an account? ', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 14)),
               InkWell(
                 onTap: widget.onToggle,
-                child: Text('Sign In', style: GoogleFonts.inter(color: const Color(0xFFE91E63), fontSize: 14, fontWeight: FontWeight.bold)),
+                child: Text('Sign In', style: GoogleFonts.inter(color: AppColors.accentOrange, fontSize: 14, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -421,11 +422,11 @@ class _RegisterFormState extends State<RegisterForm> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: isFocusedFill ? Colors.transparent : const Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: isFocusedFill ? AppColors.transparent : const Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE91E63)),
+          borderSide: const BorderSide(color: AppColors.accentOrange),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

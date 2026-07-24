@@ -1,6 +1,7 @@
 const Admin = require("../model/Admin.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { sendBulkEmail } = require("../service/emailService.js");
 
 const registerAdmin = async (req, res) => {
     try {
@@ -164,4 +165,27 @@ const updateAdminPermissions = async (req, res) => {
     }
 };
 
-module.exports = { registerAdmin, loginAdmin, logoutAdmin, getAdmin, changePassword, getAllAdmins, updateAdminStatus, deleteAdmin, updateAdminPermissions };
+const sendBulkEmailController = async (req, res) => {
+    try {
+        const { emails, subject, htmlContent } = req.body;
+
+        if (!emails || !Array.isArray(emails) || emails.length === 0) {
+            return res.status(400).json({ message: "Recipient emails array is required and cannot be empty" });
+        }
+        if (!subject || !htmlContent) {
+            return res.status(400).json({ message: "Subject and HTML body content are required" });
+        }
+
+        const results = await sendBulkEmail(emails, subject, htmlContent);
+        res.status(200).json({
+            success: true,
+            message: "Bulk email processing complete",
+            data: results
+        });
+    } catch (error) {
+        console.error("Bulk email controller error:", error.message);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { registerAdmin, loginAdmin, logoutAdmin, getAdmin, changePassword, getAllAdmins, updateAdminStatus, deleteAdmin, updateAdminPermissions, sendBulkEmailController };

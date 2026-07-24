@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -112,7 +113,7 @@ class CategoryPromoCard extends StatelessWidget {
                           style: GoogleFonts.outfit(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: AppColors.black87,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -122,7 +123,7 @@ class CategoryPromoCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
                             fontSize: 10,
-                            color: Colors.black54,
+                            color: AppColors.black54,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -138,11 +139,11 @@ class CategoryPromoCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.white,
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: AppColors.black.withOpacity(0.05),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -157,14 +158,14 @@ class CategoryPromoCard extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
-                                    color: const Color(0xFFF01B6B),
+                                    color: AppColors.primaryPink,
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.arrow_forward, size: 12, color: Color(0xFFF01B6B)),
+                              const Icon(Icons.arrow_forward, size: 12, color: AppColors.primaryPink),
                             ],
                           ),
                         ),

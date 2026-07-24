@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -37,9 +38,9 @@ class _JustForYouCardState extends State<JustForYouCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: Border.all(color: AppColors.grey200, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,10 +62,10 @@ class _JustForYouCardState extends State<JustForYouCard> {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                        decoration: BoxDecoration(color: const Color(0xFFF01B6B), borderRadius: BorderRadius.circular(4)),
+                        decoration: BoxDecoration(color: AppColors.primaryPink, borderRadius: BorderRadius.circular(4)),
                         child: Text(
                           '--${widget.discount}%',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.inter(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -78,7 +79,7 @@ class _JustForYouCardState extends State<JustForYouCard> {
                         child: Text(
                           'BEST\nSELLER',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold, height: 1.1),
+                          style: GoogleFonts.inter(color: AppColors.white, fontSize: 8, fontWeight: FontWeight.bold, height: 1.1),
                         ),
                       ),
                     ),
@@ -108,7 +109,7 @@ class _JustForYouCardState extends State<JustForYouCard> {
                 children: [
                   Text(
                     widget.brand,
-                    style: GoogleFonts.inter(fontSize: 10, color: Colors.grey.shade600),
+                    style: GoogleFonts.inter(fontSize: 10, color: AppColors.grey600),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -127,14 +128,14 @@ class _JustForYouCardState extends State<JustForYouCard> {
                     children: [
                       Text(
                         '₹${widget.price.ceil()}',
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         '₹${widget.oldPrice.ceil()}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: Colors.grey.shade500,
+                          color: AppColors.grey500,
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -151,8 +152,8 @@ class _JustForYouCardState extends State<JustForYouCard> {
                         style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF01B6B),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primaryPink,
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         elevation: 0,
@@ -171,12 +172,12 @@ class _JustForYouCardState extends State<JustForYouCard> {
   Widget _hoverActionButton(IconData icon) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.1), blurRadius: 4)],
       ),
       child: IconButton(
-        icon: Icon(icon, size: 16, color: Colors.black87),
+        icon: Icon(icon, size: 16, color: AppColors.black87),
         onPressed: () {},
         padding: const EdgeInsets.all(8),
         constraints: const BoxConstraints(),

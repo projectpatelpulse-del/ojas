@@ -20,6 +20,12 @@ class AppSettings {
   final String twitterLink;
   final String youtubeLink;
   final String linkedinLink;
+  final String whatsappNumber;
+  final String aboutUsContent;
+  final String navigationMenuItems;
+  final String homeSectionsActive;
+  final bool showTrendingProducts;
+  final bool showTrendingB2BBanner;
 
   // Trending Section & Service Cards
   final String trendingCategories;
@@ -58,6 +64,12 @@ class AppSettings {
     required this.twitterLink,
     required this.youtubeLink,
     required this.linkedinLink,
+    required this.whatsappNumber,
+    required this.aboutUsContent,
+    required this.navigationMenuItems,
+    required this.homeSectionsActive,
+    required this.showTrendingProducts,
+    required this.showTrendingB2BBanner,
     required this.trendingCategories,
     required this.serviceCard1Title,
     required this.serviceCard1Subtitle,
@@ -96,6 +108,12 @@ class AppSettings {
       twitterLink: json['twitterLink'] ?? '',
       youtubeLink: json['youtubeLink'] ?? '',
       linkedinLink: json['linkedinLink'] ?? '',
+      whatsappNumber: json['whatsappNumber'] ?? '',
+      aboutUsContent: json['aboutUsContent'] ?? '',
+      navigationMenuItems: json['navigationMenuItems'] ?? 'HOME, FEATURES, DEALS, SHOP, BLOG',
+      homeSectionsActive: json['homeSectionsActive'] ?? 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE',
+      showTrendingProducts: json['showTrendingProducts'] ?? true,
+      showTrendingB2BBanner: json['showTrendingB2BBanner'] ?? true,
       trendingCategories: json['trendingCategories'] ?? 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games',
       serviceCard1Title: json['serviceCard1Title'] ?? 'FREE DELIVERY',
       serviceCard1Subtitle: json['serviceCard1Subtitle'] ?? 'From ₹89.00',
@@ -135,6 +153,12 @@ class AppSettings {
       twitterLink: '',
       youtubeLink: '',
       linkedinLink: '',
+      whatsappNumber: '',
+      aboutUsContent: '',
+      navigationMenuItems: 'HOME, FEATURES, DEALS, SHOP, BLOG',
+      homeSectionsActive: 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE',
+      showTrendingProducts: true,
+      showTrendingB2BBanner: true,
       trendingCategories: 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games',
       serviceCard1Title: 'FREE DELIVERY',
       serviceCard1Subtitle: 'From ₹89.00',

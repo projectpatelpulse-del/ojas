@@ -34,6 +34,12 @@ exports.addToCart = async (req, res) => {
       }
     }
 
+    // Enforce MOQ check
+    const minQty = product.moq || 1;
+    if (newQuantity < minQty) {
+      newQuantity = minQty;
+    }
+
     const itemData = {
       product: productId,
       quantity: newQuantity,
@@ -110,6 +116,9 @@ exports.updateCartItem = async (req, res) => {
       const product = await Product.findById(productId);
       if (!product) return res.status(404).json({ message: 'Product not found' });
       
+      const minQty = product.moq || 1;
+      const targetQuantity = Math.max(quantity, minQty);
+
       const basePrice = (product.discountPrice > 0) ? product.discountPrice : product.price;
       const vendor = await Vendor.findOne({ user: product.user });
       const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
@@ -117,7 +126,7 @@ exports.updateCartItem = async (req, res) => {
 
       const pricing = calculateProductPricing(basePrice, commissionPercent, gstPercent);
 
-      cart.items[itemIndex].quantity = quantity;
+      cart.items[itemIndex].quantity = targetQuantity;
       cart.items[itemIndex].price = pricing.sellingPrice;
       cart.items[itemIndex].originalPrice = pricing.originalPrice;
       cart.items[itemIndex].commissionPercent = pricing.commissionPercent;

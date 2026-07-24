@@ -188,15 +188,31 @@ class CartController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addToCart(String productId, {int quantity = 1, int? moq}) async {
+  Future<bool> addToCart(String productId, {int quantity = 1, int? moq, String? variationId}) async {
     final token = await _getToken();
     if (token == null) return false;
     
     int qtyToAdd = quantity;
-    if (moq != null && moq > 1 && quantity == 1) {
+    if (quantity < 0) {
+      final existingItemIndex = _items.indexWhere((item) {
+        final p = item['product'];
+        final String? varId = item['variationId'] ?? (item['variation'] != null ? (item['variation']['_id'] ?? item['variation']['id'])?.toString() : null);
+        return p != null && (p['_id'] == productId || p['id'] == productId) && (varId == variationId);
+      });
+      if (existingItemIndex > -1) {
+        final item = _items[existingItemIndex];
+        final currentQty = item['quantity'] ?? 1;
+        final product = item['product'];
+        final int minQty = product != null && product['moq'] != null ? (product['moq'] as num).toInt() : (moq ?? 1);
+        if (currentQty + quantity < minQty) {
+          return false;
+        }
+      }
+    } else if (moq != null && moq > 1 && quantity == 1) {
       bool exists = _items.any((item) {
         final p = item['product'];
-        return p != null && (p['_id'] == productId || p['id'] == productId);
+        final String? varId = item['variationId'] ?? (item['variation'] != null ? (item['variation']['_id'] ?? item['variation']['id'])?.toString() : null);
+        return p != null && (p['_id'] == productId || p['id'] == productId) && (varId == variationId);
       });
       if (!exists) {
         qtyToAdd = moq;
@@ -207,7 +223,7 @@ class CartController extends ChangeNotifier {
         ? SessionService.instance.refCode
         : null;
 
-    final success = await _cartService.addToCart(productId, quantity: qtyToAdd, referralCode: refCode);
+    final success = await _cartService.addToCart(productId, quantity: qtyToAdd, referralCode: refCode, variationId: variationId);
     if (success) {
       await loadCart();
       return true;
@@ -215,11 +231,11 @@ class CartController extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> removeFromCart(String productId) async {
+  Future<bool> removeFromCart(String productId, {String? variationId}) async {
     final token = await _getToken();
     if (token == null) return false;
 
-    final success = await _cartService.removeFromCart(productId);
+    final success = await _cartService.removeFromCart(productId, variationId: variationId);
     if (success) {
       await loadCart();
       return true;

@@ -23,6 +23,7 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
   late TextEditingController _dimensionsController;
   late TextEditingController _dateController;
   late TextEditingController _remarksController;
+  String _realShipToPhone = '';
 
   @override
   void initState() {
@@ -56,7 +57,14 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
       ].where((e) => e != null && e.toString().isNotEmpty).join(', ');
     }
     _shipToAddressController = TextEditingController(text: fullShippingAddress);
-    _shipToPhoneController = TextEditingController(text: (customer['mobile'] ?? '').toString());
+    
+    final rawPhone = (customer['mobile'] ?? '').toString();
+    _realShipToPhone = rawPhone;
+    _shipToPhoneController = TextEditingController(
+      text: rawPhone.length >= 10
+          ? '${rawPhone.substring(0, 2)}******${rawPhone.substring(rawPhone.length - 2)}'
+          : rawPhone
+    );
     
     // 2. From (Vendor)
     _fromNameController = TextEditingController(
@@ -133,7 +141,7 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
                     _buildSectionHeader('SHIP TO (Customer Details)'),
                     _buildTextField(_shipToNameController, 'Customer Name'),
                     _buildTextField(_shipToAddressController, 'Shipping Address', maxLines: 2),
-                    _buildTextField(_shipToPhoneController, 'Customer Phone'),
+                    _buildTextField(_shipToPhoneController, 'Customer Phone', readOnly: true),
                     
                     const SizedBox(height: 24),
                     _buildSectionHeader('FROM (Vendor Details)'),
@@ -175,7 +183,7 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
                     final customData = {
                       'shipToName': _shipToNameController.text,
                       'shipToAddress': _shipToAddressController.text,
-                      'shipToPhone': _shipToPhoneController.text,
+                      'shipToPhone': _realShipToPhone,
                       'fromName': _fromNameController.text,
                       'fromAddress': _fromAddressController.text,
                       'fromPhone': _fromPhoneController.text,
@@ -210,12 +218,13 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1}) {
+  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1, bool readOnly = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        readOnly: readOnly,
         style: GoogleFonts.inter(fontSize: 14),
         decoration: InputDecoration(
           labelText: label,

@@ -22,9 +22,17 @@ class AppTheme {
       displayMedium: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
       titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
     ),
+    scrollbarTheme: ScrollbarThemeData(
+      thumbVisibility: const WidgetStatePropertyAll<bool>(true),
+      // trackVisibility: const WidgetStatePropertyAll<bool>(true),
+      thickness: const WidgetStatePropertyAll<double>(8.0),
+      radius: const Radius.circular(8),
+      thumbColor: WidgetStatePropertyAll<Color>(AppColors.primaryPink),
+      // trackColor: WidgetStatePropertyAll<Color>(AppColors.borderLight),
+    ),
     dividerTheme: const DividerThemeData(color: AppColors.borderLight),
     cardTheme: CardThemeData(
-      color: Colors.white,
+      color: AppColors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -43,6 +51,14 @@ class AppTheme {
       seedColor: AppColors.primaryIndigo,
       brightness: Brightness.dark,
       primary: AppColors.primaryBlue,
+    ),
+    scrollbarTheme: ScrollbarThemeData(
+      thumbVisibility: const WidgetStatePropertyAll<bool>(true),
+      // trackVisibility: const WidgetStatePropertyAll<bool>(true),
+      thickness: const WidgetStatePropertyAll<double>(8.0),
+      radius: const Radius.circular(8),
+      thumbColor: WidgetStatePropertyAll<Color>(AppColors.primaryPink.withOpacity(0.5)),
+      // trackColor: WidgetStatePropertyAll<Color>(AppColors.borderDark.withOpacity(0.3)),
     ),
     textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
   );

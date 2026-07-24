@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
@@ -26,19 +27,19 @@ class FeaturedDealsSection extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 60),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: AppColors.grey50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: AppColors.grey200),
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.stars_outlined, size: 48, color: Colors.grey.shade300),
+                    Icon(Icons.stars_outlined, size: 48, color: AppColors.grey300),
                     const SizedBox(height: 16),
                     Text(
                       'Stay tuned for this week\'s featured deals!',
                       style: GoogleFonts.inter(
                         fontSize: 15,
-                        color: Colors.grey.shade500,
+                        color: AppColors.grey500,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -59,7 +60,7 @@ class FeaturedDealsSection extends StatelessWidget {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                     content: Text(success ? '${product.name} added to cart!' : 'Failed. Please login.'),
-                                    backgroundColor: success ? Colors.green : Colors.red,
+                                    backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                                     behavior: SnackBarBehavior.floating,
                                   ));
                                 }
@@ -83,7 +84,7 @@ class FeaturedDealsSection extends StatelessWidget {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                       content: Text(success ? '${featuredProducts[i].name} added to cart!' : 'Failed. Please login.'),
-                                      backgroundColor: success ? Colors.green : Colors.red,
+                                      backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                                       behavior: SnackBarBehavior.floating,
                                     ));
                                   }

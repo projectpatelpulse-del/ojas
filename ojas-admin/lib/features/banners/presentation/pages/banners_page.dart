@@ -49,6 +49,7 @@ class _BannersPageState extends State<BannersPage> {
       context: context,
       builder: (context) => BannerFormDialog(
         banner: banner,
+        existingBanners: _banners,
         onSave: () {
           _fetchBanners();
         },
@@ -242,7 +243,7 @@ class _BannersPageState extends State<BannersPage> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        banner.type.replaceAll('_', ' ').toUpperCase(),
+                        _getTypeLabel(banner.type),
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 10,
@@ -329,8 +330,7 @@ class _BannersPageState extends State<BannersPage> {
   Color _getTypeColor(String type) {
     switch (type) {
       case 'main':
-      case 'main_slider_1':
-      case 'main_slider_2':
+      case 'main_slider':
         return Colors.blue;
       case 'side_top':
         return Colors.pink;
@@ -342,17 +342,45 @@ class _BannersPageState extends State<BannersPage> {
         return Colors.purple;
       case 'promo':
         return Colors.indigo;
+      case 'summer_sale':
+        return Colors.redAccent;
+      case 'become_vendor':
+        return Colors.tealAccent.shade700;
       default:
         return Colors.grey;
     }
   }
 }
 
+String _getTypeLabel(String type) {
+  switch (type) {
+    case 'main_slider':
+      return 'Hero Top Slider (Carousel)';
+    case 'side_top':
+      return 'Hero Right Top';
+    case 'side_bottom':
+      return 'Hero Right Bottom';
+    case 'offer':
+      return 'Bottom Offer Card';
+    case 'trending':
+      return 'Trending Section Banner';
+    case 'promo':
+      return 'Weekend Deals Slider';
+    case 'summer_sale':
+      return 'Summer Sale Banner';
+    case 'become_vendor':
+      return 'Become Vendor Banner';
+    default:
+      return type.replaceAll('_', ' ').toUpperCase();
+  }
+}
+
 class BannerFormDialog extends StatefulWidget {
   final BannerModel? banner;
+  final List<BannerModel> existingBanners;
   final VoidCallback onSave;
 
-  const BannerFormDialog({super.key, this.banner, required this.onSave});
+  const BannerFormDialog({super.key, this.banner, required this.existingBanners, required this.onSave});
 
   @override
   State<BannerFormDialog> createState() => _BannerFormDialogState();
@@ -364,7 +392,7 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
   late TextEditingController _subtitleController;
   late TextEditingController _linkController;
   late TextEditingController _tagController;
-  String _selectedType = 'main_slider_1';
+  String _selectedType = 'main_slider';
   bool _isActive = true;
   
   Uint8List? _selectedImageBytes;
@@ -378,8 +406,10 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
     _subtitleController = TextEditingController(text: widget.banner?.subtitle);
     _linkController = TextEditingController(text: widget.banner?.link ?? '/');
     _tagController = TextEditingController(text: widget.banner?.tag);
-    final String initialType = widget.banner?.type ?? 'main_slider_1';
-    _selectedType = initialType == 'main' ? 'main_slider_1' : initialType;
+    final String initialType = widget.banner?.type ?? 'main_slider';
+    _selectedType = (initialType == 'main' || initialType == 'main_slider_1' || initialType == 'main_slider_2')
+        ? 'main_slider'
+        : initialType;
     _isActive = widget.banner?.isActive ?? true;
   }
 
@@ -404,7 +434,29 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
     }
   }
 
+  // Carousel types allow multiple images.
+  final List<String> _carouselTypes = const ['main_slider', 'promo'];
+
   Future<void> _handleSave() async {
+    final isNew = widget.banner == null;
+    final isCarousel = _carouselTypes.contains(_selectedType);
+    
+    if (!isCarousel) {
+      final typeExists = widget.existingBanners.any((b) => 
+        b.type == _selectedType && 
+        (isNew || b.id != widget.banner!.id)
+      );
+      if (typeExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('A banner of type "${_getTypeLabel(_selectedType)}" already exists. You must delete the existing one first.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() => _isSaving = true);
     try {
       final bannerService = sl<BannerService>();
@@ -489,16 +541,20 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  initialValue: _selectedType,
+                  value: _selectedType,
                   decoration: const InputDecoration(labelText: 'Banner Type', border: OutlineInputBorder()),
                   items: const [
-                    DropdownMenuItem(value: 'main_slider_1', child: Text('Main Slider - Image 1')),
-                    DropdownMenuItem(value: 'main_slider_2', child: Text('Main Slider - Image 2')),
-                    DropdownMenuItem(value: 'side_top', child: Text('Side Banner (Top)')),
-                    DropdownMenuItem(value: 'side_bottom', child: Text('Side Banner (Bottom)')),
-                    DropdownMenuItem(value: 'offer', child: Text('Promotional Offer Banner')),
-                    DropdownMenuItem(value: 'trending', child: Text('Trending Section Banner')),
-                    DropdownMenuItem(value: 'promo', child: Text('Promo Grid Banner')),
+                    DropdownMenuItem(value: 'main_slider',      child: Text('Hero Top Slider – Carousel ')),
+                    DropdownMenuItem(value: 'promo',            child: Text('Weekend Deals Slider – Carousel')),
+                    DropdownMenuItem(value: 'side_top', child: Text('Hero Section - Right Top Banner')),
+                    DropdownMenuItem(value: 'side_bottom', child: Text('Hero Section - Right Bottom Banner')),
+                    DropdownMenuItem(value: 'offer', child: Text('Bottom Offer Card (Next to Newsletter)')),
+                    DropdownMenuItem(value: 'trending', child: Text('Trending Products Section Banner')),
+                    DropdownMenuItem(value: 'summer_sale', child: Text('Summer Sale Banner (Middle of Homepage)')),
+                    DropdownMenuItem(value: 'become_vendor', child: Text('Become Vendor Banner (Middle of Homepage)')),
+                    DropdownMenuItem(value: 'gift_promo_strip', child: Text('Gift Promo Strip (Why Choose Ojas Banner)')),
+                    // DropdownMenuItem(value: 'how_it_works', child: Text('How it Works Banner')),
+                    DropdownMenuItem(value: 'b2b_partner', child: Text('B2B Partner Banner (Trusted Gifting Partner Banner)')),
                   ],
                   onChanged: (v) => setState(() => _selectedType = v!),
                 ),

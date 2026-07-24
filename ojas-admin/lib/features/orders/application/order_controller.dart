@@ -30,7 +30,7 @@ class OrderController extends ChangeNotifier {
     try {
       final response = await _apiService.dio.put('/order/status', data: {
         'orderId': orderId,
-        'status': status,
+        'status': status.toUpperCase(),
       });
       if (response.statusCode == 200) {
         await fetchAllOrders();

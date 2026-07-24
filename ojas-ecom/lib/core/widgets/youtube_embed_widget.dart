@@ -1,4 +1,5 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -129,9 +130,9 @@ class _YoutubeEmbedWidgetState extends State<YoutubeEmbedWidget> {
               decoration: BoxDecoration(
                 color: const Color(0xFFFF0000),
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 12)],
+                boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.4), blurRadius: 12)],
               ),
-              child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 40),
+              child: const Icon(Icons.play_arrow_rounded, color: AppColors.white, size: 40),
             ),
           ],
         ),

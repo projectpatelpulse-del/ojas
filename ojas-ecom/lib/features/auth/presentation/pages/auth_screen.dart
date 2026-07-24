@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/shell_screen.dart';
@@ -47,7 +48,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     return ShellScreen(
       child: Container(
-        color: const Color(0xFFFEF6F9),
+        color: AppColors.bgSecondaryLight,
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -64,11 +65,11 @@ class _AuthScreenState extends State<AuthScreen> {
                   constraints: const BoxConstraints(maxWidth: 480),
                   padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40, vertical: 32),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: AppColors.black.withOpacity(0.04),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -128,14 +129,14 @@ class _AuthScreenState extends State<AuthScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: const Color(0xFFE91E63),
+            color: AppColors.accentOrange,
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Center(
             child: Text(
               'O',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),

@@ -27,10 +27,10 @@ class PaymentOptionTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryBlue.withOpacity(0.03) : Colors.white,
+          color: isSelected ? AppColors.primaryBlue.withOpacity(0.03) : AppColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : Colors.grey[200]!,
+            color: isSelected ? AppColors.primaryBlue : AppColors.grey[200]!,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -39,10 +39,10 @@ class PaymentOptionTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryBlue : Colors.grey[50],
+                color: isSelected ? AppColors.primaryBlue : AppColors.grey[50],
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: isSelected ? Colors.white : Colors.grey[400]),
+              child: Icon(icon, color: isSelected ? AppColors.white : AppColors.grey[400]),
             ),
             const SizedBox(width: 16),
             Expanded(

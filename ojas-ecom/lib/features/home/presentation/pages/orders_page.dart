@@ -68,7 +68,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 'Track and manage your order history',
                 style: GoogleFonts.inter(
                   fontSize: isMobile ? 14 : 16,
-                  color: Colors.black87,
+                  color: AppColors.black87,
                 ),
               ),
               const SizedBox(height: 48),
@@ -93,7 +93,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
               // Order List
               if (_isLoading)
-                const Center(child: CircularProgressIndicator(color: Color(0xFFF01B6B)))
+                const Center(child: CircularProgressIndicator(color: AppColors.primaryPink))
               else if (_orders.isEmpty)
                 _buildEmptyState(isMobile)
               else
@@ -121,7 +121,7 @@ class _OrdersPageState extends State<OrdersPage> {
     return Center(
       child: Column(
         children: [
-          Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey[300]),
+          Icon(Icons.shopping_bag_outlined, size: 80, color: AppColors.grey[300]),
           const SizedBox(height: 24),
           Text(
             'No orders found',
@@ -130,17 +130,17 @@ class _OrdersPageState extends State<OrdersPage> {
           const SizedBox(height: 8),
           Text(
             'You haven\'t placed any orders yet.',
-            style: GoogleFonts.inter(color: Colors.black54),
+            style: GoogleFonts.inter(color: AppColors.black54),
           ),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () => Navigator.pushNamed(context, '/shop'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF01B6B),
+              backgroundColor: AppColors.primaryPink,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('Start Shopping', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
+            child: Text('Start Shopping', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: AppColors.white)),
           ),
         ],
       ),
@@ -158,7 +158,7 @@ class _OrdersPageState extends State<OrdersPage> {
         icon: Icons.inventory_2_outlined,
         count: _orders.length.toString(),
         label: 'Total Orders',
-        color: const Color(0xFFF01B6B),
+        color: AppColors.primaryPink,
         isActive: true,
       ),
       _summaryCard(
@@ -173,14 +173,14 @@ class _OrdersPageState extends State<OrdersPage> {
         icon: Icons.task_alt,
         count: delivered.toString(),
         label: 'Delivered',
-        color: Colors.green,
+        color: AppColors.successGreen,
       ),
       _summaryCard(
         isMobile: isMobile,
         icon: Icons.cancel_outlined,
         count: cancelled.toString(),
         label: 'Cancelled',
-        color: Colors.red,
+        color: AppColors.errorRed,
       ),
     ];
   }
@@ -196,15 +196,15 @@ class _OrdersPageState extends State<OrdersPage> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isActive ? const Color(0xFFF01B6B) : Colors.transparent,
+          color: isActive ? AppColors.primaryPink : AppColors.transparent,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -227,14 +227,14 @@ class _OrdersPageState extends State<OrdersPage> {
             style: GoogleFonts.outfit(
               fontSize: isMobile ? 24 : 32,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: AppColors.black87,
             ),
           ),
           Text(
             label,
             style: GoogleFonts.inter(
               fontSize: isMobile ? 12 : 14,
-              color: Colors.black87,
+              color: AppColors.black87,
             ),
           ),
         ],
@@ -254,12 +254,12 @@ class _OrdersPageState extends State<OrdersPage> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: AppColors.grey200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: AppColors.black.withOpacity(0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -271,7 +271,7 @@ class _OrdersPageState extends State<OrdersPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: AppColors.grey50,
                 borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
               ),
               child: Row(
@@ -280,15 +280,15 @@ class _OrdersPageState extends State<OrdersPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('ORDER ID', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade500, letterSpacing: 0.5)),
-                      Text(order.orderId, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text('ORDER ID', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.grey500, letterSpacing: 0.5)),
+                      Text(order.orderId, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black87)),
                     ],
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('PLACED ON', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade500, letterSpacing: 0.5)),
-                      Text(DateFormat('MMM dd, yyyy').format(order.createdAt), style: GoogleFonts.inter(fontSize: 14, color: Colors.black87)),
+                      Text('PLACED ON', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.grey500, letterSpacing: 0.5)),
+                      Text(DateFormat('MMM dd, yyyy').format(order.createdAt), style: GoogleFonts.inter(fontSize: 14, color: AppColors.black87)),
                     ],
                   ),
                 ],
@@ -309,7 +309,7 @@ class _OrdersPageState extends State<OrdersPage> {
                         height: 80,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: AppColors.grey200),
                           image: DecorationImage(
                             image: NetworkImage(ApiService.formatImageUrl(order.items[0].image)),
                             fit: BoxFit.cover,
@@ -322,8 +322,8 @@ class _OrdersPageState extends State<OrdersPage> {
                           bottom: 0,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
-                            child: Text('+${order.items.length - 1}', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            decoration: BoxDecoration(color: AppColors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
+                            child: Text('+${order.items.length - 1}', style: const TextStyle(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                           ),
                         ),
                     ],
@@ -339,17 +339,17 @@ class _OrdersPageState extends State<OrdersPage> {
                           order.items[0].name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
+                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.black87),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${order.items.length} Item${order.items.length > 1 ? 's' : ''}',
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade500),
+                          style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey500),
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          '\u20b9${order.totalAmount.ceil()}',
-                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFFF01B6B)),
+                          '\u20b9${order.subtotal.ceil()}',
+                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPink),
                         ),
                       ],
                     ),
@@ -361,7 +361,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     children: [
                       _buildStatusBadge(order.status),
                       const SizedBox(height: 20),
-                      Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                      Icon(Icons.chevron_right, color: AppColors.grey400),
                     ],
                   ),
                 ],
@@ -374,16 +374,16 @@ class _OrdersPageState extends State<OrdersPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50.withOpacity(0.3),
-                  border: Border(top: BorderSide(color: Colors.blue.shade50)),
+                  color: AppColors.blue50.withOpacity(0.3),
+                  border: Border(top: BorderSide(color: AppColors.blue50)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.local_shipping_outlined, size: 16, color: Colors.blue.shade700),
+                    Icon(Icons.local_shipping_outlined, size: 16, color: AppColors.blue700),
                     const SizedBox(width: 8),
                     Text(
                       'Tracking: ${order.awb}',
-                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.blue.shade700),
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.blue700),
                     ),
                     const Spacer(),
                     InkWell(
@@ -397,7 +397,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           }
                         }
                       },
-                      child: Text('Track Package', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue.shade700)),
+                      child: Text('Track Package', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.blue700)),
                     ),
                   ],
                 ),
@@ -414,13 +414,13 @@ class _OrdersPageState extends State<OrdersPage> {
     
     final s = status.toLowerCase();
     if (s == 'shipped' || s == 'out_for_delivery') {
-      color = Colors.blue;
+      color = AppColors.blue500;
       icon = Icons.local_shipping;
     } else if (s == 'delivered') {
-      color = Colors.green;
+      color = AppColors.successGreen;
       icon = Icons.check_circle;
     } else if (s == 'cancelled') {
-      color = Colors.red;
+      color = AppColors.errorRed;
       icon = Icons.cancel;
     } else if (s == 'processing') {
       color = Colors.indigo;

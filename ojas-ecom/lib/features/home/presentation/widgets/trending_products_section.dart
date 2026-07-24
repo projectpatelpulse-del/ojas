@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
@@ -25,19 +26,19 @@ class TrendingProductsSection extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 60),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: AppColors.grey50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: AppColors.grey200),
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.trending_up_outlined, size: 48, color: Colors.grey.shade300),
+                    Icon(Icons.trending_up_outlined, size: 48, color: AppColors.grey300),
                     const SizedBox(height: 16),
                     Text(
                       'No trending products available right now.',
                       style: GoogleFonts.inter(
                         fontSize: 15,
-                        color: Colors.grey.shade500,
+                        color: AppColors.grey500,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -64,7 +65,7 @@ class TrendingProductsSection extends StatelessWidget {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text(success ? '${product.name} added to cart!' : 'Failed. Please login.'),
-                          backgroundColor: success ? Colors.green : Colors.red,
+                          backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                           behavior: SnackBarBehavior.floating,
                           duration: const Duration(seconds: 2),
                         ));

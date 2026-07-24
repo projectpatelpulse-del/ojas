@@ -17,6 +17,7 @@ class VendorsPage extends StatefulWidget {
 
 class _VendorsPageState extends State<VendorsPage> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final GlobalSearchService _globalSearchService = sl<GlobalSearchService>();
   List<dynamic> _vendors = [];
   bool _isLoading = true;
@@ -32,8 +33,24 @@ class _VendorsPageState extends State<VendorsPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     _globalSearchService.searchQuery.removeListener(_onGlobalSearchChanged);
     super.dispose();
+  }
+
+  void _scrollTable(bool toLeft) {
+    if (!_scrollController.hasClients) return;
+    final double currentOffset = _scrollController.offset;
+    final double maxScroll = _scrollController.position.maxScrollExtent;
+    final double targetOffset = toLeft 
+        ? (currentOffset - 350).clamp(0.0, maxScroll)
+        : (currentOffset + 350).clamp(0.0, maxScroll);
+    
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _onGlobalSearchChanged() {
@@ -156,6 +173,84 @@ class _VendorsPageState extends State<VendorsPage> {
         );
       }
     }
+  }
+
+  Future<void> _updateMaxProductsLimit(String id, int limit) async {
+    try {
+      await sl<VendorService>().updateVendorMaxProductsLimit(id, limit);
+      await _fetchVendors();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Product limit updated successfully to $limit'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update product limit: $e')),
+        );
+      }
+    }
+  }
+
+  void _showMaxProductsLimitDialog(Map<String, dynamic> vendor) {
+    final controller = TextEditingController(
+      text: (vendor['maxProductsOnOtherPages'] ?? 5).toString(),
+    );
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Set Other Pages Limit for ${vendor['businessName']}',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Enter the maximum number of products this vendor can display on other pages (e.g. Home, Trending, Deals). Shop page will remain unlimited.',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Product Limit',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = int.tryParse(controller.text);
+              if (val != null) {
+                Navigator.pop(context);
+                _updateMaxProductsLimit(vendor['_id'], val);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8B5CF6),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _updateAllCommissions(double commission) async {
@@ -906,43 +1001,84 @@ class _VendorsPageState extends State<VendorsPage> {
                         // Search Bar
                         Padding(
                           padding: const EdgeInsets.all(20),
-                          child: Container(
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.search,
-                                  color: Colors.grey.shade400,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _searchController,
-                                    decoration: InputDecoration(
-                                      hintText:
-                                          'Search vendor, owner, or email',
-                                      hintStyle: GoogleFonts.inter(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.search,
                                         color: Colors.grey.shade400,
-                                        fontSize: 13,
+                                        size: 20,
                                       ),
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                    ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _searchController,
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                'Search vendor, owner, or email',
+                                            hintStyle: GoogleFonts.inter(
+                                              color: Colors.grey.shade400,
+                                              fontSize: 13,
+                                            ),
+                                            border: InputBorder.none,
+                                            isDense: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 16),
+                              OutlinedButton.icon(
+                                onPressed: () => _scrollTable(true),
+                                icon: const Icon(Icons.arrow_back, size: 16),
+                                label: const Text('Scroll Left'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF6B21A8),
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                onPressed: () => _scrollTable(false),
+                                icon: const Icon(Icons.arrow_forward, size: 16),
+                                label: const Text('Scroll Right'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF6B21A8),
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
                         SingleChildScrollView(
+                          controller: _scrollController,
                           scrollDirection: Axis.horizontal,
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(
@@ -969,9 +1105,10 @@ class _VendorsPageState extends State<VendorsPage> {
                                     children: [
                                       _tableHeader('BUSINESS', flex: 3),
                                       _tableHeader('OWNER', flex: 2),
-                                      _tableHeader('CATEGORIES', flex: 3),
+                                      _tableHeader('CATEGORIES', flex: 2),
                                       _tableHeader('STATUS', flex: 2),
                                       _tableHeader('COMMISSION', flex: 2),
+                                      _tableHeader('PRODUCT LIMIT', flex: 2),
                                       _tableHeader('JOINED', flex: 2),
                                       _tableHeader(
                                         'ACTIONS',
@@ -1113,7 +1250,7 @@ class _VendorsPageState extends State<VendorsPage> {
             ),
           ),
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Text(
               (vendor['categories'] as List?)?.join(', ') ?? 'General',
               style: GoogleFonts.inter(
@@ -1163,6 +1300,31 @@ class _VendorsPageState extends State<VendorsPage> {
                 ),
                 IconButton(
                   onPressed: () => _showCommissionDialog(vendor),
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+                Text(
+                  '${vendor["maxProductsOnOtherPages"] ?? 5}',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _showMaxProductsLimitDialog(vendor),
                   icon: const Icon(
                     Icons.edit_outlined,
                     size: 14,

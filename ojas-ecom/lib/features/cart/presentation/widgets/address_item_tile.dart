@@ -27,10 +27,10 @@ class AddressItemTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.grey[50],
+          color: isSelected ? AppColors.white : AppColors.grey[50],
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : Colors.grey[200]!,
+            color: isSelected ? AppColors.primaryBlue : AppColors.grey[200]!,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected ? [
@@ -48,7 +48,7 @@ class AddressItemTile extends StatelessWidget {
               children: [
                 Icon(
                   isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
-                  color: isSelected ? AppColors.primaryBlue : Colors.grey[400],
+                  color: isSelected ? AppColors.primaryBlue : AppColors.grey[400],
                   size: 22,
                 ),
                 const SizedBox(width: 12),
@@ -110,21 +110,21 @@ class AddressItemTile extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.green[50],
+                              color: AppColors.successGreen[50],
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.green[100]!),
+                              border: Border.all(color: AppColors.successGreen[100]!),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.business_outlined, size: 12, color: Colors.green[700]),
+                                Icon(Icons.business_outlined, size: 12, color: AppColors.successGreen[700]),
                                 const SizedBox(width: 4),
                                 Text(
                                   'GST: ${address.gstNumber}',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.green[700],
+                                    color: AppColors.successGreen[700],
                                   ),
                                 ),
                               ],
@@ -136,21 +136,21 @@ class AddressItemTile extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.blue[50],
+                              color: AppColors.blue500,
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.blue[100]!),
+                              border: Border.all(color: AppColors.blue500),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.credit_card_outlined, size: 12, color: Colors.blue[700]),
+                                Icon(Icons.credit_card_outlined, size: 12, color: AppColors.blue500),
                                 const SizedBox(width: 4),
                                 Text(
                                   'PAN: ${address.panNumber}',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue[700],
+                                    color: AppColors.blue500,
                                   ),
                                 ),
                               ],
@@ -210,10 +210,10 @@ class AddressItemTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
+                  color: AppColors.errorRed[50],
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.delete_outline_rounded, color: Colors.red[400], size: 40),
+                child: Icon(Icons.delete_outline_rounded, color: AppColors.errorRed[400], size: 40),
               ),
               const SizedBox(height: 24),
               Text(
@@ -257,8 +257,8 @@ class AddressItemTile extends StatelessWidget {
                         if (context.mounted) Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[400],
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.errorRed[400],
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
@@ -289,14 +289,14 @@ class AddressItemTile extends StatelessWidget {
       onTap: onPressed,
       child: Row(
         children: [
-          Icon(icon, size: 18, color: isDelete ? Colors.red[400] : AppColors.primaryBlue),
+          Icon(icon, size: 18, color: isDelete ? AppColors.errorRed[400] : AppColors.primaryBlue),
           const SizedBox(width: 4),
           Text(
             label,
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: isDelete ? Colors.red[400] : AppColors.primaryBlue,
+              color: isDelete ? AppColors.errorRed[400] : AppColors.primaryBlue,
             ),
           ),
         ],

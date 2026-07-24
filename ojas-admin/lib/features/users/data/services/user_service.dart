@@ -37,4 +37,24 @@ class UserService {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> sendBulkEmail({
+    required List<String> emails,
+    required String subject,
+    required String htmlContent,
+  }) async {
+    try {
+      final response = await _apiService.dio.post(
+        '/admin/send-bulk-email',
+        data: {
+          'emails': emails,
+          'subject': subject,
+          'htmlContent': htmlContent,
+        },
+      );
+      return Map<String, dynamic>.from(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

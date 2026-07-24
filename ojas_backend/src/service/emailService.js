@@ -342,3 +342,91 @@ exports.sendEscalationStatusUpdatedEmail = async (order) => {
         console.error("[EmailService] Error sending escalation notice email:", error);
     }
 };
+
+/**
+ * Send Bulk Email to list of recipients
+ */
+exports.sendBulkEmail = async (emails, subject, htmlContent) => {
+    try {
+        const transporter = await getTransporter();
+        const setting = await Setting.findOne();
+        const emailUser = setting?.emailUser || process.env.EMAIL_USER;
+
+        const results = { successful: [], failed: [] };
+        for (const email of emails) {
+            try {
+                const isHtml = /<[a-z][\s\S]*>/i.test(htmlContent);
+                const mailOptions = {
+                    from: `"Ojas Market" <${emailUser}>`,
+                    to: email,
+                    subject: subject,
+                };
+
+                if (isHtml) {
+                    mailOptions.html = htmlContent;
+                } else {
+                    mailOptions.text = htmlContent;
+                    mailOptions.html = `<div style="font-family: Arial, sans-serif; white-space: pre-line; line-height: 1.6; color: #1E293B; font-size: 14px;">${htmlContent.replace(/\n/g, '<br/>')}</div>`;
+                }
+
+                await transporter.sendMail(mailOptions);
+                results.successful.push(email);
+            } catch (err) {
+                console.error(`[EmailService] Failed to send email to ${email}:`, err);
+                results.failed.push({ email, error: err.message });
+            }
+        }
+        console.log(`[EmailService] Bulk email complete. Success: ${results.successful.length}, Failed: ${results.failed.length}`);
+        return results;
+    } catch (error) {
+        console.error("[EmailService] Error in bulk email initialization:", error);
+        throw error;
+    }
+};
+
+/**
+ * Send Low Stock Alert Email to Vendor
+ */
+exports.sendLowStockAlert = async (product, vendorUser) => {
+    try {
+        const transporter = await getTransporter();
+        const setting = await Setting.findOne();
+        const emailUser = setting?.emailUser || process.env.EMAIL_USER;
+
+        if (!vendorUser || !vendorUser.email) {
+            console.error("[EmailService] Vendor user email not found for product:", product._id);
+            return;
+        }
+
+        const emailTemplate = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+                <h2 style="color: #ff9800; text-align: center;">⚠️ Low Stock Alert</h2>
+                <p>Hello <strong>${vendorUser.name || 'Vendor'}</strong>,</p>
+                <p>This is an automated alert to notify you that one of your products is running low on stock.</p>
+                
+                <div style="background-color: #fff3e0; border-left: 5px solid #ff9800; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 5px 0;"><strong>Product Name:</strong> ${product.name || product.title}</p>
+                    <p style="margin: 5px 0;"><strong>SKU:</strong> ${product.sku || 'N/A'}</p>
+                    <p style="margin: 5px 0; color: #d32f2f;"><strong>Current Stock:</strong> ${product.stock} units</p>
+                    <p style="margin: 5px 0;"><strong>Low Stock Threshold:</strong> ${product.lowStockThreshold || 5} units</p>
+                </div>
+                
+                <p>Please restock this item soon to avoid any disruptions in order fulfillment.</p>
+                
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">
+                    This is an automated system notification from Ojas.
+                </p>
+            </div>
+        `;
+
+        await transporter.sendMail({
+            from: `"Ojas Market Alerts" <${emailUser}>`,
+            to: vendorUser.email,
+            subject: `⚠️ Low Stock Alert: ${product.name || product.title}`,
+            html: emailTemplate,
+        });
+        console.log(`[EmailService] Low stock email alert sent to vendor: ${vendorUser.email}`);
+    } catch (error) {
+        console.error("[EmailService] Error sending low stock alert email:", error);
+    }
+};

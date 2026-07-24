@@ -36,6 +36,8 @@ const orderSchema = new mongoose.Schema(
                 gstAmount: Number,
                 finalPrice: Number,
                 image: String,
+                variationId: String,
+                variation: mongoose.Schema.Types.Mixed,
             },
         ],
         subtotal: Number,

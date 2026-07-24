@@ -38,7 +38,7 @@ const ProductSchema = new mongoose.Schema({
     },
     brand: {
         type: String,
-        default: "Generic"
+        default: ""
     },
     stock: {
         type: Number,
@@ -80,6 +80,10 @@ const ProductSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    moqTiers: {
+        type: String,
+        default: ""
+    },
     requiresShipping: {
         type: Boolean,
         default: true
@@ -111,16 +115,21 @@ const ProductSchema = new mongoose.Schema({
     attributes: {
         size: { type: Boolean, default: false },
         color: { type: Boolean, default: false },
-        material: { type: Boolean, default: false }
+        material: { type: Boolean, default: false },
+        weight: { type: Boolean, default: false }
     },
     variations: [{
+        title: String,
         size: String,
         color: String,
         material: String,
+        weight: String,
         price: Number,
+        oldPrice: Number,
         stock: Number,
         sku: String,
-        image: String
+        image: String,
+        images: [String]
     }],
     specs: [{
         key: String,

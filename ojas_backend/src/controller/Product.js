@@ -187,10 +187,17 @@ const getProducts = async (req, res) => {
 
         // Searching by Name or Title
         if (search) {
-            query.$or = [
-                { name: { $regex: search, $options: 'i' } },
-                { title: { $regex: search, $options: 'i' } }
-            ];
+            const words = search.split(/\s+/).filter(w => w.trim().length > 0);
+            if (words.length > 0) {
+                query.$and = words.map(word => ({
+                    $or: [
+                        { name: { $regex: word, $options: 'i' } },
+                        { title: { $regex: word, $options: 'i' } },
+                        { brand: { $regex: word, $options: 'i' } },
+                        { category: { $regex: word, $options: 'i' } }
+                    ]
+                }));
+            }
         }
 
         const products = await Product.find(query)
@@ -201,17 +208,46 @@ const getProducts = async (req, res) => {
 
         // Calculate prices with vendor commission
         const vendorIds = [...new Set(products.map(p => p.user?._id))].filter(id => id != null);
-        const vendors = await Vendor.find({ user: { $in: vendorIds } }).select("user commissionRate");
+        const vendors = await Vendor.find({ user: { $in: vendorIds } }).select("user commissionRate maxProductsOnOtherPages");
         const commissionMap = {};
+        const maxProductsMap = {};
         vendors.forEach(v => {
             commissionMap[v.user.toString()] = v.commissionRate || 10;
+            maxProductsMap[v.user.toString()] = v.maxProductsOnOtherPages !== undefined ? v.maxProductsOnOtherPages : 5;
         });
+
+        const countMap = {};
 
         const productsWithCommission = products.map(product => {
             const productObj = product.toObject();
-            const commissionRate = commissionMap[product.user?._id?.toString()] || 0;
+            const vendorId = product.user?._id?.toString();
+            const commissionRate = commissionMap[vendorId] || 0;
             const gstRate = productObj.gst || 0;
             
+            // Limit products on other pages for non-admin
+            if (!req.admin && vendorId) {
+                const limit = maxProductsMap[vendorId] !== undefined ? maxProductsMap[vendorId] : 5;
+                if (!countMap[vendorId]) {
+                    countMap[vendorId] = {};
+                }
+                if (productObj.showOnPages && Array.isArray(productObj.showOnPages)) {
+                    productObj.showOnPages = productObj.showOnPages.filter(page => {
+                        const pageNorm = page.trim().toLowerCase();
+                        if (pageNorm === 'shop') {
+                            return true;
+                        }
+                        if (!countMap[vendorId][pageNorm]) {
+                            countMap[vendorId][pageNorm] = 0;
+                        }
+                        if (countMap[vendorId][pageNorm] < limit) {
+                            countMap[vendorId][pageNorm]++;
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+            }
+
             if (productObj.discountPrice > 0) {
                 const pricingDiscount = calculateProductPricing(productObj.discountPrice, commissionRate, gstRate);
                 const pricingRegular = calculateProductPricing(productObj.price, commissionRate, gstRate);
@@ -238,7 +274,12 @@ const getProducts = async (req, res) => {
             if (productObj.variations && productObj.variations.length > 0) {
                 productObj.variations = productObj.variations.map(v => {
                     const varPricing = calculateProductPricing(v.price, commissionRate, gstRate);
-                    return { ...v, price: varPricing.sellingPrice };
+                    let updatedVar = { ...v, price: varPricing.sellingPrice };
+                    if (v.oldPrice > 0) {
+                        const varOldPricing = calculateProductPricing(v.oldPrice, commissionRate, gstRate);
+                        updatedVar.oldPrice = varOldPricing.sellingPrice;
+                    }
+                    return updatedVar;
                 });
             }
             
@@ -314,7 +355,12 @@ const getProduct = async (req, res) => {
         if (productObj.variations && productObj.variations.length > 0) {
             productObj.variations = productObj.variations.map(v => {
                 const varPricing = calculateProductPricing(v.price, commissionRate, gstRate);
-                return { ...v, price: varPricing.sellingPrice + markupAmount };
+                let updatedVar = { ...v, price: varPricing.sellingPrice + markupAmount };
+                if (v.oldPrice > 0) {
+                    const varOldPricing = calculateProductPricing(v.oldPrice, commissionRate, gstRate);
+                    updatedVar.oldPrice = varOldPricing.sellingPrice + markupAmount;
+                }
+                return updatedVar;
             });
         }
 

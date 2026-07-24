@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -44,7 +45,7 @@ class ReturnsRefundsPage extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E1B4B),
+                    color: AppColors.primaryIndigo,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -92,7 +93,7 @@ class ReturnsRefundsPage extends StatelessWidget {
             color: Color(0xFFFFEBEE),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.refresh, color: const Color(0xFFF01B6B), size: isMobile ? 32 : 40),
+          child: Icon(Icons.refresh, color: AppColors.primaryPink, size: isMobile ? 32 : 40),
         ),
         const SizedBox(height: 24),
         Text(
@@ -101,7 +102,7 @@ class ReturnsRefundsPage extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF1E1B4B),
+            color: AppColors.primaryIndigo,
           ),
         ),
         const SizedBox(height: 16),
@@ -112,7 +113,7 @@ class ReturnsRefundsPage extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: isMobile ? 15 : 18,
-              color: Colors.grey[600],
+              color: AppColors.grey[600],
               height: 1.6,
             ),
           ),
@@ -140,10 +141,10 @@ class ReturnsRefundsPage extends StatelessWidget {
       width: isMobile ? 160 : 250,
       padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -153,14 +154,14 @@ class ReturnsRefundsPage extends StatelessWidget {
             style: GoogleFonts.outfit(
               fontSize: isMobile ? 24 : 32,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFF01B6B),
+              color: AppColors.primaryPink,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
+            style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey[600]),
           ),
         ],
       ),
@@ -172,10 +173,10 @@ class ReturnsRefundsPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -183,7 +184,7 @@ class ReturnsRefundsPage extends StatelessWidget {
           Text(
             'How to Return an Item',
             textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)),
+            style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo),
           ),
           SizedBox(height: isMobile ? 32 : 48),
           if (isMobile)
@@ -231,23 +232,23 @@ class ReturnsRefundsPage extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(isMobile ? 16 : 20),
               decoration: const BoxDecoration(color: Color(0xFFFFEBEE), shape: BoxShape.circle),
-              child: Icon(icon, color: const Color(0xFFF01B6B), size: isMobile ? 24 : 32),
+              child: Icon(icon, color: AppColors.primaryPink, size: isMobile ? 24 : 32),
             ),
             Positioned(
               right: 0,
               top: 0,
               child: Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(color: Color(0xFFF01B6B), shape: BoxShape.circle),
-                child: Text(step, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                decoration: const BoxDecoration(color: AppColors.primaryPink, shape: BoxShape.circle),
+                child: Text(step, style: const TextStyle(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
         ),
         const SizedBox(height: 24),
-        Text(title, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(title, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87)),
         const SizedBox(height: 12),
-        Text(desc, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[600], height: 1.5)),
+        Text(desc, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: AppColors.grey[600], height: 1.5)),
       ],
     );
   }
@@ -257,7 +258,7 @@ class ReturnsRefundsPage extends StatelessWidget {
       children: [
         Text(
           'Return Policies',
-          style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)),
+          style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo),
         ),
         SizedBox(height: isMobile ? 32 : 48),
         Wrap(
@@ -279,27 +280,27 @@ class ReturnsRefundsPage extends StatelessWidget {
       width: isMobile ? double.infinity : 530,
       padding: EdgeInsets.all(isMobile ? 20 : 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[100]!),
+        border: Border.all(color: AppColors.grey[100]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: Colors.blue[700], size: 24),
+              Icon(icon, color: AppColors.blue500, size: 24),
               const SizedBox(width: 12),
-              Expanded(child: Text(category, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87))),
+              Expanded(child: Text(category, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.black87))),
             ],
           ),
           const SizedBox(height: 20),
           _policyRow('Return Window:', window),
           _policyRow('Restocking Fee:', fee),
           const SizedBox(height: 16),
-          Text('Conditions:', style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600])),
+          Text('Conditions:', style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[600])),
           const SizedBox(height: 4),
-          Text(conditions, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[500])),
+          Text(conditions, style: GoogleFonts.inter(fontSize: 13, color: AppColors.grey[500])),
         ],
       ),
     );
@@ -311,8 +312,8 @@ class ReturnsRefundsPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600])),
-          Text(value, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(label, style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[600])),
+          Text(value, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.black87)),
         ],
       ),
     );
@@ -323,7 +324,7 @@ class ReturnsRefundsPage extends StatelessWidget {
       children: [
         Text(
           'Refund Options',
-          style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)),
+          style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo),
         ),
         SizedBox(height: isMobile ? 32 : 48),
         if (isMobile)
@@ -355,10 +356,10 @@ class ReturnsRefundsPage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isMobile ? 24 : 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -366,14 +367,14 @@ class ReturnsRefundsPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(color: Color(0xFFFFEBEE), shape: BoxShape.circle),
-            child: Icon(icon, color: const Color(0xFFF01B6B), size: 28),
+            child: Icon(icon, color: AppColors.primaryPink, size: 28),
           ),
           const SizedBox(height: 24),
-          Text(title, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(title, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87)),
           const SizedBox(height: 8),
-          Text(time, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFFF01B6B))),
+          Text(time, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primaryPink)),
           const SizedBox(height: 16),
-          Text(desc, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[600], height: 1.5)),
+          Text(desc, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 13, color: AppColors.grey[600], height: 1.5)),
         ],
       ),
     );
@@ -389,22 +390,22 @@ class ReturnsRefundsPage extends StatelessWidget {
           flex: isMobile ? 0 : 1,
           child: Container(
             padding: EdgeInsets.all(isMobile ? 24 : 40),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+            decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.cancel, color: Colors.red, size: 24),
+                    const Icon(Icons.cancel, color: AppColors.errorRed, size: 24),
                     const SizedBox(width: 16),
-                    Expanded(child: Text('Non-Returnable Items', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)))),
+                    Expanded(child: Text('Non-Returnable Items', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
                   ],
                 ),
                 const SizedBox(height: 32),
-                _noteItem(Icons.cancel_outlined, 'Personalized items', Colors.red),
-                _noteItem(Icons.cancel_outlined, 'Perishable goods', Colors.red),
-                _noteItem(Icons.cancel_outlined, 'Intimate items', Colors.red),
-                _noteItem(Icons.cancel_outlined, 'Digital downloads', Colors.red),
+                _noteItem(Icons.cancel_outlined, 'Personalized items', AppColors.errorRed),
+                _noteItem(Icons.cancel_outlined, 'Perishable goods', AppColors.errorRed),
+                _noteItem(Icons.cancel_outlined, 'Intimate items', AppColors.errorRed),
+                _noteItem(Icons.cancel_outlined, 'Digital downloads', AppColors.errorRed),
               ],
             ),
           ),
@@ -415,7 +416,7 @@ class ReturnsRefundsPage extends StatelessWidget {
           flex: isMobile ? 0 : 1,
           child: Container(
             padding: EdgeInsets.all(isMobile ? 24 : 40),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+            decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -423,12 +424,12 @@ class ReturnsRefundsPage extends StatelessWidget {
                   children: [
                     const Icon(Icons.info_outline, color: Colors.orange, size: 24),
                     const SizedBox(width: 16),
-                    Expanded(child: Text('Important Notes', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B)))),
+                    Expanded(child: Text('Important Notes', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
                   ],
                 ),
                 const SizedBox(height: 32),
-                _noteItemWithDesc(Icons.check_circle_outline, 'Free Shipping', 'We provide prepaid labels for all eligible returns.', Colors.green),
-                _noteItemWithDesc(Icons.access_time, 'Processing', 'Refunds processed within 3-5 days after receipt.', Colors.blue),
+                _noteItemWithDesc(Icons.check_circle_outline, 'Free Shipping', 'We provide prepaid labels for all eligible returns.', AppColors.successGreen),
+                _noteItemWithDesc(Icons.access_time, 'Processing', 'Refunds processed within 3-5 days after receipt.', AppColors.blue500),
               ],
             ),
           ),
@@ -444,7 +445,7 @@ class ReturnsRefundsPage extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 18),
           const SizedBox(width: 12),
-          Text(text, style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[700])),
+          Text(text, style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[700])),
         ],
       ),
     );
@@ -462,9 +463,9 @@ class ReturnsRefundsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+                Text(title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.black87)),
                 const SizedBox(height: 4),
-                Text(desc, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[600], height: 1.4)),
+                Text(desc, style: GoogleFonts.inter(fontSize: 13, color: AppColors.grey[600], height: 1.4)),
               ],
             ),
           ),
@@ -477,10 +478,10 @@ class ReturnsRefundsPage extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 48),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24)),
       child: Column(
         children: [
-          Text('FAQ', style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B))),
+          Text('FAQ', style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
           SizedBox(height: isMobile ? 32 : 48),
           if (isMobile)
             Column(
@@ -524,9 +525,9 @@ class ReturnsRefundsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(question, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(question, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87)),
           const SizedBox(height: 12),
-          Text(answer, style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600], height: 1.6)),
+          Text(answer, style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[600], height: 1.6)),
         ],
       ),
     );
@@ -537,14 +538,14 @@ class ReturnsRefundsPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60, horizontal: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF01B6B),
+        color: AppColors.primaryPink,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: [
-          Text('Need Help?', textAlign: TextAlign.center, style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text('Need Help?', textAlign: TextAlign.center, style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.white)),
           const SizedBox(height: 16),
-          Text('Our team is here to help with any questions.', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, color: Colors.white.withOpacity(0.9))),
+          Text('Our team is here to help with any questions.', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, color: AppColors.white.withOpacity(0.9))),
           const SizedBox(height: 40),
           Flex(
             direction: isMobile ? Axis.vertical : Axis.horizontal,
@@ -555,8 +556,8 @@ class ReturnsRefundsPage extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFFF01B6B),
+                    backgroundColor: AppColors.white,
+                    foregroundColor: AppColors.primaryPink,
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
@@ -570,8 +571,8 @@ class ReturnsRefundsPage extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () {},
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white, width: 2),
+                    foregroundColor: AppColors.white,
+                    side: const BorderSide(color: AppColors.white, width: 2),
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -590,16 +591,16 @@ class ReturnsRefundsPage extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 10)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E1B4B))),
+          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
           const SizedBox(height: 24),
-          Text(content, style: GoogleFonts.inter(fontSize: 16, color: Colors.grey[700], height: 1.6)),
+          Text(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
         ],
       ),
     );

@@ -87,7 +87,19 @@ exports.createOrder = async (req, res) => {
                 }
             }
 
-            const basePrice = (product.discountPrice > 0) ? product.discountPrice : product.price;
+            let selectedVariation = null;
+            let basePrice = (product.discountPrice > 0) ? product.discountPrice : product.price;
+            let variationImage = null;
+
+            if (item.variationId && product.variations && product.variations.length > 0) {
+                const found = product.variations.find(v => v._id?.toString() === item.variationId || v.id?.toString() === item.variationId);
+                if (found) {
+                    selectedVariation = typeof found.toObject === "function" ? found.toObject() : { ...found };
+                    basePrice = found.price;
+                    variationImage = found.image;
+                }
+            }
+
             const vendor = await Vendor.findOne({ user: vendorId });
             const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
             const gstPercent = product.gst || 0;
@@ -111,16 +123,47 @@ exports.createOrder = async (req, res) => {
                 gstPercent: pricing.gstPercent,
                 gstAmount: pricing.gstAmount,
                 finalPrice: pricing.finalCartPrice + markupAmount,
-                image: product.image || "",
+                image: variationImage || product.image || "",
                 markupAmount: markupAmount,
                 resellerId: resellerId,
-                resellerCode: resellerCode
+                resellerCode: resellerCode,
+                variationId: item.variationId || undefined,
+                variation: selectedVariation || undefined
             });
         }
 
         const vendorIds = Object.keys(vendorGroups);
         if (vendorIds.length === 0) {
             return res.status(400).json({ success: false, message: "Could not resolve sellers." });
+        }
+
+        // 2b. Atomic Stock Check and Deduction
+        const deductedProducts = [];
+        try {
+            for (const item of cartItems) {
+                if (!item || !item.product) continue;
+                const product = item.product;
+                const quantity = Number(item.quantity || 1);
+
+                // Atomic update: only deduct if stock >= quantity
+                const updatedProduct = await Product.findOneAndUpdate(
+                    { _id: product._id, stock: { $gte: quantity } },
+                    { $inc: { stock: -quantity } },
+                    { new: true }
+                );
+
+                if (!updatedProduct) {
+                    throw new Error(`Product "${product.name}" is out of stock or does not have enough stock available.`);
+                }
+
+                deductedProducts.push({ product: product._id, quantity: quantity });
+            }
+        } catch (stockError) {
+            // Rollback already deducted stock
+            for (const dp of deductedProducts) {
+                await Product.findByIdAndUpdate(dp.product, { $inc: { stock: dp.quantity } });
+            }
+            return res.status(400).json({ success: false, message: stockError.message });
         }
 
         // 3. Generate orders
@@ -135,9 +178,9 @@ exports.createOrder = async (req, res) => {
 
         for (const vId of vendorIds) {
             const items = vendorGroups[vId];
-            const subtotal = items.reduce((sum, i) => sum + (i.sellingPrice * i.quantity), 0);
-            const totalGst = items.reduce((sum, i) => sum + (i.gstAmount * i.quantity), 0);
-            const amount = items.reduce((sum, i) => sum + (i.finalPrice * i.quantity), 0);
+            const subtotal = Math.ceil(items.reduce((sum, i) => sum + (i.sellingPrice * i.quantity), 0));
+            const totalGst = Math.ceil(items.reduce((sum, i) => sum + (i.gstAmount * i.quantity), 0));
+            const amount = Math.ceil(items.reduce((sum, i) => sum + (i.finalPrice * i.quantity), 0));
 
             let orderResellerId = null;
             let orderResellerCode = null;
@@ -190,6 +233,25 @@ exports.createOrder = async (req, res) => {
                 // Send Emails (Admin, Vendor, User)
                 const emailService = require("../service/emailService");
                 emailService.sendOrderEmails(newOrder._id).catch(err => console.error("Email trigger failed:", err));
+            }
+        }
+
+        // Check low stock and notify clients for all successfully ordered products
+        for (const dp of deductedProducts) {
+            try {
+                const product = await Product.findById(dp.product);
+                if (product) {
+                    checkLowStockAndNotify(product);
+                    if (io) {
+                        io.emit("admin_data_updated", { 
+                            type: "product", 
+                            action: "update", 
+                            data: product 
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error(`[LowStockAlert] Error in check:`, err.message);
             }
         }
 
@@ -316,10 +378,11 @@ exports.updateOrderStatus = async (req, res) => {
         }
 
         const oldStatus = order.status;
-        order.status = status;
+        const upperStatus = typeof status === 'string' ? status.toUpperCase() : status;
+        order.status = upperStatus;
 
         // OTP Generation when status transitions to OUT_FOR_DELIVERY
-        if (status === "OUT_FOR_DELIVERY" && oldStatus !== "OUT_FOR_DELIVERY") {
+        if (upperStatus === "OUT_FOR_DELIVERY" && oldStatus !== "OUT_FOR_DELIVERY") {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
             order.deliveryOtp = otpCode;
             order.deliveryOtpExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
@@ -327,7 +390,7 @@ exports.updateOrderStatus = async (req, res) => {
         }
 
         // If status changed to 'DELIVERED', process wallet and commission
-        if (status === "DELIVERED" && oldStatus !== "DELIVERED") {
+        if (upperStatus === "DELIVERED" && oldStatus !== "DELIVERED") {
             const vendor = await Vendor.findOne({ user: order.vendor });
             if (vendor) {
                 let commissionRate = vendor.commissionRate;
@@ -342,8 +405,8 @@ exports.updateOrderStatus = async (req, res) => {
                 }
 
                 // Vendor Earning is the sum of original prices (base prices)
-                const vendorEarning = order.items.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
-                const platformCommission = order.items.reduce((sum, item) => sum + (item.commissionAmount * item.quantity), 0);
+                const vendorEarning = Math.ceil(order.items.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0));
+                const platformCommission = Math.ceil(order.items.reduce((sum, item) => sum + (item.commissionAmount * item.quantity), 0));
 
                 order.commission = platformCommission;
                 order.vendorEarning = vendorEarning;
@@ -359,31 +422,7 @@ exports.updateOrderStatus = async (req, res) => {
 
         await order.save();
 
-        // If status changed to 'DELIVERED', decrease product stock
-        if (status === "DELIVERED" && oldStatus !== "DELIVERED") {
-            const io = req.app.get("io");
-            for (const item of order.items) {
-                try {
-                    const product = await Product.findById(item.product);
-                    if (product) {
-                        // Decrease stock but don't go below 0
-                        product.stock = Math.max(0, (product.stock || 0) - item.quantity);
-                        await product.save();
-
-                        // Notify all clients (Admin, Vendor, User) about the stock change
-                        if (io) {
-                            io.emit("admin_data_updated", { 
-                                type: "product", 
-                                action: "update", 
-                                data: product 
-                            });
-                        }
-                    }
-                } catch (err) {
-                    console.error(`Failed to update stock for product ${item.product}:`, err.message);
-                }
-            }
-        }
+        // Note: Product stock is now deducted upon order placement (checkout) rather than on delivery.
 
         res.status(200).json({ success: true, order });
     } catch (error) {
@@ -506,27 +545,7 @@ exports.verifyDeliveryOtp = async (req, res) => {
 
         await order.save();
 
-        // Stock decrease
-        const io = req.app.get("io");
-        for (const item of order.items) {
-            try {
-                const product = await Product.findById(item.product);
-                if (product) {
-                    product.stock = Math.max(0, (product.stock || 0) - item.quantity);
-                    await product.save();
-
-                    if (io) {
-                        io.emit("admin_data_updated", { 
-                            type: "product", 
-                            action: "update", 
-                            data: product 
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error(`Failed to update stock:`, err.message);
-            }
-        }
+        // Note: Product stock is now deducted upon order placement (checkout) rather than on delivery.
 
         // Notify vendor/users
         if (io) {
@@ -819,4 +838,19 @@ module.exports = {
     updatePickupStatus: exports.updatePickupStatus,
     submitPickedUpPhoto: exports.submitPickedUpPhoto,
     submitDispatchPhoto: exports.submitDispatchPhoto
+};
+
+const checkLowStockAndNotify = async (product) => {
+    try {
+        if (product.trackQuantity && product.stock <= product.lowStockThreshold) {
+            const User = require("../model/user");
+            const vendorUser = await User.findById(product.user);
+            if (vendorUser && vendorUser.email) {
+                const emailService = require("../service/emailService");
+                await emailService.sendLowStockAlert(product, vendorUser);
+            }
+        }
+    } catch (err) {
+        console.error("[LowStockAlert] Error triggering low stock alert:", err.message);
+    }
 };

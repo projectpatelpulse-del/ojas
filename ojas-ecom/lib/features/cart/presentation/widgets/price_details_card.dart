@@ -11,11 +11,11 @@ class PriceDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.black.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -43,7 +43,7 @@ class PriceDetailsCard extends StatelessWidget {
               children: [
                 _buildPriceRow('Price (${cartController.itemCount} items)', '\u20b9${cartController.subtotal.ceil()}'),
                 const SizedBox(height: 16),
-                _buildPriceRow('Delivery Charges', 'FREE', valueColor: Colors.green[600]),
+                _buildPriceRow('Delivery Charges', 'FREE', valueColor: AppColors.successGreen[600]),
                 const SizedBox(height: 16),
                 _buildPriceRow('Taxes', '\u20b9${cartController.tax.ceil()}'),
                 const Padding(
@@ -78,7 +78,7 @@ class PriceDetailsCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green[50],
+              color: AppColors.successGreen[50],
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
@@ -87,12 +87,12 @@ class PriceDetailsCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.stars_rounded, color: Colors.green[700], size: 18),
+                Icon(Icons.stars_rounded, color: AppColors.successGreen[700], size: 18),
                 const SizedBox(width: 8),
                 Text(
                   'You will save \u20b9${cartController.savings.ceil()} on this order',
                   style: GoogleFonts.inter(
-                    color: Colors.green[700], 
+                    color: AppColors.successGreen[700], 
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),

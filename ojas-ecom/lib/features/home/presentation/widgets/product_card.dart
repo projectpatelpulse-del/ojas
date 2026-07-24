@@ -36,7 +36,7 @@ class _ProductCardState extends State<ProductCard> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: _isHovered ? AppColors.primaryBlue : AppColors.borderLight,
@@ -45,7 +45,7 @@ class _ProductCardState extends State<ProductCard> {
                 boxShadow: [
                   if (_isHovered)
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: AppColors.black.withOpacity(0.08),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -78,7 +78,7 @@ class _ProductCardState extends State<ProductCard> {
                             child: Text(
                               '${widget.product.discount}% OFF',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -90,15 +90,15 @@ class _ProductCardState extends State<ProductCard> {
                         right: 12,
                         child: Container(
                           decoration: const BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.white,
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                            boxShadow: [BoxShadow(color: AppColors.black12, blurRadius: 4)],
                           ),
                           child: IconButton(
                             icon: Icon(
                               isWishlisted ? Icons.favorite : Icons.favorite_border, 
                               size: 20,
-                              color: isWishlisted ? const Color(0xFFF01B6B) : null,
+                              color: isWishlisted ? AppColors.primaryPink : null,
                             ),
                             onPressed: () {
                               final productMap = {
@@ -171,7 +171,7 @@ class _ProductCardState extends State<ProductCard> {
                                 Icon(
                                   Icons.inventory_2_outlined,
                                   size: 13,
-                                  color: (widget.product.available ?? 0) > 0 ? Colors.green : Colors.red,
+                                  color: (widget.product.available ?? 0) > 0 ? AppColors.successGreen : AppColors.errorRed,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -179,7 +179,7 @@ class _ProductCardState extends State<ProductCard> {
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: (widget.product.available ?? 0) > 0 ? Colors.green : Colors.red,
+                                    color: (widget.product.available ?? 0) > 0 ? AppColors.successGreen : AppColors.errorRed,
                                   ),
                                 ),
                               ],
@@ -188,16 +188,16 @@ class _ProductCardState extends State<ProductCard> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
+                                  color: AppColors.blue50,
                                   borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: Colors.blue.shade200),
+                                  border: Border.all(color: AppColors.blue200),
                                 ),
                                 child: Text(
                                   'MOQ: ${widget.product.moq}',
                                   style: GoogleFonts.inter(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade700,
+                                    color: AppColors.blue700,
                                   ),
                                 ),
                               ),
@@ -210,7 +210,7 @@ class _ProductCardState extends State<ProductCard> {
                             onPressed: widget.onAddToCart,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryBlue,
-                              foregroundColor: Colors.white,
+                              foregroundColor: AppColors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               elevation: 0,
@@ -220,7 +220,7 @@ class _ProductCardState extends State<ProductCard> {
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
-                                color: Colors.white,
+                                color: AppColors.white,
                               ),
                             ),
                           ),

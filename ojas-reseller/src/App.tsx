@@ -31,9 +31,11 @@ function PendingScreen({ status }: { status: string }) {
     try {
       await logoutInfluencer();
       qc.clear();
+      localStorage.removeItem("auth_token");
       window.location.href = "/login";
     } catch (e) {
       console.error(e);
+      localStorage.removeItem("auth_token");
       window.location.href = "/login";
     }
   };

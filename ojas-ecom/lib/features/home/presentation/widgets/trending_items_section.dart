@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
@@ -39,7 +40,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
           categories.insert(0, 'All');
         }
 
-        var products = HomeController.instance.homeProducts;
+        var products = HomeController.instance.trendingProducts;
 
         // Apply filtering
         if (_selectedCategory != 'All') {
@@ -79,7 +80,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                       ),
                       child: const Text(
                         'TRENDING ITEMS',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                        style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -89,9 +90,14 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                         categories: categories,
                         selectedCategory: _selectedCategory,
                         onCategoryChanged: (cat) {
-                          setState(() {
-                            _selectedCategory = cat;
-                          });
+                          Navigator.pushNamed(
+                            context,
+                            '/shop',
+                            arguments: <String, dynamic>{
+                              'category': cat,
+                              'subcategory': 'All',
+                            },
+                          );
                         },
                       ),
                     ),
@@ -108,7 +114,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                       ),
                       child: const Text(
                         'TRENDING ITEMS',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                        style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
                       ),
                     ),
                     const Spacer(),
@@ -116,168 +122,364 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                       categories: categories,
                       selectedCategory: _selectedCategory,
                       onCategoryChanged: (cat) {
-                        setState(() {
-                          _selectedCategory = cat;
-                        });
+                        Navigator.pushNamed(
+                          context,
+                          '/shop',
+                          arguments: <String, dynamic>{
+                            'category': cat,
+                            'subcategory': 'All',
+                          },
+                        );
                       },
                     ),
                   ],
                 ),
               SizedBox(height: isMobile ? 24 : 40),
               
-              // 2. Service Grid & Banner
-              if (isMobile || isTablet)
-                Column(
-                  children: [
-                    GridView(
-                      shrinkWrap: true,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: isMobile ? 2 : 4,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        mainAxisExtent: 150,
+              // 2. Styled Gifting Partner Section (from image layout / Admin dynamic banner)
+              if (settings.showTrendingB2BBanner) ...[
+                Builder(
+                  builder: (context) {
+                    final allBanners = HomeController.instance.banners;
+                    final b2bBanners = allBanners
+                        .where((b) => b.type == 'b2b_partner')
+                        .toList();
+                    final banner = b2bBanners.isNotEmpty ? b2bBanners[0] : null;
+
+                    if (banner != null && banner.imageUrl.isNotEmpty) {
+                      return MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            final targetLink = banner.link.isEmpty ? '/shop' : banner.link;
+                            Navigator.pushNamed(context, targetLink);
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            constraints: BoxConstraints(
+                              maxHeight: isMobile ? 180 : (isTablet ? 280 : 360),
+                            ),
+                            decoration:  BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+
+                              color: Colors.transparent,
+                               boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.black.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Image.network(
+                              banner.imageUrl,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final String tagText = (banner != null && banner.tag.isNotEmpty)
+                        ? banner.tag.toUpperCase()
+                        : 'WHY CHOOSE OJAS INDIA?';
+                    final String titleText = (banner != null && banner.title.isNotEmpty)
+                        ? banner.title
+                        : 'Your Trusted B2B\nGifting Partner';
+                    final String buttonText = 'Know More About Us';
+                    final String link = (banner != null && banner.link.isNotEmpty) ? banner.link : '/about-us';
+
+                    return Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 16 : 40,
+                        vertical: isMobile ? 32 : 48,
                       ),
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        ServiceCard(
-                          title: settings.serviceCard1Title,
-                          subtitle: settings.serviceCard1Subtitle,
-                          iconUrl: settings.serviceCard1Icon,
-                        ),
-                        ServiceCard(
-                          title: settings.serviceCard2Title,
-                          subtitle: settings.serviceCard2Subtitle,
-                          iconUrl: settings.serviceCard2Icon,
-                        ),
-                        ServiceCard(
-                          title: settings.serviceCard3Title,
-                          subtitle: settings.serviceCard3Subtitle,
-                          iconUrl: settings.serviceCard3Icon,
-                        ),
-                        ServiceCard(
-                          title: settings.serviceCard4Title,
-                          subtitle: settings.serviceCard4Subtitle,
-                          iconUrl: settings.serviceCard4Icon,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    const SizedBox(height: 300, child: TrendingPromoBanner()),
-                  ],
-                )
-              else
-                SizedBox(
-                  height: 580,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: GridView.count(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          childAspectRatio: 1.3,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: [
-                            ServiceCard(
-                              title: settings.serviceCard1Title,
-                              subtitle: settings.serviceCard1Subtitle,
-                              iconUrl: settings.serviceCard1Icon,
-                            ),
-                            ServiceCard(
-                              title: settings.serviceCard2Title,
-                              subtitle: settings.serviceCard2Subtitle,
-                              iconUrl: settings.serviceCard2Icon,
-                            ),
-                            ServiceCard(
-                              title: settings.serviceCard3Title,
-                              subtitle: settings.serviceCard3Subtitle,
-                              iconUrl: settings.serviceCard3Icon,
-                            ),
-                            ServiceCard(
-                              title: settings.serviceCard4Title,
-                              subtitle: settings.serviceCard4Subtitle,
-                              iconUrl: settings.serviceCard4Icon,
-                            ),
-                          ],
-                        ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryIndigo,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(width: 24),
-                      const Expanded(
-                        flex: 2,
-                        child: TrendingPromoBanner(),
-                      ),
-                    ],
-                  ),
+                      child: isMobile
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  tagText,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFFFBBF24),
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  titleText,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.white,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  width: 60,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFBBF24),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pushNamed(context, link),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.transparent,
+                                    foregroundColor: const Color(0xFFFBBF24),
+                                    side: const BorderSide(color: Color(0xFFFBBF24), width: 1.5),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    buttonText,
+                                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                const SizedBox(height: 40),
+                                const Divider(color: AppColors.white24, height: 1),
+                                const SizedBox(height: 24),
+                                _buildFeatureItem(Icons.verified_outlined, '40+ Years of Experience'),
+                                const SizedBox(height: 16),
+                                _buildFeatureItem(Icons.diamond_outlined, 'Wide Range Premium Quality Products'),
+                                const SizedBox(height: 16),
+                                _buildFeatureItem(Icons.inventory_2_outlined, 'Bulk Order Support & Best Pricing'),
+                                const SizedBox(height: 16),
+                                _buildFeatureItem(Icons.edit_note_outlined, 'Custom Branding & Private Label Solutions'),
+                                const SizedBox(height: 16),
+                                _buildFeatureItem(Icons.card_giftcard_outlined, 'Premium Packaging'),
+                                const SizedBox(height: 16),
+                                _buildFeatureItem(Icons.local_shipping_outlined, 'PAN India Delivery'),
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Left Content Block
+                                Expanded(
+                                  flex: 3,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        tagText,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFFFBBF24),
+                                          letterSpacing: 1.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        titleText,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 36,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.white,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        width: 60,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFBBF24),
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 24),
+                                      ElevatedButton(
+                                        onPressed: () => Navigator.pushNamed(context, link),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.transparent,
+                                          foregroundColor: const Color(0xFFFBBF24),
+                                          side: const BorderSide(color: Color(0xFFFBBF24), width: 1.5),
+                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                          elevation: 0,
+                                        ),
+                                        child: Text(
+                                          buttonText,
+                                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 32),
+                                // Right Features Grid List
+                                Expanded(
+                                  flex: 7,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _buildGridFeatureItem(Icons.verified_outlined, '40+', 'Years of\nExperience'),
+                                      _buildVerticalDivider(),
+                                      _buildGridFeatureItem(Icons.diamond_outlined, 'Wide Range', 'Premium Quality\nProducts'),
+                                      _buildVerticalDivider(),
+                                      _buildGridFeatureItem(Icons.inventory_2_outlined, 'Bulk Order', 'Support & Best\nPricing'),
+                                      _buildVerticalDivider(),
+                                      _buildGridFeatureItem(Icons.edit_note_outlined, 'Custom Branding &', 'Private Label\nSolutions'),
+                                      _buildVerticalDivider(),
+                                      _buildGridFeatureItem(Icons.card_giftcard_outlined, 'Premium', 'Packaging'),
+                                      _buildVerticalDivider(),
+                                      _buildGridFeatureItem(Icons.local_shipping_outlined, 'PAN India', 'Delivery'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                    );
+                  },
                 ),
+              ],
               
               SizedBox(height: isMobile ? 32 : 48),
               
               // 3. Trending Product Grid
-              if (products.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 60),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.trending_up_outlined, size: 48, color: Colors.grey.shade300),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No trending products at the moment.',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          color: Colors.grey.shade500,
+              if (settings.showTrendingProducts) ...[
+                if (products.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 60),
+                    decoration: BoxDecoration(
+                      color: AppColors.grey50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.grey200),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(Icons.trending_up_outlined, size: 48, color: AppColors.grey300),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No trending products at the moment.',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            color: AppColors.grey500,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: products.length > 5 ? 5 : products.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isMobile ? 2 : (isTablet ? 3 : 5),
+                      mainAxisSpacing: isMobile ? 12 : 24,
+                      crossAxisSpacing: isMobile ? 12 : 24,
+                      mainAxisExtent: isMobile ? 380 : 420,
+                    ),
+                    itemBuilder: (context, index) {
+                      final product = ProductModel.fromMap(products[index]);
+                      return ProductCard(
+                        product: product,
+                        onAddToCart: () async {
+                          final String? token = SessionService.instance.token;
+                          if (token == null) {
+                            CartController.instance.setPendingItem(product.id, null);
+                            Navigator.pushNamed(context, '/login');
+                            return;
+                          }
+                          
+                          final success = await CartController.instance.addToCart(product.id);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(success ? '${product.name} added to cart!' : 'Failed to add. Please login.'),
+                              backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ));
+                          }
+                        },
+                      );
+                    },
                   ),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: products.length > 5 ? 5 : products.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isMobile ? 2 : (isTablet ? 3 : 5),
-                    mainAxisSpacing: isMobile ? 12 : 24,
-                    crossAxisSpacing: isMobile ? 12 : 24,
-                    mainAxisExtent: isMobile ? 380 : 420,
-                  ),
-                  itemBuilder: (context, index) {
-                    final product = ProductModel.fromMap(products[index]);
-                    return ProductCard(
-                      product: product,
-                      onAddToCart: () async {
-                        final String? token = SessionService.instance.token;
-                        if (token == null) {
-                          CartController.instance.setPendingItem(product.id, null);
-                          Navigator.pushNamed(context, '/login');
-                          return;
-                        }
-                        
-                        final success = await CartController.instance.addToCart(product.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(success ? '${product.name} added to cart!' : 'Failed to add. Please login.'),
-                            backgroundColor: success ? Colors.green : Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 2),
-                          ));
-                        }
-                      },
-                    );
-                  },
-                ),
-              SizedBox(height: isMobile ? 32 : 60),
+              ],
+              // SizedBox(height: isMobile ? 32 : 60),
             ],
           ),
         );
       },
     );
   }
+
+  Widget _buildFeatureItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFFFBBF24), size: 24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              color: AppColors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGridFeatureItem(IconData icon, String boldText, String subText) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: const Color(0xFFFBBF24), size: 36),
+          const SizedBox(height: 12),
+          Text(
+            boldText,
+            style: GoogleFonts.outfit(
+              color: const Color(0xFFFBBF24),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subText,
+            style: GoogleFonts.inter(
+              color: AppColors.white,
+              fontSize: 12,
+              height: 1.3,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return Container(
+      height: 60,
+      width: 1,
+      color: AppColors.white24,
+    );
+  }
 }
+

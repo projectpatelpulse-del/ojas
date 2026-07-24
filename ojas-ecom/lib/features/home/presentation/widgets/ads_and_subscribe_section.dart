@@ -73,12 +73,12 @@ class AdsAndSubscribeSection extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: Colors.grey.shade400),
+        Icon(icon, size: 16, color: AppColors.grey400),
         const SizedBox(width: 8),
         Text(
           text,
           style: GoogleFonts.inter(
-            color: Colors.grey.shade500,
+            color: AppColors.grey500,
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
@@ -101,7 +101,9 @@ class _OfferCard extends StatelessWidget {
       builder: (context, _) {
         final offer = homeController.offerBanner;
 
-        return Container(
+        final bool hasLink = offer.link.isNotEmpty && offer.link != '/' && offer.link != '#';
+
+        Widget mainContent = Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: offer.imageUrl.isEmpty 
@@ -119,7 +121,7 @@ class _OfferCard extends StatelessWidget {
                 : null,
             boxShadow: [
               BoxShadow(
-                color: (offer.imageUrl.isEmpty ? const Color(0xFFE91E63) : Colors.black).withOpacity(0.3),
+                color: (offer.imageUrl.isEmpty ? const Color(0xFFE91E63) : AppColors.black).withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               )
@@ -131,7 +133,7 @@ class _OfferCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               gradient: offer.imageUrl.isNotEmpty
                   ? LinearGradient(
-                      colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                      colors: [AppColors.black.withOpacity(0.7), AppColors.transparent],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     )
@@ -140,80 +142,82 @@ class _OfferCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.card_giftcard, color: Colors.white, size: 18),
-                  ),
-                  const SizedBox(width: 12),
-                  if (offer.tag.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        offer.tag.toUpperCase(),
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              Text(
-                offer.title,
-                style: GoogleFonts.outfit(
-                  fontSize: isMobile ? 28 : 40,
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 20),
-                child: Text(
-                  offer.subtitle,
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: isMobile ? 14 : 16,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              if (isMobile)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildClaimButton(context, offer.link),
-                    const SizedBox(height: 16),
-                    _buildValidityText(),
-                  ],
-                )
-              else
                 Row(
                   children: [
-                    _buildClaimButton(context, offer.link),
-                    const SizedBox(width: 24),
-                    _buildValidityText(),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.card_giftcard, color: AppColors.white, size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    if (offer.tag.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          offer.tag.toUpperCase(),
+                          style: GoogleFonts.inter(
+                            color: AppColors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
+                const SizedBox(height: 32),
+                Text(
+                  offer.title,
+                  style: GoogleFonts.outfit(
+                    fontSize: isMobile ? 28 : 40,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                    color: AppColors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: Text(
+                    offer.subtitle,
+                    style: GoogleFonts.inter(
+                      color: AppColors.white.withOpacity(0.9),
+                      fontSize: isMobile ? 14 : 16,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildValidityText(),
               ],
             ),
           ),
         );
+
+        if (hasLink) {
+          return MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                if (offer.link.isNotEmpty) {
+                  Navigator.pushNamed(context, '/shop', arguments: {'search': offer.link});
+                } else {
+                  Navigator.pushNamed(context, '/shop');
+                }
+              },
+              child: mainContent,
+            ),
+          );
+        }
+
+        return mainContent;
       },
     );
   }
@@ -228,8 +232,8 @@ class _OfferCard extends StatelessWidget {
         }
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFFE91E63),
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.accentOrange,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 0,
@@ -257,14 +261,14 @@ class _OfferCard extends StatelessWidget {
       children: [
         Icon(
           Icons.auto_awesome,
-          color: Colors.white.withOpacity(0.8),
+          color: AppColors.white.withOpacity(0.8),
           size: 16,
         ),
         const SizedBox(width: 6),
         Text(
           'Valid for a limited time',
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.8),
+            color: AppColors.white.withOpacity(0.8),
             fontSize: 12,
           ),
         ),
@@ -297,16 +301,16 @@ class _SubscribeCardState extends State<_SubscribeCard> {
     return Container(
       padding: EdgeInsets.all(isMobile ? 24 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.black.withOpacity(0.05),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: AppColors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -321,7 +325,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)], // Violet/Indigo
+                colors: [AppColors.primaryIndigo, AppColors.primaryBlue], // Bronze/Gold
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -329,7 +333,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
             ),
             child: const Icon(
               Icons.mail_outline,
-              color: Colors.white,
+              color: AppColors.white,
               size: 32,
             ),
           ),
@@ -355,81 +359,71 @@ class _SubscribeCardState extends State<_SubscribeCard> {
           const SizedBox(height: 32),
 
           // Input field
-          Container(
-            height: 54,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200),
-              borderRadius: BorderRadius.circular(8),
+          TextFormField(
+            controller: _emailController,
+            style: const TextStyle(
+              color: AppColors.black,
+              fontSize: 14,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child:
-                     TextFormField(
-  controller: _emailController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
 
-  /// INPUT TEXT COLOR
-  style: const TextStyle(
-    color: Colors.black,
-    fontSize: 14,
-  ),
+              final emailRegex = RegExp(
+                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+              );
 
-  validator: (value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your email';
-    }
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email';
+              }
 
-    final emailRegex = RegExp(
-      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-    );
-
-    if (!emailRegex.hasMatch(value)) {
-      return 'Please enter a valid email';
-    }
-
-    return null;
-  },
-
-  decoration: InputDecoration(
-    hintText: 'Enter your email',
-
-    hintStyle: TextStyle(
-      color: Colors.grey.shade400,
-      fontSize: 13,
-    ),
-
-    filled: true,
-    fillColor: Colors.white,
-
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
-
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 14,
-    ),
-
-    errorStyle: const TextStyle(
-      height: 0,
-    ),
-  ),
-)
-             
-                  ),
+              return null;
+            },
+            decoration: InputDecoration(
+              hintText: 'Enter your email',
+              hintStyle: TextStyle(
+                color: AppColors.grey400,
+                fontSize: 13,
+              ),
+              filled: true,
+              fillColor: AppColors.white,
+              suffixIcon: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(
+                  Icons.mail_outline,
+                  color: AppColors.grey400,
+                  size: 20,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Icon(
-                    Icons.mail_outline,
-                    color: Colors.grey.shade400,
-                    size: 20,
-                  ),
-                ),
-              ],
+              ),
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 40,
+                minHeight: 40,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColors.grey200),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: AppColors.grey200),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.accentOrange, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.errorRed, width: 1),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.errorRed, width: 1.5),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -444,7 +438,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Successfully subscribed to newsletter!'),
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppColors.successGreen,
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -452,8 +446,8 @@ class _SubscribeCardState extends State<_SubscribeCard> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE91E63),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accentOrangeHover,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -478,7 +472,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
           const SizedBox(height: 32),
 
           // Divider
-          Divider(color: Colors.grey.shade100, thickness: 1),
+          Divider(color: AppColors.grey100, thickness: 1),
           const SizedBox(height: 16),
 
           // Perks
@@ -487,7 +481,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
             child: Text(
               'What you\'ll get:',
               style: GoogleFonts.inter(
-                color: Colors.grey.shade600,
+                color: AppColors.grey600,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
@@ -499,11 +493,11 @@ class _SubscribeCardState extends State<_SubscribeCard> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPerk(Colors.red.shade400, 'Exclusive discounts'),
+                _buildPerk(AppColors.red400, 'Exclusive discounts'),
                 const SizedBox(height: 10),
-                _buildPerk(Colors.green.shade400, 'New product alerts'),
+                _buildPerk(AppColors.green400, 'New product alerts'),
                 const SizedBox(height: 10),
-                _buildPerk(Colors.blue.shade400, 'Early access to sales'),
+                _buildPerk(AppColors.blue400, 'Early access to sales'),
                 const SizedBox(height: 10),
                 _buildPerk(Colors.purple.shade400, 'Weekly style tips'),
               ],
@@ -515,9 +509,9 @@ class _SubscribeCardState extends State<_SubscribeCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildPerk(Colors.red.shade400, 'Exclusive discounts'),
+                      _buildPerk(AppColors.red400, 'Exclusive discounts'),
                       const SizedBox(height: 12),
-                      _buildPerk(Colors.green.shade400, 'New product alerts'),
+                      _buildPerk(AppColors.green400, 'New product alerts'),
                     ],
                   ),
                 ),
@@ -525,7 +519,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildPerk(Colors.blue.shade400, 'Early access to sales'),
+                      _buildPerk(AppColors.blue400, 'Early access to sales'),
                       const SizedBox(height: 12),
                       _buildPerk(Colors.purple.shade400, 'Weekly style tips'),
                     ],
@@ -550,7 +544,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
         const SizedBox(width: 10),
         Text(
           text,
-          style: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 12),
+          style: GoogleFonts.inter(color: AppColors.grey600, fontSize: 12),
         ),
       ],
     );

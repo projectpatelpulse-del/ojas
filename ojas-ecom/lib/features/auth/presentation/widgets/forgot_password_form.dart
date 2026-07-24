@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/features/auth/application/auth_service.dart';
@@ -30,7 +31,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response.message),
-            backgroundColor: response.success ? Colors.green : Colors.red,
+            backgroundColor: response.success ? AppColors.successGreen : AppColors.errorRed,
           ),
         );
         if (response.success) {
@@ -82,13 +83,13 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE91E63),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accentOrange,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
               ),
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Color(0xFFE91E63), strokeWidth: 2))
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.accentOrange, strokeWidth: 2))
                   : Text('Send Reset Link', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
             ),
           ),
@@ -101,7 +102,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               Text('Remember your password? ', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 14)),
               InkWell(
                 onTap: widget.onBackToLogin,
-                child: Text('Sign In', style: GoogleFonts.inter(color: const Color(0xFFE91E63), fontSize: 14, fontWeight: FontWeight.bold)),
+                child: Text('Sign In', style: GoogleFonts.inter(color: AppColors.accentOrange, fontSize: 14, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -138,7 +139,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 14),
         prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 18),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -146,7 +147,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE91E63)),
+          borderSide: const BorderSide(color: AppColors.accentOrange),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

@@ -96,14 +96,34 @@ const processCartItems = async (items) => {
             productObj.discountPrice     = 0;
         }
 
+        let selectedVariation = null;
         if (productObj.variations && productObj.variations.length > 0) {
             productObj.variations = productObj.variations.map(v => {
-                const varPricing = calculateProductPricing(v.price, commissionRate, gstRate);
-                return { ...v, price: varPricing.sellingPrice + markupAmount };
+                const vObj = typeof v.toObject === "function" ? v.toObject() : { ...v };
+                const varPricing = calculateProductPricing(vObj.price || vObj.price === 0 ? vObj.price : v.price, commissionRate, gstRate);
+                let updatedVar = { ...vObj, price: varPricing.sellingPrice + markupAmount };
+                const oldPriceVal = vObj.oldPrice || v.oldPrice;
+                if (oldPriceVal > 0) {
+                    const varOldPricing = calculateProductPricing(oldPriceVal, commissionRate, gstRate);
+                    updatedVar.oldPrice = varOldPricing.sellingPrice + markupAmount;
+                }
+                if (item.variationId && (vObj._id?.toString() === item.variationId || vObj.id?.toString() === item.variationId || v._id?.toString() === item.variationId)) {
+                    selectedVariation = updatedVar;
+                }
+                return updatedVar;
             });
         }
 
-        return { ...item, product: productObj };
+        if (selectedVariation) {
+            productObj.price = selectedVariation.price;
+            productObj.discountPrice = 0;
+            if (selectedVariation.image) {
+                productObj.image = selectedVariation.image;
+            }
+        }
+
+        const itemObj = typeof item.toObject === "function" ? item.toObject() : { ...item };
+        return { ...itemObj, product: productObj, variation: selectedVariation };
     }));
     return processed;
 };
@@ -303,12 +323,15 @@ const getUsers = async (req, res) => {
 
 const addToCart = async (req, res) => {
     try {
-        const { productId, quantity, referralCode } = req.body;
+        const { productId, quantity, referralCode, variationId } = req.body;
         const user = await User.findById(req.user.id);
         
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        const cartItemIndex = user.cart.findIndex(item => item.product.toString() === productId);
+        const cartItemIndex = user.cart.findIndex(item => 
+            item.product.toString() === productId && 
+            (item.variationId || "") === (variationId || "")
+        );
         const q = parseInt(quantity) || 1;
 
         if (cartItemIndex > -1) {
@@ -321,7 +344,7 @@ const addToCart = async (req, res) => {
                 user.cart.splice(cartItemIndex, 1);
             }
         } else if (q > 0) {
-            user.cart.push({ product: productId, quantity: q, referralCode });
+            user.cart.push({ product: productId, variationId, quantity: q, referralCode });
         }
 
         user.markModified('cart');
@@ -353,11 +376,16 @@ const getCart = async (req, res) => {
 
 const removeFromCart = async (req, res) => {
     try {
-        const { productId } = req.body;
+        const { productId, variationId } = req.body;
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        user.cart = user.cart.filter(item => item.product.toString() !== productId);
+        user.cart = user.cart.filter(item => {
+            if (variationId) {
+                return !(item.product.toString() === productId && (item.variationId || "") === variationId);
+            }
+            return item.product.toString() !== productId;
+        });
         user.markModified('cart');
         await user.save();
         

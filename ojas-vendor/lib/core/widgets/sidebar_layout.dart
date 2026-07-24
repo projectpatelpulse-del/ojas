@@ -70,7 +70,7 @@ class SidebarLayout extends StatelessWidget {
                       _buildSectionHeader('MENU'),
                       _buildNavItem(context, Icons.dashboard_outlined, 'Dashboard', route: '/'),
                       _buildNavItem(context, Icons.shopping_cart_outlined, 'Order', route: '/orders'),
-                      _buildNavItem(context, Icons.people_outline, 'Customers', route: '/customers'),
+                      // _buildNavItem(context, Icons.people_outline, 'Customers', route: '/customers'),
                       const SizedBox(height: 24),
 
                       _buildSectionHeader('TOOLS'),
@@ -78,7 +78,7 @@ class SidebarLayout extends StatelessWidget {
                       _buildNavItem(context, Icons.category_outlined, 'Categories', route: '/categories'),
                       _buildNavItem(context, Icons.account_tree_outlined, 'Sub Categories', route: '/subcategories'),
                       _buildNavItem(context, Icons.percent_outlined, 'Discount', route: '/discounts'),
-                      _buildNavItem(context, Icons.grid_view_outlined, 'Integrations', route: '/integrations'),
+                      // _buildNavItem(context, Icons.grid_view_outlined, 'Integrations', route: '/integrations'),
                       _buildNavItem(context, Icons.analytics_outlined, 'Analytic', route: '/analytics'),
                       _buildNavItem(context, Icons.account_balance_wallet_outlined, 'Payouts', route: '/payouts'),
                       const SizedBox(height: 24),

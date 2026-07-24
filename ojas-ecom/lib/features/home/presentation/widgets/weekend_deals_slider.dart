@@ -19,7 +19,7 @@
 //       child: Container(
 //         decoration: BoxDecoration(
 //           borderRadius: BorderRadius.circular(16),
-//           color: Colors.black.withOpacity(0.4), // Dark overlay
+//           color: AppColors.black.withOpacity(0.4), // Dark overlay
 //         ),
 //         child: Stack(
 //           children: [
@@ -43,14 +43,14 @@
 //                       children: [
 //                         const Icon(
 //                           Icons.local_offer_outlined,
-//                           color: Colors.white,
+//                           color: AppColors.white,
 //                           size: 14,
 //                         ),
 //                         const SizedBox(width: 8),
 //                         Text(
 //                           'LIMITED OFFER',
 //                           style: GoogleFonts.inter(
-//                             color: Colors.white,
+//                             color: AppColors.white,
 //                             fontSize: 12,
 //                             fontWeight: FontWeight.bold,
 //                           ),
@@ -62,7 +62,7 @@
 //                   Text(
 //                     'Weekend Deals',
 //                     style: GoogleFonts.outfit(
-//                       color: Colors.white,
+//                       color: AppColors.white,
 //                       fontSize: 48,
 //                       fontWeight: FontWeight.bold,
 //                       height: 1.1,
@@ -72,7 +72,7 @@
 //                   Text(
 //                     'Accessories • Speakers • Smart Home',
 //                     style: GoogleFonts.inter(
-//                       color: Colors.white.withOpacity(0.9),
+//                       color: AppColors.white.withOpacity(0.9),
 //                       fontSize: 16,
 //                       fontWeight: FontWeight.w600,
 //                     ),
@@ -103,11 +103,11 @@
 //               child: Row(
 //                 mainAxisAlignment: MainAxisAlignment.center,
 //                 children: [
-//                   _dot(Colors.white.withOpacity(0.5), width: 8),
+//                   _dot(AppColors.white.withOpacity(0.5), width: 8),
 //                   const SizedBox(width: 6),
-//                   _dot(Colors.white, width: 24), // Active dot
+//                   _dot(AppColors.white, width: 24), // Active dot
 //                   const SizedBox(width: 6),
-//                   _dot(Colors.white.withOpacity(0.5), width: 8),
+//                   _dot(AppColors.white.withOpacity(0.5), width: 8),
 //                 ],
 //               ),
 //             ),
@@ -121,13 +121,13 @@
 //     return Container(
 //       padding: const EdgeInsets.all(12),
 //       decoration: BoxDecoration(
-//         color: Colors.white,
+//         color: AppColors.white,
 //         shape: BoxShape.circle,
 //         boxShadow: [
-//           BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+//           BoxShadow(color: AppColors.black.withOpacity(0.1), blurRadius: 4),
 //         ],
 //       ),
-//       child: Icon(icon, color: Colors.black87, size: 20),
+//       child: Icon(icon, color: AppColors.black87, size: 20),
 //     );
 //   }
 
@@ -149,400 +149,284 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ojas_user/core/controllers/home_controller.dart';
+import 'package:ojas_user/features/home/data/models/banner_model.dart';
+import 'package:ojas_user/core/constants/app_colors.dart';
 
 class WeekendDealsSlider extends StatefulWidget {
   const WeekendDealsSlider({super.key});
 
   @override
-  State<WeekendDealsSlider> createState() =>
-      _WeekendDealsSliderState();
+  State<WeekendDealsSlider> createState() => _WeekendDealsSliderState();
 }
 
-class _WeekendDealsSliderState
-    extends State<WeekendDealsSlider> {
-  final CarouselSliderController
-      _carouselController =
-      CarouselSliderController();
-
+class _WeekendDealsSliderState extends State<WeekendDealsSlider> {
+  final CarouselSliderController _carouselController = CarouselSliderController();
   int _currentIndex = 0;
-
-  final List<Map<String, String>> banners = [
-    {
-      "image":
-          "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200",
-      "title": "Weekend Deals",
-      "subtitle":
-          "Accessories • Speakers • Smart Home",
-    },
-    {
-      "image":
-          "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
-      "title": "Modern Furniture",
-      "subtitle":
-          "Luxury Sofas • Tables • Decor",
-    },
-    {
-      "image":
-          "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200",
-      "title": "Office Essentials",
-      "subtitle":
-          "Workstations • Chairs • Cabinets",
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth =
-        MediaQuery.of(context).size.width;
+    final homeController = HomeController.instance;
 
-    final bool isMobile = screenWidth < 768;
+    return ListenableBuilder(
+      listenable: homeController,
+      builder: (context, _) {
+        final List<BannerModel> displayBanners = homeController.promoBanners.isEmpty
+            ? [
+                BannerModel(
+                  id: "default_wd1",
+                  title: "Weekend Deals",
+                  subtitle: "Accessories • Speakers • Smart Home",
+                  imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200",
+                  link: "/shop",
+                  tag: "LIMITED OFFER",
+                  type: "promo",
+                ),
+                BannerModel(
+                  id: "default_wd2",
+                  title: "Modern Furniture",
+                  subtitle: "Luxury Sofas • Tables • Decor",
+                  imageUrl: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+                  link: "/shop",
+                  tag: "LIMITED OFFER",
+                  type: "promo",
+                ),
+                BannerModel(
+                  id: "default_wd3",
+                  title: "Office Essentials",
+                  subtitle: "Workstations • Chairs • Cabinets",
+                  imageUrl: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200",
+                  link: "/shop",
+                  tag: "LIMITED OFFER",
+                  type: "promo",
+                ),
+              ]
+            : homeController.promoBanners;
 
-    return Container(
-      width: double.infinity,
-      constraints: BoxConstraints(
-        minHeight: isMobile ? 320 : 500,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          children: [
-            /// SLIDER
-            CarouselSlider.builder(
-              carouselController:
-                  _carouselController,
-              itemCount: banners.length,
-              options: CarouselOptions(
-                height:
-                    isMobile ? 320 : 500,
-                viewportFraction: 1,
-                autoPlay: true,
-                enlargeCenterPage: false,
-                autoPlayInterval:
-                    const Duration(seconds: 5),
-                onPageChanged:
-                    (index, reason) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-              ),
-              itemBuilder:
-                  (context, index, realIndex) {
-                final item = banners[index];
+        final screenWidth = MediaQuery.of(context).size.width;
+        final bool isMobile = screenWidth < 768;
 
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    /// IMAGE
-                    Image.network(
-                      item["image"]!,
-                      fit: BoxFit.cover,
-                    ),
+        if (_currentIndex >= displayBanners.length) {
+          _currentIndex = 0;
+        }
 
-                    /// OVERLAY
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient:
-                            LinearGradient(
-                          begin:
-                              Alignment.centerLeft,
-                          end:
-                              Alignment.centerRight,
-                          colors: [
-                            Colors.black
-                                .withOpacity(
-                                    0.75),
-                            Colors.black
-                                .withOpacity(
-                                    0.35),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
+        return Container(
+          width: double.infinity,
+          constraints: BoxConstraints(
+            minHeight: isMobile ? 320 : 500,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              children: [
+                /// SLIDER
+                CarouselSlider.builder(
+                  carouselController: _carouselController,
+                  itemCount: displayBanners.length,
+                  options: CarouselOptions(
+                    height: isMobile ? 320 : 500,
+                    viewportFraction: 1,
+                    autoPlay: true,
+                    enlargeCenterPage: false,
+                    autoPlayInterval: const Duration(seconds: 5),
+                    onPageChanged: (index, reason) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                  ),
+                  itemBuilder: (context, index, realIndex) {
+                    final item = displayBanners[index];
+                    final bool hasLink = item.link.isNotEmpty && item.link != '/' && item.link != '#';
 
-                    /// CONTENT
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(
-                        horizontal:
-                            isMobile
-                                ? 20
-                                : 60,
-                        vertical:
-                            isMobile
-                                ? 24
-                                : 50,
-                      ),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
-                        mainAxisAlignment:
-                            MainAxisAlignment
-                                .center,
-                        children: [
-                          /// BADGE
-                          Container(
-                            padding:
-                                const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration:
-                                BoxDecoration(
-                              color:
-                                  const Color(
-                                      0xFFD81B60),
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      30),
-                            ),
-                            child: Row(
-                              mainAxisSize:
-                                  MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons
-                                      .local_offer_outlined,
-                                  color:
-                                      Colors.white,
-                                  size: 14,
+                    Widget slideContent = Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        /// IMAGE
+                        item.imageUrl.startsWith('http')
+                            ? Image.network(
+                                item.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: AppColors.grey800,
+                                  child: const Icon(Icons.broken_image, color: AppColors.white),
                                 ),
+                              )
+                            : Image.asset(
+                                item.imageUrl,
+                                fit: BoxFit.cover,
+                              ),
 
-                                const SizedBox(
-                                    width: 8),
-
-                                Text(
-                                  'LIMITED OFFER',
-                                  style:
-                                      GoogleFonts.inter(
-                                    color: Colors
-                                        .white,
-                                    fontSize:
-                                        isMobile
-                                            ? 10
-                                            : 12,
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                    letterSpacing:
-                                        0.5,
-                                  ),
-                                ),
+                        /// OVERLAY
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                AppColors.black.withOpacity(0.75),
+                                AppColors.black.withOpacity(0.35),
+                                AppColors.transparent,
                               ],
                             ),
                           ),
+                        ),
 
-                          SizedBox(
-                              height:
-                                  isMobile
-                                      ? 18
-                                      : 28),
-
-                          /// TITLE
-                          ConstrainedBox(
-                            constraints:
-                                BoxConstraints(
-                              maxWidth:
-                                  isMobile
-                                      ? double
-                                          .infinity
-                                      : 600,
-                            ),
-                            child: Text(
-                              item["title"]!,
-                              maxLines:
-                                  isMobile
-                                      ? 2
-                                      : 1,
-                              overflow:
-                                  TextOverflow
-                                      .ellipsis,
-                              style:
-                                  GoogleFonts
-                                      .outfit(
-                                color:
-                                    Colors.white,
-                                fontSize:
-                                    isMobile
-                                        ? 34
-                                        : 58,
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
-                                height: 1.05,
-                              ),
-                            ),
+                        /// CONTENT
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 20 : 60,
+                            vertical: isMobile ? 24 : 50,
                           ),
-
-                          SizedBox(
-                              height:
-                                  isMobile
-                                      ? 10
-                                      : 16),
-
-                          /// SUBTITLE
-                          Text(
-                            item["subtitle"]!,
-                            style:
-                                GoogleFonts.inter(
-                              color: Colors.white
-                                  .withOpacity(
-                                      0.92),
-                              fontSize:
-                                  isMobile
-                                      ? 14
-                                      : 18,
-                              fontWeight:
-                                  FontWeight.w500,
-                              height: 1.5,
-                            ),
-                          ),
-
-                          SizedBox(
-                              height:
-                                  isMobile
-                                      ? 24
-                                      : 34),
-
-                          /// BUTTON
-                          SizedBox(
-                            width: isMobile
-                                ? double.infinity
-                                : null,
-                            child:
-                                ElevatedButton(
-                                 onPressed: () => Navigator.pushNamed(context, "/shop"),
-                              style:
-                                  ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(
-                                        0xFFD81B60),
-                                foregroundColor:
-                                    Colors.white,
-                                padding:
-                                    EdgeInsets.symmetric(
-                                  horizontal:
-                                      isMobile
-                                          ? 22
-                                          : 32,
-                                  vertical:
-                                      isMobile
-                                          ? 14
-                                          : 18,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              /// BADGE
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
                                 ),
-                                elevation: 0,
-                                shape:
-                                    RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                          14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryIndigo,
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.local_offer_outlined,
+                                      color: AppColors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      item.tag.isEmpty ? 'LIMITED OFFER' : item.tag.toUpperCase(),
+                                      style: GoogleFonts.inter(
+                                        color: AppColors.white,
+                                        fontSize: isMobile ? 10 : 12,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              child: Text(
-                                'SHOP NOW',
-                                style:
-                                    GoogleFonts.inter(
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
-                                  fontSize:
-                                      isMobile
-                                          ? 13
-                                          : 15,
-                                  letterSpacing:
-                                      1,
+
+                              SizedBox(height: isMobile ? 18 : 28),
+
+                              /// TITLE
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: isMobile ? double.infinity : 600,
+                                ),
+                                child: Text(
+                                  item.title,
+                                  maxLines: isMobile ? 2 : 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(
+                                    color: AppColors.white,
+                                    fontSize: isMobile ? 34 : 58,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.05,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
 
-            /// LEFT BUTTON
-            Positioned(
-              left: isMobile ? 12 : 20,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: _navButton(
-                  Icons.arrow_back_rounded,
-                  () {
-                    _carouselController
-                        .previousPage();
+                              SizedBox(height: isMobile ? 10 : 16),
+
+                              /// SUBTITLE
+                              Text(
+                                item.subtitle,
+                                style: GoogleFonts.inter(
+                                  color: AppColors.white.withOpacity(0.92),
+                                  fontSize: isMobile ? 14 : 18,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+
+                    if (hasLink) {
+                      return MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => Navigator.pushNamed(context, item.link),
+                          child: slideContent,
+                        ),
+                      );
+                    }
+
+                    return slideContent;
                   },
-                  isMobile,
                 ),
-              ),
-            ),
 
-            /// RIGHT BUTTON
-            Positioned(
-              right: isMobile ? 12 : 20,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: _navButton(
-                  Icons.arrow_forward_rounded,
-                  () {
-                    _carouselController
-                        .nextPage();
-                  },
-                  isMobile,
-                ),
-              ),
-            ),
-
-            /// DOTS
-            Positioned(
-              bottom: isMobile ? 16 : 24,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
-                children: List.generate(
-                  banners.length,
-                  (index) => AnimatedContainer(
-                    duration:
-                        const Duration(
-                            milliseconds:
-                                250),
-                    margin:
-                        const EdgeInsets.symmetric(
-                      horizontal: 4,
-                    ),
-                    width:
-                        _currentIndex == index
-                            ? 28
-                            : 8,
-                    height: 8,
-                    decoration:
-                        BoxDecoration(
-                      color:
-                          _currentIndex ==
-                                  index
-                              ? Colors.white
-                              : Colors.white
-                                  .withOpacity(
-                                      0.5),
-                      borderRadius:
-                          BorderRadius.circular(
-                              30),
+                /// LEFT BUTTON
+                Positioned(
+                  left: isMobile ? 12 : 20,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: _navButton(
+                      Icons.arrow_back_rounded,
+                      () {
+                        _carouselController.previousPage();
+                      },
+                      isMobile,
                     ),
                   ),
                 ),
-              ),
+
+                /// RIGHT BUTTON
+                Positioned(
+                  right: isMobile ? 12 : 20,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: _navButton(
+                      Icons.arrow_forward_rounded,
+                      () {
+                        _carouselController.nextPage();
+                      },
+                      isMobile,
+                    ),
+                  ),
+                ),
+
+                /// DOTS
+                Positioned(
+                  bottom: isMobile ? 16 : 24,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      displayBanners.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                        ),
+                        width: _currentIndex == index ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentIndex == index ? AppColors.white : AppColors.white.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -553,18 +437,16 @@ class _WeekendDealsSliderState
   ) {
     return InkWell(
       onTap: onTap,
-      borderRadius:
-          BorderRadius.circular(100),
+      borderRadius: BorderRadius.circular(100),
       child: Container(
         height: isMobile ? 42 : 56,
         width: isMobile ? 42 : 56,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black
-                  .withOpacity(0.12),
+              color: AppColors.black12,
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -572,7 +454,7 @@ class _WeekendDealsSliderState
         ),
         child: Icon(
           icon,
-          color: Colors.black87,
+          color: AppColors.black87,
           size: isMobile ? 20 : 24,
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -93,7 +94,7 @@ class _BlogPageState extends State<BlogPage> {
         color: const Color(0xFFF8FAFC),
         padding: EdgeInsets.symmetric(vertical: isMobile ? 32 : 60),
         child: _isLoading 
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF01B6B)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPink))
           : CenteredContent(
           horizontalPadding: isMobile ? 16 : 40,
           child: Column(
@@ -163,7 +164,7 @@ class _BlogPageState extends State<BlogPage> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Text('No articles found in this category', style: GoogleFonts.inter(color: Colors.grey)),
+                    child: Text('No articles found in this category', style: GoogleFonts.inter(color: AppColors.grey)),
                   ),
                 )
               else
@@ -197,7 +198,7 @@ class _BlogPageState extends State<BlogPage> {
       width: width,
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -236,16 +237,16 @@ class _BlogPageState extends State<BlogPage> {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isActive ? const Color(0xFFF01B6B) : Colors.white,
+                  color: isActive ? AppColors.primaryPink : AppColors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: isActive ? const Color(0xFFF01B6B) : const Color(0xFFE2E8F0)),
+                  border: Border.all(color: isActive ? AppColors.primaryPink : const Color(0xFFE2E8F0)),
                 ),
                 child: Text(
                   cat,
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                    color: isActive ? Colors.white : const Color(0xFF475569),
+                    color: isActive ? AppColors.white : const Color(0xFF475569),
                   ),
                 ),
               ),
@@ -261,19 +262,19 @@ class _BlogPageState extends State<BlogPage> {
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60, horizontal: isMobile ? 20 : 40),
       decoration: BoxDecoration(
-        color: const Color(0xFFF01B6B),
+        color: AppColors.primaryPink,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
           Text(
             'Stay Updated',
-            style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: Colors.white),
+            style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.white),
           ),
           const SizedBox(height: 12),
           Text(
             'Subscribe to our newsletter for latest tips.',
-            style: GoogleFonts.inter(fontSize: 15, color: Colors.white.withOpacity(0.9)),
+            style: GoogleFonts.inter(fontSize: 15, color: AppColors.white.withOpacity(0.9)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -292,10 +293,10 @@ class _BlogPageState extends State<BlogPage> {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: AppColors.white),
                       decoration: InputDecoration(
                         hintText: 'Enter your email',
-                        hintStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.6), fontSize: 14),
+                        hintStyle: GoogleFonts.inter(color: AppColors.white.withOpacity(0.6), fontSize: 14),
                         border: InputBorder.none,
                       ),
                     ),
@@ -307,7 +308,7 @@ class _BlogPageState extends State<BlogPage> {
                   width: isMobile ? double.infinity : null,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     borderRadius: isMobile ? BorderRadius.circular(8) : const BorderRadius.horizontal(right: Radius.circular(8)),
                   ),
                   alignment: Alignment.center,
@@ -316,10 +317,10 @@ class _BlogPageState extends State<BlogPage> {
                     children: [
                       Text(
                         'Subscribe',
-                        style: GoogleFonts.inter(color: const Color(0xFFF01B6B), fontWeight: FontWeight.bold, fontSize: 15),
+                        style: GoogleFonts.inter(color: AppColors.primaryPink, fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward, color: Color(0xFFF01B6B), size: 16),
+                      const Icon(Icons.arrow_forward, color: AppColors.primaryPink, size: 16),
                     ],
                   ),
                 ),
@@ -355,11 +356,11 @@ class _BlogCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
+            BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
           ],
         ),
         clipBehavior: Clip.antiAlias,
@@ -376,8 +377,8 @@ class _BlogCard extends StatelessWidget {
                     article['image'] ?? '', 
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
+                      color: AppColors.grey[200],
+                      child: const Icon(Icons.image_not_supported, color: AppColors.grey, size: 40),
                     ),
                   ),
                   if (isFeatured)
@@ -386,10 +387,10 @@ class _BlogCard extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF01B6B),
+                          color: AppColors.primaryPink,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text('Featured', style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: Text('Featured', style: GoogleFonts.inter(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                     ),
                 ],
@@ -404,7 +405,7 @@ class _BlogCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(article['category'] ?? 'General', style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFFF01B6B), fontWeight: FontWeight.bold)),
+                        Text(article['category'] ?? 'General', style: GoogleFonts.inter(fontSize: 10, color: AppColors.primaryPink, fontWeight: FontWeight.bold)),
                         const SizedBox(width: 12),
                         Icon(Icons.access_time, size: 12, color: const Color(0xFF94A3B8)),
                         const SizedBox(width: 4),

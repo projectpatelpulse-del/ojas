@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
@@ -19,13 +20,13 @@ class _CartDrawerState extends State<CartDrawer> {
 
     return Drawer(
       width: isMobile ? screenWidth * 2 / 3 : 450,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       child: ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
           if (controller.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+              child: CircularProgressIndicator(color: AppColors.primaryPink),
             );
           }
 
@@ -41,12 +42,12 @@ class _CartDrawerState extends State<CartDrawer> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF01B6B),
+                        color: AppColors.primaryPink,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.shopping_bag_outlined,
-                        color: Colors.white,
+                        color: AppColors.white,
                         size: 24,
                       ),
                     ),
@@ -60,21 +61,21 @@ class _CartDrawerState extends State<CartDrawer> {
                             style: GoogleFonts.outfit(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: AppColors.black87,
                             ),
                           ),
                           Text(
                             '${items.length} items',
                             style: GoogleFonts.inter(
                               fontSize: 14,
-                              color: Colors.grey[500],
+                              color: AppColors.grey[500],
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
+                      icon: const Icon(Icons.close, color: AppColors.grey),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -87,7 +88,7 @@ class _CartDrawerState extends State<CartDrawer> {
                 child: items.isEmpty
                     ? _buildEmptyState(context)
                     : RawScrollbar(
-                        thumbColor: const Color(0xFFF01B6B).withOpacity(0.6),
+                        thumbColor: AppColors.primaryPink.withOpacity(0.6),
                         thickness: 6,
                         radius: const Radius.circular(10),
                         thumbVisibility: true,
@@ -131,7 +132,7 @@ class _CartDrawerState extends State<CartDrawer> {
                       _buildSummaryRow(
                         'Tax',
                         '\u20b9${controller.tax.ceil()}',
-                        valueColor: Colors.grey[400]!,
+                        valueColor: AppColors.grey[400]!,
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -145,7 +146,7 @@ class _CartDrawerState extends State<CartDrawer> {
                             style: GoogleFonts.outfit(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: AppColors.black87,
                             ),
                           ),
                           Text(
@@ -175,7 +176,7 @@ class _CartDrawerState extends State<CartDrawer> {
                                       content: Text(
                                         '${p['name']} requires a minimum order quantity of $moq',
                                       ),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppColors.errorRed,
                                     ),
                                   );
                                 }
@@ -191,8 +192,8 @@ class _CartDrawerState extends State<CartDrawer> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF01B6B),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primaryPink,
+                            foregroundColor: AppColors.white,
                             padding: const EdgeInsets.symmetric(vertical: 20),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -261,12 +262,31 @@ class _CartDrawerState extends State<CartDrawer> {
     final double priceFontSize = isMobile ? 15.0 : 18.0;
     final double oldPriceFontSize = isMobile ? 12.0 : 14.0;
 
+    final variation = item['variation'];
+    final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
+    String? variationText;
+    if (variation != null) {
+      final List<String> parts = [];
+      if (variation['size'] != null && variation['size'].toString().trim().isNotEmpty) {
+        parts.add('Size: ${variation['size']}');
+      }
+      if (variation['color'] != null && variation['color'].toString().trim().isNotEmpty) {
+        parts.add('Color: ${variation['color']}');
+      }
+      if (variation['material'] != null && variation['material'].toString().trim().isNotEmpty) {
+        parts.add('Material: ${variation['material']}');
+      }
+      if (parts.isNotEmpty) {
+        variationText = parts.join(' | ');
+      }
+    }
+
     return Container(
       padding: EdgeInsets.all(paddingVal),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.grey[200]!),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +316,7 @@ class _CartDrawerState extends State<CartDrawer> {
                     child: Text(
                       '$discount%',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                       ),
@@ -318,9 +338,20 @@ class _CartDrawerState extends State<CartDrawer> {
                   style: GoogleFonts.inter(
                     fontSize: titleFontSize,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: AppColors.black87,
                   ),
                 ),
+                if (variationText != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    variationText,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: AppColors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 6),
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -332,7 +363,7 @@ class _CartDrawerState extends State<CartDrawer> {
                       style: GoogleFonts.hind(
                         fontSize: priceFontSize,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: AppColors.black87,
                       ),
                     ),
                     if (oldPrice > price)
@@ -340,7 +371,7 @@ class _CartDrawerState extends State<CartDrawer> {
                         '\u20b9${oldPrice.ceil()}',
                         style: GoogleFonts.hind(
                           fontSize: oldPriceFontSize,
-                          color: Colors.grey[400],
+                          color: AppColors.grey[400],
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -374,17 +405,18 @@ class _CartDrawerState extends State<CartDrawer> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: AppColors.grey[300]!),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
                           _quantityButton(Icons.remove, () {
-                            final int moq = product['moq'] ?? 1;
+                            final int moq = product['moq'] != null ? (product['moq'] as num).toInt() : 1;
                             if (quantity > moq) {
                               CartController.instance.addToCart(
                                 product['_id'],
                                 quantity: -1,
+                                variationId: variationId,
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -410,6 +442,7 @@ class _CartDrawerState extends State<CartDrawer> {
                             CartController.instance.addToCart(
                               product['_id'],
                               quantity: 1,
+                              variationId: variationId,
                             );
                           }),
                         ],
@@ -423,7 +456,7 @@ class _CartDrawerState extends State<CartDrawer> {
                         size: 20,
                       ),
                       onPressed: () {
-                        CartController.instance.removeFromCart(product['_id']);
+                        CartController.instance.removeFromCart(product['_id'], variationId: variationId);
                       },
                     ),
                   ],
@@ -441,7 +474,7 @@ class _CartDrawerState extends State<CartDrawer> {
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.all(4.0),
-        child: Icon(icon, size: 16, color: Colors.grey[600]),
+        child: Icon(icon, size: 16, color: AppColors.grey[600]),
       ),
     );
   }
@@ -456,7 +489,7 @@ class _CartDrawerState extends State<CartDrawer> {
             fontSize: 16,
             color: label == 'You saved' || label == 'Shipping'
                 ? const Color(0xFF2E7D32)
-                : Colors.grey[700],
+                : AppColors.grey[700],
           ),
         ),
         Text(
@@ -464,7 +497,7 @@ class _CartDrawerState extends State<CartDrawer> {
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: label == 'Total' ? FontWeight.bold : FontWeight.w500,
-            color: valueColor ?? Colors.black87,
+            color: valueColor ?? AppColors.black87,
           ),
         ),
       ],
@@ -478,13 +511,13 @@ class _CartDrawerState extends State<CartDrawer> {
         Container(
           padding: const EdgeInsets.all(40),
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: AppColors.grey[100],
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.shopping_bag_outlined,
             size: 80,
-            color: Colors.grey[400],
+            color: AppColors.grey[400],
           ),
         ),
         const SizedBox(height: 32),
@@ -493,20 +526,20 @@ class _CartDrawerState extends State<CartDrawer> {
           style: GoogleFonts.outfit(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: AppColors.black87,
           ),
         ),
         const SizedBox(height: 12),
         Text(
           'Add some products to get started',
-          style: GoogleFonts.inter(fontSize: 16, color: Colors.grey[500]),
+          style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[500]),
         ),
         const SizedBox(height: 40),
         ElevatedButton(
           onPressed: () => Navigator.pop(context),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF01B6B),
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.primaryPink,
+            foregroundColor: AppColors.white,
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

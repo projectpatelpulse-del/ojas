@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -113,10 +114,10 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -148,7 +149,7 @@ class ProfileScreen extends StatelessWidget {
               label: Text('Edit Profile', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE91E63),
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -245,10 +246,10 @@ class ProfileScreen extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 20 : 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,9 +384,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
       setState(() => _isUpdating = false);
       if (updated != null) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: AppColors.successGreen));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update profile.'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update profile.'), backgroundColor: AppColors.errorRed));
       }
     }
   }
@@ -404,7 +405,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Edit Profile', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text('Edit Profile', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.white)),
                 const SizedBox(height: 24),
                 Center(
                   child: Stack(
@@ -423,7 +424,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                         bottom: 0, right: 0,
                         child: InkWell(
                           onTap: _pickImage,
-                          child: Container(padding: const EdgeInsets.all(8), decoration: const BoxDecoration(color: Color(0xFFE91E63), shape: BoxShape.circle), child: const Icon(Icons.camera_alt, size: 16, color: Colors.white)),
+                          child: Container(padding: const EdgeInsets.all(8), decoration: const BoxDecoration(color: Color(0xFFE91E63), shape: BoxShape.circle), child: const Icon(Icons.camera_alt, size: 16, color: AppColors.white)),
                         ),
                       ),
                     ],
@@ -436,7 +437,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                 const SizedBox(height: 16),
                 _buildField('Mobile', _mobileController),
                 const SizedBox(height: 16),
-                Text('Gender', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white)),
+                Text('Gender', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.white)),
                 const SizedBox(height: 8),
                 Row(children: [_buildGenderRadio('male'), const SizedBox(width: 16), _buildGenderRadio('female')]),
                 const SizedBox(height: 32),
@@ -444,8 +445,8 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   width: double.infinity, height: 48,
                   child: ElevatedButton(
                     onPressed: _isUpdating ? null : _handleUpdate,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE91E63), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: _isUpdating ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Text('Save Changes', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE91E63), foregroundColor: AppColors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: _isUpdating ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)) : Text('Save Changes', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -460,7 +461,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white60)),
+        Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.white60)),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -479,7 +480,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Radio<String>(value: value, groupValue: _gender, onChanged: (v) => setState(() => _gender = v!), activeColor: const Color(0xFFE91E63)),
-          Text(value[0].toUpperCase() + value.substring(1), style: GoogleFonts.inter(fontSize: 14, color: Colors.white)),
+          Text(value[0].toUpperCase() + value.substring(1), style: GoogleFonts.inter(fontSize: 14, color: AppColors.white)),
         ],
       ),
     );

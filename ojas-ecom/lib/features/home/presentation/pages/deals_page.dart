@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -110,11 +111,11 @@ class _DealsPageState extends State<DealsPage> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.white,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
+                                color: AppColors.black.withOpacity(0.03),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -225,12 +226,12 @@ class _DealsPageState extends State<DealsPage> {
           width: 190,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: AppColors.black.withOpacity(0.02),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -241,7 +242,7 @@ class _DealsPageState extends State<DealsPage> {
               value: _sortBy,
               isExpanded: true,
               isDense: true,
-              dropdownColor: Colors.white,
+              dropdownColor: AppColors.white,
               icon: const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF64748B)),
               style: GoogleFonts.inter(
                 fontSize: 13, 
@@ -287,11 +288,11 @@ class _NeverMissDealSection extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 40),
       padding: EdgeInsets.symmetric(vertical: 60, horizontal: isMobile ? 24 : 60),
       decoration: BoxDecoration(
-        color: const Color(0xFFF01B6B), 
+        color: AppColors.primaryPink, 
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF01B6B).withOpacity(0.3),
+            color: AppColors.primaryPink.withOpacity(0.3),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
@@ -304,7 +305,7 @@ class _NeverMissDealSection extends StatelessWidget {
             style: GoogleFonts.outfit(
               fontSize: isMobile ? 28 : 36,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.white,
             ),
           ),
           const SizedBox(height: 12),
@@ -313,7 +314,7 @@ class _NeverMissDealSection extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: isMobile ? 14 : 16,
-              color: Colors.white.withOpacity(0.9),
+              color: AppColors.white.withOpacity(0.9),
               height: 1.5,
             ),
           ),
@@ -344,17 +345,17 @@ class _NeverMissDealSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: AppColors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: AppColors.white.withOpacity(0.2)),
       ),
       child: TextField(
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: AppColors.white),
         decoration: InputDecoration(
           hintText: 'Enter your email',
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+          hintStyle: TextStyle(color: AppColors.white.withOpacity(0.6)),
           border: InputBorder.none,
-          icon: Icon(Icons.mail_outline, color: Colors.white.withOpacity(0.6)),
+          icon: Icon(Icons.mail_outline, color: AppColors.white.withOpacity(0.6)),
         ),
       ),
     );
@@ -369,8 +370,8 @@ class _NeverMissDealSection extends StatelessWidget {
         icon: const Icon(Icons.flash_on, size: 18),
         label: const Text('Get Alerts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFFF01B6B),
+          backgroundColor: AppColors.white,
+          foregroundColor: AppColors.primaryPink,
           padding: const EdgeInsets.symmetric(horizontal: 32),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
@@ -460,10 +461,10 @@ class _DealCardState extends State<_DealCard> {
         final bool isWishlisted = WishlistController.instance.isWishlisted(p.id);
         return Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4)),
+              BoxShadow(color: AppColors.black.withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4)),
             ],
           ),
           clipBehavior: Clip.antiAlias,
@@ -495,12 +496,12 @@ class _DealCardState extends State<_DealCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF01B6B),
+                        color: AppColors.primaryPink,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         '-${p.discountPercent}%',
-                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.white),
                       ),
                     ),
                   ),
@@ -540,13 +541,13 @@ class _DealCardState extends State<_DealCard> {
                         height: 30,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isWishlisted ? const Color(0xFFF01B6B) : Colors.white,
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4)],
+                          color: isWishlisted ? AppColors.primaryPink : AppColors.white,
+                          boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.08), blurRadius: 4)],
                         ),
                         child: Icon(
                           isWishlisted ? Icons.favorite : Icons.favorite_border,
                           size: 16,
-                          color: isWishlisted ? Colors.white : const Color(0xFF94A3B8),
+                          color: isWishlisted ? AppColors.white : const Color(0xFF94A3B8),
                         ),
                       ),
                     ),
@@ -612,7 +613,7 @@ class _DealCardState extends State<_DealCard> {
                           value: p.stockPercent,
                           minHeight: 5,
                           backgroundColor: const Color(0xFFE2E8F0),
-                          valueColor: const AlwaysStoppedAnimation(Color(0xFFF01B6B)),
+                          valueColor: const AlwaysStoppedAnimation(AppColors.primaryPink),
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -620,11 +621,11 @@ class _DealCardState extends State<_DealCard> {
                       // Limited Stock label
                       Row(
                         children: [
-                          const Icon(Icons.local_fire_department_outlined, size: 14, color: Color(0xFFF01B6B)),
+                          const Icon(Icons.local_fire_department_outlined, size: 14, color: AppColors.primaryPink),
                           const SizedBox(width: 4),
                           Text(
                             'Limited Stock left',
-                            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFFF01B6B), fontWeight: FontWeight.w500),
+                            style: GoogleFonts.inter(fontSize: 12, color: AppColors.primaryPink, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
@@ -641,7 +642,7 @@ class _DealCardState extends State<_DealCard> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(success ? '${p.name} added to cart' : 'Failed to add to cart. Please login first.'),
-                                  backgroundColor: success ? Colors.green : Colors.red,
+                                  backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                                   behavior: SnackBarBehavior.floating,
                                   duration: const Duration(seconds: 2),
                                 ),
@@ -651,8 +652,8 @@ class _DealCardState extends State<_DealCard> {
                           icon: const Icon(Icons.shopping_cart_outlined, size: 16),
                           label: Text('Add to Cart', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF01B6B),
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primaryPink,
+                            foregroundColor: AppColors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             elevation: 0,
@@ -686,11 +687,11 @@ class _ViewToggleBtn extends StatelessWidget {
         width: 34,
         height: 34,
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFF01B6B) : Colors.white,
+          color: isActive ? AppColors.primaryPink : AppColors.white,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: isActive ? const Color(0xFFF01B6B) : const Color(0xFFE2E8F0)),
+          border: Border.all(color: isActive ? AppColors.primaryPink : const Color(0xFFE2E8F0)),
         ),
-        child: Icon(icon, size: 18, color: isActive ? Colors.white : const Color(0xFF64748B)),
+        child: Icon(icon, size: 18, color: isActive ? AppColors.white : const Color(0xFF64748B)),
       ),
     );
   }

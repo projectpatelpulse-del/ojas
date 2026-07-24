@@ -1,11 +1,11 @@
 const express = require("express");
-const { registerAdmin, loginAdmin, logoutAdmin, getAdmin, changePassword, getAllAdmins, updateAdminStatus, deleteAdmin, updateAdminPermissions } = require("../controller/AdminController.js");
+const { registerAdmin, loginAdmin, logoutAdmin, getAdmin, changePassword, getAllAdmins, updateAdminStatus, deleteAdmin, updateAdminPermissions, sendBulkEmailController } = require("../controller/AdminController.js");
 const resellerController = require("../controller/ResellerController.js");
 const { getVendors, getUsers, updateUserRole, deleteUser, updateUserStatus } = require("../controller/userController.js");
 const Adminauth = require("../middlewere/AdminAuth.js");
 const { postCategories, getCategories, deleteCategory, updateCategory, handleCategoryRequest } = require("../controller/Homecontroller.js");
 const { createProduct, getProducts, getProduct, updateProduct, deleteProduct } = require("../controller/Product.js");
-const { getAllVendorRequests, updateVendorStatus, updateVendorCommission, updateAllVendorsCommission, getVendorLedger, deleteVendor } = require("../controller/VendorController");
+const { getAllVendorRequests, updateVendorStatus, updateVendorCommission, updateVendorMaxProductsLimit, updateAllVendorsCommission, getVendorLedger, deleteVendor } = require("../controller/VendorController");
 const { getSettings, updateSettings, resetSettings } = require("../controller/SettingController.js");
 const { createBanner, getAllBanners, updateBanner, deleteBanner } = require("../controller/BannerController.js");
 const { createSubCategory, getSubCategories, updateSubCategory, deleteSubCategory } = require("../controller/SubCategoryController.js");
@@ -32,6 +32,7 @@ router.get("/users", Adminauth, checkPermission('manage_users'), getUsers);
 router.put("/user-role/:id", Adminauth, checkPermission('manage_users'), updateUserRole);
 router.put("/user-status/:id", Adminauth, checkPermission('manage_users'), updateUserStatus);
 router.delete("/user/:id", Adminauth, checkPermission('manage_users'), deleteUser);
+router.post("/send-bulk-email", Adminauth, checkPermission('manage_users'), sendBulkEmailController);
 
 // Category routes (Admin task)
 router.post("/category", Adminauth, checkPermission('manage_products'), postCategories);
@@ -52,6 +53,7 @@ router.get("/vendor-requests", Adminauth, checkPermission('manage_vendors'), get
 router.put("/vendor-status/:id", Adminauth, checkPermission('manage_vendors'), updateVendorStatus);
 router.put("/vendor-commission-all", Adminauth, checkPermission('manage_vendors'), updateAllVendorsCommission);
 router.put("/vendor-commission/:id", Adminauth, checkPermission('manage_vendors'), updateVendorCommission);
+router.put("/vendor-max-products/:id", Adminauth, checkPermission('manage_vendors'), updateVendorMaxProductsLimit);
 router.get("/vendor-ledger/:id", Adminauth, checkPermission('manage_vendors'), getVendorLedger);
 router.delete("/vendor/:id", Adminauth, checkPermission('manage_vendors'), deleteVendor);
 

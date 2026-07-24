@@ -16,7 +16,9 @@ class BannerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final bool hasLink = banner.link.isNotEmpty && banner.link != '/' && banner.link != '#';
+
+    Widget mainContent = Container(
       width: double.infinity,
       height: isHero ? 450 : 300,
       decoration: BoxDecoration(
@@ -30,15 +32,6 @@ class BannerWidget extends StatelessWidget {
         padding: EdgeInsets.all(isHero ? 60 : 40),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              Colors.black.withOpacity(0.7),
-              Colors.black.withOpacity(0.3),
-              Colors.transparent,
-            ],
-          ),
         ),
         child: CenteredContent(
           child: Column(
@@ -48,7 +41,7 @@ class BannerWidget extends StatelessWidget {
               Text(
                 banner.title,
                 style: GoogleFonts.outfit(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: isHero ? 48 : 32,
                   fontWeight: FontWeight.bold,
                   height: 1.1,
@@ -60,23 +53,9 @@ class BannerWidget extends StatelessWidget {
                 child: Text(
                   banner.subtitle,
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.9),
+                    color: AppColors.white.withOpacity(0.9),
                     fontSize: isHero ? 18 : 16,
                   ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, "/shop"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text(
-                  'Shop Now',
-                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -84,5 +63,17 @@ class BannerWidget extends StatelessWidget {
         ),
       ),
     );
+
+    if (hasLink) {
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => Navigator.pushNamed(context, banner.link),
+          child: mainContent,
+        ),
+      );
+    }
+
+    return mainContent;
   }
 }

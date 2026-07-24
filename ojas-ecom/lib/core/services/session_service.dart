@@ -27,21 +27,24 @@ class SessionService extends ChangeNotifier {
   Future<void> setReferral(String? ref, String? productId) async {
     _refCode = ref;
     _referredProductId = productId;
-    final prefs = await SharedPreferences.getInstance();
-    if (ref != null && productId != null) {
-      await prefs.setString('referral_code', ref);
-      await prefs.setString('referred_product_id', productId);
-    } else {
-      await prefs.remove('referral_code');
-      await prefs.remove('referred_product_id');
-    }
+    // Commented out SharedPreferences persistence to keep referral at session-level only.
+    // When browser/tab is closed, memory resets and referral clears automatically.
+    // final prefs = await SharedPreferences.getInstance();
+    // if (ref != null && productId != null) {
+    //   await prefs.setString('referral_code', ref);
+    //   await prefs.setString('referred_product_id', productId);
+    // } else {
+    //   await prefs.remove('referral_code');
+    //   await prefs.remove('referred_product_id');
+    // }
     notifyListeners();
   }
 
   Future<void> loadReferral() async {
-    final prefs = await SharedPreferences.getInstance();
-    _refCode = prefs.getString('referral_code');
-    _referredProductId = prefs.getString('referred_product_id');
+    // Commented out loading referral from SharedPreferences to keep it in-memory session only.
+    // final prefs = await SharedPreferences.getInstance();
+    // _refCode = prefs.getString('referral_code');
+    // _referredProductId = prefs.getString('referred_product_id');
     notifyListeners();
   }
 

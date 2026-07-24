@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
@@ -39,12 +40,14 @@ class _HeroSectionState extends State<HeroSection> {
                   title: 'SALE UP TO 50% OFF',
                   subtitle: "They're built to save energy, they help to clean up every door.",
                   imageUrl: 'assets/images/modern_furniture_hero.png',
+                  link: '/shop',
                 ),
                 const HeroMainBanner(
                   title: 'NEW ARRIVALS',
                   subtitle: "Explore our latest collection of premium office furniture.",
                   imageUrl: 'assets/images/modern_furniture_hero.png',
                   badgeText: 'New ✨',
+                  link: '/shop',
                 ),
               ]
             : mainBanners.map((banner) => HeroMainBanner(
@@ -52,12 +55,16 @@ class _HeroSectionState extends State<HeroSection> {
                 subtitle: banner.subtitle,
                 imageUrl: banner.imageUrl,
                 badgeText: banner.tag,
+                link: banner.link,
               )).toList();
 
         return CenteredContent(
           horizontalPadding: isMobile ? 16 : 40,
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 32),
+            padding: EdgeInsets.only(
+              top: isMobile ? 24 : 40,
+              bottom: isMobile ? 24 : 48,
+            ),
             child: Column(
               children: [
                 if (isMobile || isTablet)
@@ -75,7 +82,8 @@ class _HeroSectionState extends State<HeroSection> {
                                 subtitle: sideTop.subtitle,
                                 imageUrl: sideTop.imageUrl,
                                 badgeText: sideTop.tag.isEmpty ? 'Trending' : sideTop.tag,
-                                badgeColor: const Color(0xFFF01B6B),
+                                badgeColor: AppColors.primaryPink,
+                                link: sideTop.link,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -87,6 +95,7 @@ class _HeroSectionState extends State<HeroSection> {
                                 imageUrl: sideBottom.imageUrl,
                                 badgeText: sideBottom.tag.isEmpty ? 'Premium' : sideBottom.tag,
                                 badgeColor: const Color(0xFF00B4D8),
+                                link: sideBottom.link,
                               ),
                             ),
                           ],
@@ -102,7 +111,8 @@ class _HeroSectionState extends State<HeroSection> {
                                   subtitle: sideTop.subtitle,
                                   imageUrl: sideTop.imageUrl,
                                   badgeText: sideTop.tag.isEmpty ? 'Trending' : sideTop.tag,
-                                  badgeColor: const Color(0xFFF01B6B),
+                                  badgeColor: AppColors.primaryPink,
+                                  link: sideTop.link,
                                 ),
                               ),
                             ),
@@ -116,6 +126,7 @@ class _HeroSectionState extends State<HeroSection> {
                                   imageUrl: sideBottom.imageUrl,
                                   badgeText: sideBottom.tag.isEmpty ? 'Premium' : sideBottom.tag,
                                   badgeColor: const Color(0xFF00B4D8),
+                                  link: sideBottom.link,
                                 ),
                               ),
                             ),
@@ -146,7 +157,8 @@ class _HeroSectionState extends State<HeroSection> {
                                   subtitle: sideTop.subtitle,
                                   imageUrl: sideTop.imageUrl,
                                   badgeText: sideTop.tag.isEmpty ? 'Trending' : sideTop.tag,
-                                  badgeColor: const Color(0xFFF01B6B),
+                                  badgeColor: AppColors.primaryPink,
+                                  link: sideTop.link,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -157,6 +169,7 @@ class _HeroSectionState extends State<HeroSection> {
                                   imageUrl: sideBottom.imageUrl,
                                   badgeText: sideBottom.tag.isEmpty ? 'Premium' : sideBottom.tag,
                                   badgeColor: const Color(0xFF00B4D8),
+                                  link: sideBottom.link,
                                 ),
                               ),
                             ],
@@ -165,8 +178,7 @@ class _HeroSectionState extends State<HeroSection> {
                       ],
                     ),
                   ),
-                
-                const SizedBox(height: 32),
+                SizedBox(height: 20),
                 const GiftPromoStrip(),
               ],
             ),
@@ -213,7 +225,7 @@ class _HeroSectionState extends State<HeroSection> {
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white.withOpacity(isActive ? 0.9 : 0.4),
+                    color: AppColors.white.withOpacity(isActive ? 0.9 : 0.4),
                   ),
                 ),
               );

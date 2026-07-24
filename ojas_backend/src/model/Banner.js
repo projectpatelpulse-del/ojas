@@ -23,7 +23,7 @@ const bannerSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["main", "main_slider_1", "main_slider_2", "side_top", "side_bottom", "offer", "trending", "promo"],
+            enum: ["main", "main_slider", "side_top", "side_bottom", "offer", "trending", "promo", "summer_sale", "become_vendor", "gift_promo_strip", "how_it_works", "b2b_partner"],
             default: "main",
         },
         isActive: {

@@ -18,11 +18,14 @@ class _ProductsPageState extends State<ProductsPage> {
   bool _isGridView = true;
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _products = [];
+  List<dynamic> _filteredProducts = [];
   bool _isLoading = true;
+  String _selectedFilter = 'All';
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_onSearchChanged);
     _fetchProducts();
   }
 
@@ -37,14 +40,17 @@ class _ProductsPageState extends State<ProductsPage> {
       int lowStock = 0;
       
       for (var p in products) {
-        if (p['status'] == 'Active' || p['status'] == 'Published') active++;
-        if ((p['stock'] ?? 0) < 30) lowStock++;
+        final status = p['status'] ?? 'Draft';
+        if (status == 'Active' || status == 'Published') active++;
+        final threshold = p['lowStockThreshold'] ?? 5;
+        if ((p['stock'] ?? 0) <= threshold) lowStock++;
       }
 
       setState(() {
         _products = products;
         _activeCount = active;
         _lowStockCount = lowStock;
+        _onSearchChanged();
       });
     } catch (e) {
       if (mounted) {
@@ -98,8 +104,38 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+    setState(() {
+      _filteredProducts = _products.where((product) {
+        final status = (product['status'] ?? '').toString();
+        final stock = product['stock'] ?? 0;
+        final threshold = product['lowStockThreshold'] ?? 5;
+
+        bool matchesFilter = true;
+        if (_selectedFilter == 'Active') {
+          matchesFilter = (status == 'Active' || status == 'Published');
+        } else if (_selectedFilter == 'Inactive') {
+          matchesFilter = (status == 'Archived' || status == 'Inactive');
+        } else if (_selectedFilter == 'Draft') {
+          matchesFilter = (status == 'Draft');
+        } else if (_selectedFilter == 'Low Stock') {
+          matchesFilter = (stock <= threshold);
+        }
+
+        if (!matchesFilter) return false;
+
+        final name = (product['name'] ?? '').toString().toLowerCase();
+        final category = (product['category'] ?? '').toString().toLowerCase();
+        final sku = (product['sku'] ?? '').toString().toLowerCase();
+        return name.contains(query) || category.contains(query) || sku.contains(query);
+      }).toList();
+    });
+  }
+
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -280,12 +316,14 @@ class _ProductsPageState extends State<ProductsPage> {
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              _buildFilterChips(),
+              const SizedBox(height: 12),
 
               // Product List/Grid Area
               if (_isLoading)
                 const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()))
-              else if (_products.isEmpty)
+              else if (_filteredProducts.isEmpty)
                 Container(
                   height: 280,
                   decoration: BoxDecoration(
@@ -304,40 +342,42 @@ class _ProductsPageState extends State<ProductsPage> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.inventory_2_outlined,
+                            _searchController.text.isNotEmpty ? Icons.search_off_outlined : Icons.inventory_2_outlined,
                             size: 40,
                             color: Colors.grey.shade400,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No products found',
+                          _searchController.text.isNotEmpty ? 'No products match your search' : 'No products found',
                           style: GoogleFonts.outfit(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () => context.go('/products/add'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: Text(
-                            'Add Your First Product',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                        if (_searchController.text.isEmpty) ...[
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () => context.go('/products/add'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: Text(
+                              'Add Your First Product',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -378,6 +418,64 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 
+  Widget _buildFilterChips() {
+    int allCount = _products.length;
+    int activeCount = _products.where((p) => p['status'] == 'Active' || p['status'] == 'Published').length;
+    int inactiveCount = _products.where((p) => p['status'] == 'Archived' || p['status'] == 'Inactive').length;
+    int draftCount = _products.where((p) => p['status'] == 'Draft').length;
+    int lowStockCount = _products.where((p) => (p['stock'] ?? 0) <= (p['lowStockThreshold'] ?? 5)).length;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _filterChip('All', allCount),
+          const SizedBox(width: 10),
+          _filterChip('Active', activeCount),
+          const SizedBox(width: 10),
+          _filterChip('Inactive', inactiveCount),
+          const SizedBox(width: 10),
+          _filterChip('Draft', draftCount),
+          const SizedBox(width: 10),
+          _filterChip('Low Stock', lowStockCount),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterChip(String label, int count) {
+    final isSelected = _selectedFilter == label;
+    return ChoiceChip(
+      label: Text(
+        "$label ($count)",
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          color: isSelected ? Colors.white : AppColors.textPrimary,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          setState(() {
+            _selectedFilter = label;
+            _onSearchChanged();
+          });
+        }
+      },
+      selectedColor: AppColors.primary,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : Colors.grey.shade300,
+          width: 1,
+        ),
+      ),
+      showCheckmark: false,
+    );
+  }
+
   Widget _buildGridView() {
     return GridView.builder(
       shrinkWrap: true,
@@ -388,9 +486,9 @@ class _ProductsPageState extends State<ProductsPage> {
         mainAxisSpacing: 20,
         childAspectRatio: 0.75,
       ),
-      itemCount: _products.length,
+      itemCount: _filteredProducts.length,
       itemBuilder: (context, index) {
-        final product = _products[index];
+        final product = _filteredProducts[index];
         return GestureDetector(
           onTap: () => context.go('/products/add', extra: product),
           child: Container(
@@ -553,7 +651,7 @@ class _ProductsPageState extends State<ProductsPage> {
                   const DataColumn(label: Text('Status')),
                   const DataColumn(label: Text('Action')),
                 ],
-                rows: _products.map((product) {
+                rows: _filteredProducts.map((product) {
                   final int stock = product['stock'] ?? 0;
                   final bool isLowStock = stock < 30;
                   final List variations = product['variations'] ?? [];

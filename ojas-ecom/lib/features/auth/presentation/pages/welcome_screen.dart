@@ -65,7 +65,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       Text(
                         'Welcome Back,',
                         style: GoogleFonts.spectral(
-                          color: Colors.white54,
+                          color: AppColors.white54,
                           fontSize: 24,
                           letterSpacing: 2,
                         ),
@@ -74,7 +74,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       Text(
                         widget.user.name.toUpperCase(),
                         style: GoogleFonts.spectral(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 60,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 4,
@@ -93,7 +93,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       Text(
                         'Ready to explore the marketplace?',
                         style: GoogleFonts.poppins(
-                          color: Colors.white38,
+                          color: AppColors.white38,
                           fontSize: 16,
                           fontStyle: FontStyle.italic,
                         ),

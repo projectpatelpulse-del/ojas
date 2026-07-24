@@ -30,6 +30,15 @@ class HomeController with ChangeNotifier {
       _products.where((p) => _containsPage(p, 'Deals')).toList();
   List<dynamic> get shopProducts =>
       _products.where((p) => _containsPage(p, 'Shop')).toList();
+  List<dynamic> get trendingProducts =>
+      _products.where((p) => _containsPage(p, 'Trending')).toList();
+  List<dynamic> get dailyDealsProducts =>
+      _products.where((p) => _containsPage(p, 'Daily Deals') || _containsPage(p, 'Deals')).toList();
+  List<dynamic> get justForYouProducts =>
+      _products.where((p) => _containsPage(p, 'Just For You')).toList();
+  List<dynamic> get latestProducts =>
+      _products.where((p) => _containsPage(p, 'Latest Products')).toList();
+
 
   bool _containsPage(dynamic p, String page) {
     final pages = p['showOnPages'];
@@ -46,8 +55,7 @@ class HomeController with ChangeNotifier {
       .where(
         (b) =>
             b.type == 'main' ||
-            b.type == 'main_slider_1' ||
-            b.type == 'main_slider_2',
+            b.type == 'main_slider',
       )
       .toList();
   BannerModel get sideTopBanner => _banners.firstWhere(
@@ -66,10 +74,18 @@ class HomeController with ChangeNotifier {
     (b) => b.type == 'trending',
     orElse: () => _defaultTrendingBanner,
   );
+  BannerModel get summerSaleBanner => _banners.firstWhere(
+    (b) => b.type == 'summer_sale',
+    orElse: () => _defaultSummerSaleBanner,
+  );
+  BannerModel get becomeVendorBanner => _banners.firstWhere(
+    (b) => b.type == 'become_vendor',
+    orElse: () => _defaultBecomeVendorBanner,
+  );
   List<BannerModel> get promoBanners =>
       _banners.where((b) => b.type == 'promo').toList();
 
-  final _defaultSideTop = BannerModel(
+  static final _defaultSideTop = BannerModel(
     id: 'default_top',
     title: 'COLORFUL PILLOWS',
     subtitle: 'Starts at ₹299',
@@ -79,7 +95,7 @@ class HomeController with ChangeNotifier {
     type: 'side_top',
   );
 
-  final _defaultSideBottom = BannerModel(
+  static final _defaultSideBottom = BannerModel(
     id: 'default_bottom',
     title: 'INTERIOR DESIGN',
     subtitle: '₹499',
@@ -89,7 +105,7 @@ class HomeController with ChangeNotifier {
     type: 'side_bottom',
   );
 
-  final _defaultOfferBanner = BannerModel(
+  static final _defaultOfferBanner = BannerModel(
     id: 'default_offer',
     title: 'Get 50% OFF Your First Order',
     subtitle:
@@ -100,7 +116,7 @@ class HomeController with ChangeNotifier {
     type: 'offer',
   );
 
-  final _defaultTrendingBanner = BannerModel(
+  static final _defaultTrendingBanner = BannerModel(
     id: 'default_trending',
     title: 'ARMCHAIR FURNITURE',
     subtitle: 'up to 50% OFF',
@@ -109,6 +125,26 @@ class HomeController with ChangeNotifier {
     link: '/',
     tag: 'Trending',
     type: 'trending',
+  );
+
+  static final _defaultSummerSaleBanner = BannerModel(
+    id: 'default_summer_sale',
+    title: 'Summer Sale - Up to 50% Off on Selected Items',
+    subtitle: 'Hot Deal',
+    imageUrl: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400',
+    link: '/shop',
+    tag: 'Hot Deal',
+    type: 'summer_sale',
+  );
+
+  static final _defaultBecomeVendorBanner = BannerModel(
+    id: 'default_become_vendor',
+    title: 'Become a Vendor.\nGrow Your Business With Us.',
+    subtitle: 'Get your storefront, reach millions of customers, and enjoy fast payouts, promotion tools, and dedicated support.',
+    imageUrl: 'https://ik.imagekit.io/xgdosezi9/banners/banner_1781869135292__XRIzd1zQ.png',
+    link: '/become-vendor',
+    tag: '20% FLAT DISCOUNT',
+    type: 'become_vendor',
   );
 
   Future<void> init() async {

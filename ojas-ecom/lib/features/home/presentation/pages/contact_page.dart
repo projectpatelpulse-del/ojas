@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -90,7 +91,7 @@ class _ContactPageState extends State<ContactPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Ticket #${result['data']['ticketId']} raised successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.successGreen,
         ),
       );
       // Automatically switch to track tickets
@@ -100,7 +101,7 @@ class _ContactPageState extends State<ContactPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Failed to raise ticket'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.errorRed,
         ),
       );
     }
@@ -235,13 +236,13 @@ class _ContactPageState extends State<ContactPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white : Colors.transparent,
+          color: isActive ? AppColors.white : AppColors.transparent,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: isActive ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)] : null,
+          boxShadow: isActive ? [BoxShadow(color: AppColors.black.withOpacity(0.1), blurRadius: 4)] : null,
         ),
         child: Row(
           children: [
-            Icon(icon, color: isActive ? const Color(0xFFF01B6B) : const Color(0xFF64748B), size: 20),
+            Icon(icon, color: isActive ? AppColors.primaryPink : const Color(0xFF64748B), size: 20),
             const SizedBox(width: 8),
             Text(
               label,
@@ -263,16 +264,16 @@ class _ContactPageState extends State<ContactPage> {
       constraints: const BoxConstraints(maxWidth: 800),
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 20)],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(color: Color(0xFFFFF1F2), shape: BoxShape.circle),
-            child: const Icon(Icons.email_outlined, color: Color(0xFFF01B6B), size: 40),
+            child: const Icon(Icons.email_outlined, color: AppColors.primaryPink, size: 40),
           ),
           const SizedBox(height: 32),
           Text(
@@ -295,7 +296,7 @@ class _ContactPageState extends State<ContactPage> {
             ),
             child: SelectableText(
               settings.contactEmail,
-              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFFF01B6B)),
+              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPink),
             ),
           ),
           const SizedBox(height: 40),
@@ -307,8 +308,8 @@ class _ContactPageState extends State<ContactPage> {
               icon: const Icon(Icons.open_in_new_rounded, size: 18),
               label: Text('Open Email App', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF01B6B),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primaryPink,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
@@ -329,9 +330,9 @@ class _ContactPageState extends State<ContactPage> {
       constraints: const BoxConstraints(maxWidth: 1000),
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 20)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,7 +350,7 @@ class _ContactPageState extends State<ContactPage> {
               ),
               IconButton(
                 onPressed: _fetchMyTickets,
-                icon: Icon(_fetchingTickets ? Icons.sync : Icons.refresh, color: const Color(0xFFF01B6B)),
+                icon: Icon(_fetchingTickets ? Icons.sync : Icons.refresh, color: AppColors.primaryPink),
                 tooltip: 'Refresh',
               ),
             ],
@@ -381,7 +382,7 @@ class _ContactPageState extends State<ContactPage> {
       constraints: const BoxConstraints(maxWidth: 800),
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -419,13 +420,13 @@ class _ContactPageState extends State<ContactPage> {
         padding: const EdgeInsets.symmetric(vertical: 40),
         child: Column(
           children: [
-            Icon(Icons.confirmation_number_outlined, size: 48, color: Colors.grey.shade300),
+            Icon(Icons.confirmation_number_outlined, size: 48, color: AppColors.grey300),
             const SizedBox(height: 16),
-            Text('No tickets found', style: GoogleFonts.inter(color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+            Text('No tickets found', style: GoogleFonts.inter(color: AppColors.grey500, fontWeight: FontWeight.w500)),
             const SizedBox(height: 24),
             TextButton(
               onPressed: () => setState(() => _activeOption = 1),
-              child: Text('Raise a New Ticket', style: GoogleFonts.inter(color: const Color(0xFFF01B6B), fontWeight: FontWeight.bold)),
+              child: Text('Raise a New Ticket', style: GoogleFonts.inter(color: AppColors.primaryPink, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -437,11 +438,11 @@ class _ContactPageState extends State<ContactPage> {
     final status = ticket['status'] ?? 'Open';
     Color statusColor;
     switch (status) {
-      case 'Open': statusColor = Colors.blue; break;
+      case 'Open': statusColor = AppColors.blue500; break;
       case 'In Progress': statusColor = Colors.orange; break;
-      case 'Resolved': statusColor = Colors.green; break;
-      case 'Closed': statusColor = Colors.grey; break;
-      default: statusColor = Colors.blue;
+      case 'Resolved': statusColor = AppColors.successGreen; break;
+      case 'Closed': statusColor = AppColors.grey; break;
+      default: statusColor = AppColors.blue500;
     }
 
     final responses = (ticket['responses'] as List?) ?? [];
@@ -449,7 +450,7 @@ class _ContactPageState extends State<ContactPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -514,7 +515,7 @@ class _ContactPageState extends State<ContactPage> {
                 
                 if (responses.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  Text('Admin Response:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFFF01B6B))),
+                  Text('Admin Response:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primaryPink)),
                   const SizedBox(height: 12),
                   ...responses.where((r) => r['sender'] == 'Admin').map((r) => Container(
                     padding: const EdgeInsets.all(16),
@@ -545,15 +546,15 @@ class _ContactPageState extends State<ContactPage> {
                   const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: AppColors.green50, borderRadius: BorderRadius.circular(8)),
                     child: Row(
                       children: [
-                        const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        const Icon(Icons.check_circle, color: AppColors.successGreen, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'This issue has been marked as resolved.',
-                            style: GoogleFonts.inter(fontSize: 13, color: Colors.green.shade800, fontWeight: FontWeight.w500),
+                            style: GoogleFonts.inter(fontSize: 13, color: AppColors.green800, fontWeight: FontWeight.w500),
                           ),
                         ),
                       ],
@@ -578,9 +579,9 @@ class _ContactPageState extends State<ContactPage> {
       constraints: const BoxConstraints(maxWidth: 1000),
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 20)],
       ),
       child: Form(
         key: _formKey,
@@ -632,12 +633,12 @@ class _ContactPageState extends State<ContactPage> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _submitTicket,
                 icon: _isLoading 
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
                     : const Icon(Icons.send_rounded, size: 18),
                 label: Text(_isLoading ? 'Submitting...' : 'Submit Ticket', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF01B6B),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primaryPink,
+                  foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
@@ -665,7 +666,7 @@ class _ContactPageState extends State<ContactPage> {
             hintText: hint,
             hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 14),
             filled: true,
-            fillColor: readOnly ? const Color(0xFFF1F5F9) : Colors.white,
+            fillColor: readOnly ? const Color(0xFFF1F5F9) : AppColors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -676,7 +677,7 @@ class _ContactPageState extends State<ContactPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFF01B6B)),
+              borderSide: const BorderSide(color: AppColors.primaryPink),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -694,7 +695,7 @@ class _ContactPageState extends State<ContactPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
@@ -702,7 +703,7 @@ class _ContactPageState extends State<ContactPage> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              dropdownColor: Colors.white,
+              dropdownColor: AppColors.white,
               style: GoogleFonts.inter(color: const Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.w500),
               items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: GoogleFonts.inter(color: const Color(0xFF0F172A))))).toList(),
               onChanged: onChanged,
@@ -732,21 +733,21 @@ class _ContactPageState extends State<ContactPage> {
       width: isMobile ? double.infinity : 280,
       padding: EdgeInsets.all(isMobile ? 24 : 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(color: Color(0xFFFFF1F2), shape: BoxShape.circle),
-            child: Icon(icon, color: const Color(0xFFF01B6B), size: 24),
+            child: Icon(icon, color: AppColors.primaryPink, size: 24),
           ),
           const SizedBox(height: 20),
           Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
           const SizedBox(height: 8),
-          Text(value, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFFF01B6B))),
+          Text(value, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primaryPink)),
           const SizedBox(height: 4),
           Text(subtitle, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
         ],
@@ -759,9 +760,9 @@ class _ContactPageState extends State<ContactPage> {
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20)],
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 20)],
       ),
       child: Column(
         children: [

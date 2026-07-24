@@ -96,7 +96,7 @@ class DeliveryChallanHelper {
                         pw.SizedBox(height: 4),
                         pw.Text(userName, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
                         pw.Text(shippingStr, style: const pw.TextStyle(fontSize: 9)),
-                        pw.Text('Mobile: $userMobile', style: const pw.TextStyle(fontSize: 9)),
+                        // pw.Text('Mobile: $userMobile', style: const pw.TextStyle(fontSize: 9)),
                       ],
                     ),
                   ),

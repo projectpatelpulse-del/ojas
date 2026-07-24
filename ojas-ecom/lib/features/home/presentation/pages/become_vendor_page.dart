@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
@@ -166,7 +167,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
           content: Text(
             'Please agree to the Terms & Conditions and Privacy Policy to proceed.',
           ),
-          backgroundColor: Color(0xFFF01B6B),
+          backgroundColor: AppColors.primaryPink,
         ),
       );
       return;
@@ -177,7 +178,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+        child: CircularProgressIndicator(color: AppColors.primaryPink),
       ),
     );
 
@@ -266,14 +267,14 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF01B6B).withOpacity(0.1),
+                  color: AppColors.primaryPink.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'OTP: $otp',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFF01B6B),
+                    color: AppColors.primaryPink,
                     fontSize: 16,
                   ),
                 ),
@@ -311,7 +312,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
                 context: context,
                 barrierDismissible: false,
                 builder: (context) => const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+                  child: CircularProgressIndicator(color: AppColors.primaryPink),
                 ),
               );
 
@@ -360,8 +361,8 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF01B6B),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryPink,
+              foregroundColor: AppColors.white,
             ),
             child: const Text('Verify'),
           ),
@@ -376,7 +377,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+        child: CircularProgressIndicator(color: AppColors.primaryPink),
       ),
     );
 
@@ -489,107 +490,192 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isMobile = Responsive.isMobile(context);
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 1100;
+    final Color ojasMaroon = const Color(0xFF5C0B1B);
+    final double containerHeight = (screenWidth / 1.77).clamp(800.0, 1080.0);
+
+    Widget formContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _toggleMode(false),
+                  child: _ToggleButton(
+                    title: 'Become a Vendor',
+                    isActive: !_isLogin,
+                    fullWidth: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _toggleMode(true),
+                  child: _ToggleButton(
+                    title: 'Login',
+                    isActive: _isLogin,
+                    fullWidth: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _isLogin
+              ? _buildLoginForm(isMobile)
+              : _buildRegistrationFlow(isMobile),
+        ),
+      ],
+    );
+
+    if (isMobile) {
+      return OjasLayout(
+        activeTitle: 'BECOME VENDOR',
+        child: Container(
+          color: const Color(0xFFFBECEB),
+          padding: const EdgeInsets.symmetric(vertical: 32),
+          child: CenteredContent(
+            horizontalPadding: 16,
+            child: Column(
+              children: [
+                if (!_isLogin)
+                  Text(
+                    'Become a vendor',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: ojasMaroon,
+                    ),
+                  ),
+                if (!_isLogin) const SizedBox(height: 12),
+                Text(
+                  _isLogin
+                      ? 'Access your vendor dashboard to manage your products, orders, and business analytics.'
+                      : 'Join thousands of successful vendors and grow your business with us.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: const Color(0xFF475569),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                formContent,
+                const SizedBox(height: 60),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return OjasLayout(
       activeTitle: 'BECOME VENDOR',
       child: Container(
-        color: const Color(0xFFF8FAFC),
-        padding: EdgeInsets.symmetric(vertical: isMobile ? 32 : 80),
-        child: CenteredContent(
-          horizontalPadding: isMobile ? 16 : 40,
-          child: Column(
-            children: [
-              if (!_isLogin)
-                Text(
-                  'Become a vendor',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    fontSize: isMobile ? 32 : 48,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
+        width: double.infinity,
+        height: containerHeight,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/auth.png'),
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Spacer(flex: 58),
+            Expanded(
+              flex: 38,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 450),
+                    child: formContent,
                   ),
                 ),
-              if (!_isLogin) SizedBox(height: isMobile ? 12 : 16),
-              Text(
-                _isLogin
-                    ? 'Access your vendor dashboard to manage your products, orders, and business analytics.'
-                    : 'Join thousands of successful vendors and grow your business with us.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: isMobile ? 15 : 18,
-                  color: const Color(0xFF475569),
-                  height: 1.5,
-                ),
               ),
-              SizedBox(height: isMobile ? 32 : 48),
-
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Flex(
-                  direction: isMobile ? Axis.vertical : Axis.horizontal,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () => _toggleMode(false),
-                      child: _ToggleButton(
-                        title: 'Become a Vendor',
-                        isActive: !_isLogin,
-                        fullWidth: isMobile,
-                      ),
-                    ),
-                    if (isMobile) const SizedBox(height: 4),
-                    GestureDetector(
-                      onTap: () => _toggleMode(true),
-                      child: _ToggleButton(
-                        title: 'Login',
-                        isActive: _isLogin,
-                        fullWidth: isMobile,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: isMobile ? 40 : 60),
-
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _isLogin
-                    ? _buildLoginForm(isMobile)
-                    : _buildRegistrationFlow(isMobile),
-              ),
-
-              SizedBox(height: isMobile ? 60 : 100),
-            ],
-          ),
+            ),
+            const Spacer(flex: 4),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildLoginForm(bool isMobile) {
+    final Color ojasMaroon = const Color(0xFF5C0B1B);
+
+    Widget formFields = Column(
+      children: [
+        _FormField(
+          label: 'Email Address *',
+          hintText: 'demo@example.com',
+          controller: _loginEmailController,
+        ),
+        const SizedBox(height: 12),
+        _FormField(
+          label: 'Password *',
+          hintText: '••••••••',
+          isPassword: true,
+          isObscured: _obscureLoginPassword,
+          onToggleVisibility: () =>
+              setState(() => _obscureLoginPassword = !_obscureLoginPassword),
+          controller: _loginPasswordController,
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: _loginVendor,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ojasMaroon,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Sign In',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (!isMobile) {
+      return formFields;
+    }
+
     return Container(
-      width: isMobile ? double.infinity : 500,
-      padding: EdgeInsets.all(isMobile ? 24 : 48),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: AppColors.black.withOpacity(0.03),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -598,79 +684,73 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
       child: Column(
         children: [
           CircleAvatar(
-            radius: isMobile ? 32 : 40,
-            backgroundColor: const Color(0xFFFCE7F3),
+            radius: 32,
+            backgroundColor: const Color(0xFFFBECEB),
             child: Icon(
               Icons.person_outline,
-              size: isMobile ? 28 : 36,
-              color: const Color(0xFFF01B6B),
+              size: 28,
+              color: ojasMaroon,
             ),
           ),
           const SizedBox(height: 24),
           Text(
             'Vendor Login',
             style: GoogleFonts.outfit(
-              fontSize: isMobile ? 24 : 28,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF0F172A),
+              color: ojasMaroon,
             ),
           ),
           const SizedBox(height: 32),
-          _FormField(
-            label: 'Email Address *',
-            hintText: 'demo@example.com',
-            controller: _loginEmailController,
-          ),
-          const SizedBox(height: 20),
-          _FormField(
-            label: 'Password *',
-            hintText: '••••••••',
-            isPassword: true,
-            isObscured: _obscureLoginPassword,
-            onToggleVisibility: () =>
-                setState(() => _obscureLoginPassword = !_obscureLoginPassword),
-            controller: _loginPasswordController,
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _loginVendor,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF01B6B),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Sign In',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          TextButton(
-            onPressed: () => _toggleMode(false),
-            child: Text(
-              'New here? Become a Vendor',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFF01B6B),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          formFields,
         ],
       ),
     );
   }
 
   Widget _buildRegistrationFlow(bool isMobile) {
+    final Color ojasMaroon = const Color(0xFF5C0B1B);
+
+    Widget formContent = Column(
+      children: [
+        if (isMobile)
+          _MobileProgress(currentStep: _currentStep)
+        else
+          _DesktopProgress(currentStep: _currentStep),
+        const SizedBox(height: 12),
+        const Divider(),
+        const SizedBox(height: 12),
+        _buildStepContent(isMobile),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentStep > 0)
+              _NavBtn(
+                label: 'Back',
+                icon: Icons.arrow_back,
+                onPressed: _previousStep,
+                isPrimary: false,
+              )
+            else
+              const SizedBox(),
+            _NavBtn(
+              label: _currentStep == 4 ? 'Submit Application' : 'Next',
+              icon: _currentStep == 4 ? Icons.check_circle_outline : Icons.arrow_forward,
+              onPressed: _nextStep,
+              isPrimary: true,
+              color: _currentStep == 4 ? const Color(0xFF10B981) : ojasMaroon,
+              textColor: AppColors.white,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    if (!isMobile) {
+      return formContent;
+    }
+
     return ListenableBuilder(
       listenable: HomeController.instance,
       builder: (context, _) {
@@ -701,57 +781,15 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
                 ),
               ],
             ),
-            SizedBox(height: isMobile ? 40 : 60),
+            const SizedBox(height: 24),
             Container(
-              padding: EdgeInsets.all(isMobile ? 20 : 40),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
-              child: Column(
-                children: [
-                  if (isMobile)
-                    _MobileProgress(currentStep: _currentStep)
-                  else
-                    _DesktopProgress(currentStep: _currentStep),
-                  SizedBox(height: isMobile ? 32 : 48),
-                  const Divider(),
-                  SizedBox(height: isMobile ? 32 : 48),
-                  _buildStepContent(isMobile),
-                  const SizedBox(height: 48),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_currentStep > 0)
-                        _NavBtn(
-                          label: 'Back',
-                          icon: Icons.arrow_back,
-                          onPressed: _previousStep,
-                          isPrimary: false,
-                        )
-                      else
-                        const SizedBox(),
-                      _NavBtn(
-                        label: _currentStep == 4
-                            ? 'Submit Application'
-                            : 'Next',
-                        icon: _currentStep == 4
-                            ? Icons.check_circle_outline
-                            : Icons.arrow_forward,
-                        onPressed: _nextStep,
-                        isPrimary: true,
-                        color: _currentStep == 4
-                            ? const Color(0xFF86EFAC)
-                            : const Color(0xFFF01B6B),
-                        textColor: _currentStep == 4
-                            ? Colors.white
-                            : Colors.white,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              child: formContent,
             ),
           ],
         );
@@ -779,80 +817,95 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
     }
   }
 
+  Widget _buildResponsiveRow(bool isMobile, List<Widget> children, {double spacing = 24}) {
+    if (isMobile) {
+      final List<Widget> columnChildren = [];
+      for (int i = 0; i < children.length; i++) {
+        columnChildren.add(children[i]);
+        if (i < children.length - 1) {
+          columnChildren.add(SizedBox(height: spacing / 2));
+        }
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: columnChildren,
+      );
+    }
+    
+    final List<Widget> rowChildren = [];
+    for (int i = 0; i < children.length; i++) {
+      rowChildren.add(Expanded(child: children[i]));
+      if (i < children.length - 1) {
+        rowChildren.add(SizedBox(width: spacing));
+      }
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: rowChildren,
+    );
+  }
+
   Widget _buildPersonalInfo(bool isMobile) {
+    final double spacing = isMobile ? 24 : 10;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Personal Information',
-          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: _FormField(
-                label: 'First Name *',
-                hintText: 'First Name',
-                controller: _firstNameController,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Required' : null,
-              ),
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: _FormField(
-                label: 'Last Name *',
-                hintText: 'Last Name',
-                controller: _lastNameController,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Required' : null,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: _FormField(
-                label: 'Email Address *',
-                hintText: 'Email Address',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Required';
-                  if (!RegExp(
-                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                  ).hasMatch(val)) {
-                    return 'Enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: _FormField(
-                label: 'Phone Number *',
-                hintText: '1234567890',
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                prefixText: '+91 ',
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                ],
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Required';
-                  if (val.length != 10) return 'Must be 10 digits';
-                  return null;
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
+        SizedBox(height: spacing),
+        _buildResponsiveRow(isMobile, [
+          _FormField(
+            label: 'First Name *',
+            hintText: 'First Name',
+            controller: _firstNameController,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Required' : null,
+          ),
+          _FormField(
+            label: 'Last Name *',
+            hintText: 'Last Name',
+            controller: _lastNameController,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Required' : null,
+          ),
+        ], spacing: spacing),
+        SizedBox(height: spacing),
+        _buildResponsiveRow(isMobile, [
+          _FormField(
+            label: 'Email Address *',
+            hintText: 'Email Address',
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Required';
+              if (!RegExp(
+                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+              ).hasMatch(val)) {
+                return 'Enter a valid email';
+              }
+              return null;
+            },
+          ),
+          _FormField(
+            label: 'Phone Number *',
+            hintText: '1234567890',
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            prefixText: '+91 ',
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Required';
+              if (val.length != 10) return 'Must be 10 digits';
+              return null;
+            },
+          ),
+        ], spacing: spacing),
+        SizedBox(height: spacing),
         _FormField(
           label: 'Password *',
           hintText: 'Create a strong password',
@@ -884,99 +937,83 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
   }
 
   Widget _buildBusinessInfo(bool isMobile) {
+    final double spacing = isMobile ? 24 : 10;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Business Information',
-          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: _FormField(
-                label: 'Business Name *',
-                hintText: 'Enter business name',
-                controller: _businessNameController,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Required' : null,
-              ),
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: _DropdownField(
-                label: 'Business Type *',
-                items: const [
-                  'Select type',
-                  'Individual',
-                  'Partnership',
-                  'LLC',
-                  'Corporation',
-                  'Other',
-                ],
-                value: _businessType,
-                onChanged: (val) => setState(() => _businessType = val!),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
+        SizedBox(height: spacing),
+        _buildResponsiveRow(isMobile, [
+          _FormField(
+            label: 'Business Name *',
+            hintText: 'Enter business name',
+            controller: _businessNameController,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Required' : null,
+          ),
+          _DropdownField(
+            label: 'Business Type *',
+            items: const [
+              'Select type',
+              'Individual',
+              'Partnership',
+              'LLC',
+              'Corporation',
+              'Other',
+            ],
+            value: _businessType,
+            onChanged: (val) => setState(() => _businessType = val!),
+          ),
+        ], spacing: spacing),
+        SizedBox(height: spacing),
         _FormField(
           label: 'Business Website (Optional)',
           hintText: 'https://www.example.com',
           controller: _websiteController,
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: spacing),
         _FormField(
           label: 'Business Address *',
           hintText: 'Enter street address',
           controller: _addressController,
           validator: (val) => val == null || val.isEmpty ? 'Required' : null,
         ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            Expanded(
-              child: _FormField(
-                label: 'City *',
-                hintText: 'City',
-                controller: _cityController,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Required' : null,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _FormField(
-                label: 'State *',
-                hintText: 'State',
-                controller: _stateController,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Required' : null,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _FormField(
-                label: 'Zip Code *',
-                hintText: 'Zip Code',
-                controller: _zipCodeController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(6),
-                ],
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Required';
-                  if (val.length != 6) return 'Must be 6 digits';
-                  return null;
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
+        SizedBox(height: spacing),
+        _buildResponsiveRow(isMobile, [
+          _FormField(
+            label: 'City *',
+            hintText: 'City',
+            controller: _cityController,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Required' : null,
+          ),
+          _FormField(
+            label: 'State *',
+            hintText: 'State',
+            controller: _stateController,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Required' : null,
+          ),
+          _FormField(
+            label: 'Zip Code *',
+            hintText: 'Zip Code',
+            controller: _zipCodeController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Required';
+              if (val.length != 6) return 'Must be 6 digits';
+              return null;
+            },
+          ),
+        ], spacing: spacing),
+        SizedBox(height: spacing),
         _FormField(
           label: 'Business Description',
           hintText: 'Briefly describe your business...',
@@ -1009,7 +1046,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             border: Border.all(
-              color: _showCategoryError ? Colors.red : const Color(0xFFE2E8F0),
+              color: _showCategoryError ? AppColors.errorRed : const Color(0xFFE2E8F0),
             ),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -1042,7 +1079,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
             padding: const EdgeInsets.only(top: 8, left: 4),
             child: Text(
               'Please select at least one category',
-              style: GoogleFonts.inter(color: Colors.red, fontSize: 12),
+              style: GoogleFonts.inter(color: AppColors.errorRed, fontSize: 12),
             ),
           ),
         const SizedBox(height: 24),
@@ -1167,14 +1204,15 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
   }
 
   Widget _buildDocumentsInfo(bool isMobile) {
+    final double spacing = isMobile ? 24 : 10;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Required Documents',
-          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: spacing),
         _DashedUploadBox(
           label: 'Business License/Registration/GST Certificate *',
           hint:
@@ -1183,8 +1221,8 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
           onTap: _pickFile,
           hasError: _showFileError,
         ),
-        const SizedBox(height: 24),
-        if (isMobile) ...[
+        SizedBox(height: spacing),
+        _buildResponsiveRow(isMobile, [
           _FormField(
             label: 'GST Number *',
             hintText: 'Enter GST number',
@@ -1199,106 +1237,37 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
               return null;
             },
           ),
-          const SizedBox(height: 24),
           _FormField(
             label: 'Bank Name *',
             hintText: 'Enter bank name',
             controller: _bankNameController,
             validator: (val) => val == null || val.isEmpty ? 'Required' : null,
           ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _FormField(
-                  label: 'Account Number *',
-                  hintText: 'Enter account number',
-                  controller: _bankAccountController,
-                  keyboardType: TextInputType.number,
-                  validator: (val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _FormField(
-                  label: 'IFSC Code *',
-                  hintText: 'Enter IFSC code',
-                  controller: _ifscController,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Required';
-                    if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(val)) {
-                      return 'Enter a valid IFSC code e.g. SBIN0000001';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ],
+        ], spacing: spacing),
+        SizedBox(height: spacing),
+        _buildResponsiveRow(isMobile, [
+          _FormField(
+            label: 'Bank Account Number *',
+            hintText: 'Enter full bank account number',
+            controller: _bankAccountController,
+            keyboardType: TextInputType.number,
+            validator: (val) =>
+                val == null || val.isEmpty ? 'Required' : null,
           ),
-        ] else ...[
-          Row(
-            children: [
-              Expanded(
-                child: _FormField(
-                  label: 'GST Number *',
-                  hintText: 'Enter GST number',
-                  controller: _gstController,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Required';
-                    if (!RegExp(
-                      r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
-                    ).hasMatch(val)) {
-                      return 'Enter a valid GST number e.g. 29ABCDE1234F1Z5';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: _FormField(
-                  label: 'Bank Name *',
-                  hintText: 'Enter bank name',
-                  controller: _bankNameController,
-                  validator: (val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
-                ),
-              ),
-            ],
+          _FormField(
+            label: 'IFSC Code *',
+            hintText: 'Enter IFSC code',
+            controller: _ifscController,
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Required';
+              if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(val)) {
+                return 'Enter a valid IFSC code e.g. SBIN0000001';
+              }
+              return null;
+            },
           ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _FormField(
-                  label: 'Bank Account Number *',
-                  hintText: 'Enter full bank account number',
-                  controller: _bankAccountController,
-                  keyboardType: TextInputType.number,
-                  validator: (val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: _FormField(
-                  label: 'IFSC Code *',
-                  hintText: 'Enter IFSC code',
-                  controller: _ifscController,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Required';
-                    if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(val)) {
-                      return 'Enter a valid IFSC code e.g. SBIN0000001';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-        const SizedBox(height: 32),
+        ], spacing: spacing),
+        SizedBox(height: spacing),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -1378,7 +1347,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
               child: Checkbox(
                 value: _agreedToTerms,
                 onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
-                activeColor: const Color(0xFFF01B6B),
+                activeColor: AppColors.primaryPink,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -1399,7 +1368,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
                       TextSpan(
                         text: 'Terms & Conditions',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFFF01B6B),
+                          color: AppColors.primaryPink,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1407,7 +1376,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
                       TextSpan(
                         text: 'Privacy Policy',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFFF01B6B),
+                          color: AppColors.primaryPink,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -1429,7 +1398,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
                 value: _agreedToMarketing,
                 onChanged: (v) =>
                     setState(() => _agreedToMarketing = v ?? false),
-                activeColor: const Color(0xFFF01B6B),
+                activeColor: AppColors.primaryPink,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -1497,7 +1466,7 @@ class _ToggleButton extends StatelessWidget {
       width: fullWidth ? double.infinity : 200,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFF01B6B) : Colors.transparent,
+        color: isActive ? AppColors.primaryPink : AppColors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       alignment: Alignment.center,
@@ -1506,7 +1475,7 @@ class _ToggleButton extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : const Color(0xFF64748B),
+          color: isActive ? AppColors.white : const Color(0xFF64748B),
         ),
       ),
     );
@@ -1531,13 +1500,13 @@ class _BenefitCard extends StatelessWidget {
       width: isMobile ? double.infinity : 220,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFFF01B6B), size: 32),
+          Icon(icon, color: AppColors.primaryPink, size: 32),
           const SizedBox(height: 16),
           Text(
             title,
@@ -1568,28 +1537,23 @@ class _DesktopProgress extends StatelessWidget {
   static const steps = [
     {
       'icon': Icons.person_outline,
-      'title': 'Personal Info',
-      'desc': 'Your personal details',
+      'title': 'Personal',
     },
     {
       'icon': Icons.domain,
-      'title': 'Business Info',
-      'desc': 'Business information',
+      'title': 'Business',
     },
     {
       'icon': Icons.inventory_2_outlined,
       'title': 'Products',
-      'desc': 'Product details',
     },
     {
       'icon': Icons.description_outlined,
       'title': 'Documents',
-      'desc': 'Required documents',
     },
     {
       'icon': Icons.check_circle_outline,
       'title': 'Review',
-      'desc': 'Review & submit',
     },
   ];
 
@@ -1599,12 +1563,13 @@ class _DesktopProgress extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(
         5,
-        (index) => _StepIcon(
-          index: index,
-          active: currentStep >= index,
-          icon: steps[index]['icon'] as IconData,
-          title: steps[index]['title'] as String,
-          desc: steps[index]['desc'] as String,
+        (index) => Expanded(
+          child: _StepIcon(
+            index: index,
+            active: currentStep >= index,
+            icon: steps[index]['icon'] as IconData,
+            title: steps[index]['title'] as String,
+          ),
         ),
       ),
     );
@@ -1617,6 +1582,7 @@ class _MobileProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color ojasMaroon = const Color(0xFF5C0B1B);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
@@ -1626,7 +1592,7 @@ class _MobileProgress extends StatelessWidget {
           child: CircleAvatar(
             radius: 4,
             backgroundColor: currentStep >= index
-                ? const Color(0xFFF01B6B)
+                ? ojasMaroon
                 : const Color(0xFFE2E8F0),
           ),
         ),
@@ -1640,46 +1606,38 @@ class _StepIcon extends StatelessWidget {
   final bool active;
   final IconData icon;
   final String title;
-  final String desc;
 
   const _StepIcon({
     required this.index,
     required this.active,
     required this.icon,
     required this.title,
-    required this.desc,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color ojasMaroon = const Color(0xFF5C0B1B);
     return Column(
       children: [
         CircleAvatar(
           radius: 24,
           backgroundColor: active
-              ? const Color(0xFFF01B6B)
+              ? ojasMaroon
               : const Color(0xFFF1F5F9),
           child: Icon(
             icon,
-            color: active ? Colors.white : const Color(0xFF64748B),
+            color: active ? AppColors.white : const Color(0xFF64748B),
             size: 24,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           title,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: active ? const Color(0xFFF01B6B) : const Color(0xFF0F172A),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          desc,
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 12,
-            color: const Color(0xFF64748B),
+            color: active ? ojasMaroon : const Color(0xFF0F172A),
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ],
@@ -1726,7 +1684,7 @@ class _DashedUploadBox extends StatelessWidget {
             ),
             child: CustomPaint(
               painter: _DashPainter(
-                color: hasError ? Colors.red : const Color(0xFFCBD5E1),
+                color: hasError ? AppColors.errorRed : const Color(0xFFCBD5E1),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1734,14 +1692,14 @@ class _DashedUploadBox extends StatelessWidget {
                   Icon(
                     Icons.cloud_upload_outlined,
                     size: 54,
-                    color: hasError ? Colors.red : _hintColor(),
+                    color: hasError ? AppColors.errorRed : _hintColor(),
                   ),
                   const SizedBox(height: 20),
                   Text(
                     hint,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: hasError ? Colors.red : _hintColor(),
+                      color: hasError ? AppColors.errorRed : _hintColor(),
                       fontWeight: _selectedFileName()
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -1751,11 +1709,11 @@ class _DashedUploadBox extends StatelessWidget {
                   ElevatedButton(
                     onPressed: onTap,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppColors.white,
                       foregroundColor: const Color(0xFF0F172A),
                       side: const BorderSide(color: Color(0xFFE2E8F0)),
                       elevation: 0,
-                      shadowColor: Colors.transparent,
+                      shadowColor: AppColors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -1783,7 +1741,7 @@ class _DashedUploadBox extends StatelessWidget {
 
   Color _hintColor() {
     return _selectedFileName()
-        ? const Color(0xFFF01B6B)
+        ? AppColors.primaryPink
         : const Color(0xFF64748B);
   }
 
@@ -1857,7 +1815,7 @@ class _DropdownField extends StatelessWidget {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: value ?? items.first,
-          dropdownColor: Colors.white,
+          dropdownColor: AppColors.white,
           icon: const Icon(Icons.expand_more, color: Color(0xFF64748B)),
           items: items
               .map(
@@ -1881,7 +1839,7 @@ class _DropdownField extends StatelessWidget {
               vertical: 14,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -1893,7 +1851,7 @@ class _DropdownField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(
-                color: Color(0xFFF01B6B),
+                color: AppColors.primaryPink,
                 width: 1.5,
               ),
             ),
@@ -1959,7 +1917,7 @@ class _DocumentUploadField extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
@@ -1996,7 +1954,7 @@ class _DocumentUploadField extends StatelessWidget {
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.white,
               foregroundColor: const Color(0xFF0F172A),
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -2059,7 +2017,7 @@ class _FormField extends StatelessWidget {
             color: const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         TextFormField(
           controller: controller,
           obscureText: isPassword && isObscured,
@@ -2098,11 +2056,11 @@ class _FormField extends StatelessWidget {
                   )
                 : null,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
+              horizontal: 12,
+              vertical: 10,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -2114,17 +2072,17 @@ class _FormField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(
-                color: Color(0xFFF01B6B),
+                color: Color(0xFF5C0B1B),
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 1),
+              borderSide: const BorderSide(color: AppColors.errorRed, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              borderSide: const BorderSide(color: AppColors.errorRed, width: 1.5),
             ),
           ),
         ),
@@ -2155,11 +2113,11 @@ class _NavBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = isDisabled
-        ? Colors.grey.shade300
-        : (color ?? (isPrimary ? const Color(0xFFF01B6B) : Colors.white));
+        ? AppColors.grey300
+        : (color ?? (isPrimary ? AppColors.primaryPink : AppColors.white));
     final fgColor = isDisabled
-        ? Colors.grey.shade500
-        : (textColor ?? (isPrimary ? Colors.white : const Color(0xFF0F172A)));
+        ? AppColors.grey500
+        : (textColor ?? (isPrimary ? AppColors.white : const Color(0xFF0F172A)));
 
     return ElevatedButton.icon(
       onPressed: isDisabled ? null : onPressed,
@@ -2168,15 +2126,15 @@ class _NavBtn extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: bgColor,
         foregroundColor: fgColor,
-        disabledBackgroundColor: Colors.grey.shade200,
-        disabledForegroundColor: Colors.grey.shade500,
+        disabledBackgroundColor: AppColors.grey200,
+        disabledForegroundColor: AppColors.grey500,
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: BorderSide(
             color: isPrimary || isDisabled
-                ? Colors.transparent
+                ? AppColors.transparent
                 : const Color(0xFFE2E8F0),
           ),
         ),

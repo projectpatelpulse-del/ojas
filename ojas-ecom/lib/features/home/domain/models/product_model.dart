@@ -33,48 +33,73 @@ class ProductAttributes {
 
 class ProductVariation {
   final String id;
+  final String? title;
   final String? size;
   final String? color;
   final String? material;
   final double price;
+  final double? oldPrice;
   final int stock;
+  final double? weight;
+  final String? weightStr;
   final String? sku;
   final String? image;
+  final List<String> images;
 
   ProductVariation({
     required this.id,
+    this.title,
     this.size,
     this.color,
     this.material,
     required this.price,
+    this.oldPrice,
     required this.stock,
+    this.weight,
+    this.weightStr,
     this.sku,
     this.image,
+    this.images = const [],
   });
 
   factory ProductVariation.fromMap(Map<String, dynamic> map) {
+    List<String> parsedImages = [];
+    if (map['images'] != null && map['images'] is List) {
+      parsedImages = (map['images'] as List)
+          .map((e) => ApiService.formatImageUrl(e.toString()))
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
     return ProductVariation(
       id: map['_id'] ?? '',
+      title: map['title'],
       size: map['size'],
       color: map['color'],
       material: map['material'],
-      price: _toDouble(map['price']),
+      price: _toDouble(map['price']).ceilToDouble(),
+      oldPrice: map['oldPrice'] != null ? _toDouble(map['oldPrice']).ceilToDouble() : null,
       stock: _toInt(map['stock']),
+      weight: _toDouble(map['weight']),
+      weightStr: map['weight']?.toString(),
       sku: map['sku'],
       image: map['image'] != null && map['image'].toString().isNotEmpty
           ? ApiService.formatImageUrl(map['image'].toString())
-          : null,
+          : (parsedImages.isNotEmpty ? parsedImages[0] : null),
+      images: parsedImages,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       '_id': id,
+      'title': title,
       'size': size,
       'color': color,
       'material': material,
       'price': price,
+      'oldPrice': oldPrice,
       'stock': stock,
+      'weight': weightStr ?? weight,
       'sku': sku,
       'image': image,
     };
@@ -219,6 +244,7 @@ class ProductModel {
   final String status;
   final String visibility;
   final double moqDiscount;
+  final String moqTiers;
   final List<String> showOnPages;
   
   // Pricing calculation fields
@@ -270,6 +296,7 @@ class ProductModel {
     this.status = 'Draft',
     this.visibility = 'Public',
     this.moqDiscount = 0,
+    this.moqTiers = '',
     this.showOnPages = const ['Shop'],
     this.originalPrice,
     this.commissionPercent,
@@ -281,8 +308,8 @@ class ProductModel {
     double discountPrice = _toDouble(p['discountPrice'] ?? 0);
     double regularPrice = _toDouble(p['price'] ?? 0);
 
-    double price = discountPrice > 0 ? discountPrice : regularPrice;
-    double? oldPrice = discountPrice > 0 ? regularPrice : null;
+    double price = (discountPrice > 0 ? discountPrice : regularPrice).ceilToDouble();
+    double? oldPrice = discountPrice > 0 ? regularPrice.ceilToDouble() : null;
     int disc = (oldPrice != null && oldPrice > price)
         ? (((oldPrice - price) / oldPrice) * 100).toInt()
         : 0;
@@ -321,6 +348,15 @@ class ProductModel {
       try {
         variations = (p['variations'] as List).map((e) => ProductVariation.fromMap(Map<String, dynamic>.from(e))).toList();
       } catch (_) {}
+    }
+
+    if (variations.isNotEmpty) {
+      final firstVar = variations.first;
+      price = firstVar.price;
+      oldPrice = firstVar.oldPrice;
+      disc = (oldPrice != null && oldPrice > price)
+          ? (((oldPrice - price) / oldPrice) * 100).toInt()
+          : 0;
     }
 
     ProductAttributes attributes = ProductAttributes.fromMap(
@@ -381,6 +417,7 @@ class ProductModel {
       status: p['status'] ?? 'Draft',
       visibility: p['visibility'] ?? 'Public',
       moqDiscount: _toDouble(p['moqDiscount']),
+      moqTiers: p['moqTiers']?.toString() ?? '',
       showOnPages: (p['showOnPages'] as List?)?.map((e) => e.toString()).toList() ?? ['Shop'],
       originalPrice: _toDouble(p['originalPrice']),
       commissionPercent: _toDouble(p['commissionPercent']),

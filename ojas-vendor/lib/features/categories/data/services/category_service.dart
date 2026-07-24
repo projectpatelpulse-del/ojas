@@ -16,4 +16,16 @@ class CategoryService {
       rethrow;
     }
   }
+
+  Future<List<dynamic>> getPublicCategories() async {
+    try {
+      final response = await _apiService.dio.get(
+        '/home/categories',
+        queryParameters: {'type': 'approved'},
+      );
+      return response.data['data'] as List<dynamic>;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

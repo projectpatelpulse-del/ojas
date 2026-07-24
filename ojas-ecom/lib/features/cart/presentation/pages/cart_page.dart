@@ -29,11 +29,11 @@ class _CartPageState extends State<CartPage> {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 800),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: AppColors.black.withOpacity(0.04),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -46,7 +46,7 @@ class _CartPageState extends State<CartPage> {
                   return const SizedBox(
                     height: 400,
                     child: Center(
-                      child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+                      child: CircularProgressIndicator(color: AppColors.primaryPink),
                     ),
                   );
                 }
@@ -71,12 +71,12 @@ class _CartPageState extends State<CartPage> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: const BoxDecoration(
-                              color: Color(0xFFF01B6B),
+                              color: AppColors.primaryPink,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
                               Icons.shopping_bag_outlined,
-                              color: Colors.white,
+                              color: AppColors.white,
                               size: 24,
                             ),
                           ),
@@ -90,14 +90,14 @@ class _CartPageState extends State<CartPage> {
                                   style: GoogleFonts.outfit(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: AppColors.black87,
                                   ),
                                 ),
                                 Text(
                                   '${items.length} items in your shopping bag',
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
-                                    color: Colors.grey[500],
+                                    color: AppColors.grey[500],
                                   ),
                                 ),
                               ],
@@ -144,7 +144,7 @@ class _CartPageState extends State<CartPage> {
                           _buildSummaryRow(
                             'Tax',
                             '\u20b9${controller.tax.ceil()}',
-                            valueColor: Colors.grey[400]!,
+                            valueColor: AppColors.grey[400]!,
                           ),
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -158,7 +158,7 @@ class _CartPageState extends State<CartPage> {
                                 style: GoogleFonts.outfit(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: AppColors.black87,
                                 ),
                               ),
                               Text(
@@ -188,7 +188,7 @@ class _CartPageState extends State<CartPage> {
                                           content: Text(
                                             '${p['name']} requires a minimum order quantity of $moq',
                                           ),
-                                          backgroundColor: Colors.red,
+                                          backgroundColor: AppColors.errorRed,
                                         ),
                                       );
                                     }
@@ -204,8 +204,8 @@ class _CartPageState extends State<CartPage> {
                                 );
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFF01B6B),
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppColors.primaryPink,
+                                foregroundColor: AppColors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 18),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -245,7 +245,12 @@ class _CartPageState extends State<CartPage> {
     final product = item['product'];
     if (product == null) return const SizedBox();
 
-    final String name = product['name'] ?? 'Product';
+    final variation = item['variation'];
+    final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
+    String name = product['name'] ?? 'Product';
+    if (variation != null && variation['title'] != null && variation['title'].toString().trim().isNotEmpty) {
+      name = "$name - ${variation['title']}";
+    }
     double price =
         (product['discountPrice'] != null && product['discountPrice'] > 0
                 ? product['discountPrice']
@@ -257,9 +262,31 @@ class _CartPageState extends State<CartPage> {
 
     final int moq = product['moq'] ?? 1;
     final double moqDiscount = (product['moqDiscount'] ?? 0).toDouble();
+    final String moqTiers = product['moqTiers']?.toString() ?? '';
 
-    if (quantity >= moq && moqDiscount > 0) {
-      price = price - (price * (moqDiscount / 100));
+    double appliedDiscount = moqDiscount;
+    if (moqTiers.isNotEmpty) {
+      double matchedDiscount = 0.0;
+      int highestQty = 0;
+      final parts = moqTiers.split(',');
+      for (var part in parts) {
+        final subParts = part.trim().split(':');
+        if (subParts.length == 2) {
+          final q = int.tryParse(subParts[0].trim()) ?? 0;
+          final d = double.tryParse(subParts[1].replaceAll('%', '').trim()) ?? 0.0;
+          if (quantity >= q && q > highestQty) {
+            highestQty = q;
+            matchedDiscount = d;
+          }
+        }
+      }
+      if (highestQty > 0) {
+        appliedDiscount = matchedDiscount;
+      }
+    }
+
+    if ((quantity >= moq && appliedDiscount > 0) || (moqTiers.isNotEmpty && appliedDiscount > 0)) {
+      price = price - (price * (appliedDiscount / 100));
     }
     price = price.roundToDouble();
 
@@ -275,12 +302,29 @@ class _CartPageState extends State<CartPage> {
     final double priceFontSize = isMobile ? 15.0 : 18.0;
     final double oldPriceFontSize = isMobile ? 12.0 : 14.0;
 
+    String? variationText;
+    if (variation != null) {
+      final List<String> parts = [];
+      if (variation['size'] != null && variation['size'].toString().trim().isNotEmpty) {
+        parts.add('Size: ${variation['size']}');
+      }
+      if (variation['color'] != null && variation['color'].toString().trim().isNotEmpty) {
+        parts.add('Color: ${variation['color']}');
+      }
+      if (variation['material'] != null && variation['material'].toString().trim().isNotEmpty) {
+        parts.add('Material: ${variation['material']}');
+      }
+      if (parts.isNotEmpty) {
+        variationText = parts.join(' | ');
+      }
+    }
+
     return Container(
       padding: EdgeInsets.all(paddingVal),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.grey[200]!),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +353,7 @@ class _CartPageState extends State<CartPage> {
                     child: Text(
                       '$discount%',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                       ),
@@ -330,9 +374,20 @@ class _CartPageState extends State<CartPage> {
                   style: GoogleFonts.inter(
                     fontSize: titleFontSize,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: AppColors.black87,
                   ),
                 ),
+                if (variationText != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    variationText,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: AppColors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 6),
                 Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
@@ -344,7 +399,7 @@ class _CartPageState extends State<CartPage> {
                       style: GoogleFonts.hind(
                         fontSize: priceFontSize,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: AppColors.black87,
                       ),
                     ),
                     if (oldPrice > price)
@@ -352,13 +407,13 @@ class _CartPageState extends State<CartPage> {
                         '\u20b9${oldPrice.ceil()}',
                         style: GoogleFonts.hind(
                           fontSize: oldPriceFontSize,
-                          color: Colors.grey[400],
+                          color: AppColors.grey[400],
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
                   ],
                 ),
-                if (quantity >= moq && moqDiscount > 0) ...[
+                if ((quantity >= moq && appliedDiscount > 0) || (moqTiers.isNotEmpty && appliedDiscount > 0)) ...[
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -371,7 +426,7 @@ class _CartPageState extends State<CartPage> {
                       border: Border.all(color: const Color(0xFFC8E6C9)),
                     ),
                     child: Text(
-                      'Includes ${moqDiscount.toInt()}% MOQ Discount',
+                      'Includes ${appliedDiscount.toInt()}% MOQ Discount',
                       style: GoogleFonts.inter(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -385,17 +440,18 @@ class _CartPageState extends State<CartPage> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: AppColors.grey[300]!),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
                           _quantityButton(Icons.remove, () {
-                            final int moq = product['moq'] ?? 1;
+                            final int moq = product['moq'] != null ? (product['moq'] as num).toInt() : 1;
                             if (quantity > moq) {
                               CartController.instance.addToCart(
                                 product['_id'],
                                 quantity: -1,
+                                variationId: variationId,
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -421,6 +477,7 @@ class _CartPageState extends State<CartPage> {
                             CartController.instance.addToCart(
                               product['_id'],
                               quantity: 1,
+                              variationId: variationId,
                             );
                           }),
                         ],
@@ -434,7 +491,7 @@ class _CartPageState extends State<CartPage> {
                         size: 20,
                       ),
                       onPressed: () {
-                        CartController.instance.removeFromCart(product['_id']);
+                        CartController.instance.removeFromCart(product['_id'], variationId: variationId);
                       },
                     ),
                   ],
@@ -452,7 +509,7 @@ class _CartPageState extends State<CartPage> {
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.all(4.0),
-        child: Icon(icon, size: 16, color: Colors.grey[600]),
+        child: Icon(icon, size: 16, color: AppColors.grey[600]),
       ),
     );
   }
@@ -465,7 +522,7 @@ class _CartPageState extends State<CartPage> {
           label,
           style: GoogleFonts.inter(
             fontSize: 15,
-            color: label == 'You saved' || label == 'Shipping' ? const Color(0xFF2E7D32) : Colors.grey[700],
+            color: label == 'You saved' || label == 'Shipping' ? const Color(0xFF2E7D32) : AppColors.grey[700],
           ),
         ),
         Text(
@@ -473,7 +530,7 @@ class _CartPageState extends State<CartPage> {
           style: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: label == 'Total Amount' ? FontWeight.bold : FontWeight.w500,
-            color: valueColor ?? Colors.black87,
+            color: valueColor ?? AppColors.black87,
           ),
         ),
       ],
@@ -487,13 +544,13 @@ class _CartPageState extends State<CartPage> {
         Container(
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: AppColors.grey[100],
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.shopping_bag_outlined,
             size: 60,
-            color: Colors.grey[400],
+            color: AppColors.grey[400],
           ),
         ),
         const SizedBox(height: 24),
@@ -502,20 +559,20 @@ class _CartPageState extends State<CartPage> {
           style: GoogleFonts.outfit(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: AppColors.black87,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           'Add some products to get started',
-          style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[500]),
+          style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[500]),
         ),
         const SizedBox(height: 32),
         ElevatedButton(
           onPressed: () => Navigator.pushReplacementNamed(context, '/'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF01B6B),
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.primaryPink,
+            foregroundColor: AppColors.white,
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

@@ -30,7 +30,7 @@ class FeaturedHeader extends StatelessWidget {
             fontSize: 42,
             fontWeight: FontWeight.bold,
             letterSpacing: -1,
-            color: Colors.black87,
+            color: AppColors.black87,
           ),
         ),
         const SizedBox(height: 12),
@@ -43,7 +43,7 @@ class FeaturedHeader extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: AppColors.grey[600],
               height: 1.6,
             ),
           ),
@@ -54,12 +54,12 @@ class FeaturedHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.borderLight),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: AppColors.black.withOpacity(0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -73,7 +73,7 @@ class FeaturedHeader extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
+                  color: AppColors.grey[700],
                 ),
               ),
               Row(
@@ -101,16 +101,16 @@ class _ViewToggleButton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFF01B6B) : Colors.transparent,
+        color: isActive ? AppColors.primaryPink : AppColors.transparent,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isActive ? const Color(0xFFF01B6B) : AppColors.borderLight,
+          color: isActive ? AppColors.primaryPink : AppColors.borderLight,
         ),
       ),
       child: Icon(
         icon,
         size: 18,
-        color: isActive ? Colors.white : Colors.grey[600],
+        color: isActive ? AppColors.white : AppColors.grey[600],
       ),
     );
   }

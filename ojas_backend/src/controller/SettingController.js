@@ -17,12 +17,17 @@ const defaultSettings = {
   returnRefundPolicy: "",
   termsConditions: "",
   privacyPolicy: "",
+  aboutUsContent: "",
   facebookLink: "",
   instagramLink: "",
   twitterLink: "",
   youtubeLink: "",
   linkedinLink: "",
   defaultCommission: 10,
+  navigationMenuItems: 'HOME, FEATURES, DEALS, SHOP, BLOG',
+  homeSectionsActive: 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE',
+  showTrendingProducts: true,
+  showTrendingB2BBanner: true,
   trendingCategories: 'All, Pet Supplies, Jewelry & Accessories, Industrial Parts & Tools, Books & Stationery, Toys & Games',
   serviceCard1Title: 'FREE DELIVERY',
   serviceCard1Subtitle: 'From ₹89.00',
@@ -36,6 +41,7 @@ const defaultSettings = {
   serviceCard4Title: '24/7 SUPPORT',
   serviceCard4Subtitle: 'Dedicated Support',
   serviceCard4Icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
+  whatsappNumber: '',
 };
 
 // Helper to get or create the singleton setting document
@@ -99,6 +105,7 @@ const updateSettings = async (req, res) => {
       returnRefundPolicy,
       termsConditions,
       privacyPolicy,
+      aboutUsContent,
       facebookLink,
       instagramLink,
       twitterLink,
@@ -110,7 +117,13 @@ const updateSettings = async (req, res) => {
       emailUser,
       emailPass,
       whatsappToken,
+      whatsappNumber,
       geminiApiKey,
+      openAiApiKey,
+      navigationMenuItems,
+      homeSectionsActive,
+      showTrendingProducts,
+      showTrendingB2BBanner,
       trendingCategories,
       serviceCard1Title,
       serviceCard1Subtitle,
@@ -145,13 +158,20 @@ const updateSettings = async (req, res) => {
     if (returnRefundPolicy !== undefined) setting.returnRefundPolicy = returnRefundPolicy;
     if (termsConditions !== undefined) setting.termsConditions = termsConditions;
     if (privacyPolicy !== undefined) setting.privacyPolicy = privacyPolicy;
+    if (aboutUsContent !== undefined) setting.aboutUsContent = aboutUsContent;
     if (facebookLink !== undefined) setting.facebookLink = facebookLink;
     if (instagramLink !== undefined) setting.instagramLink = instagramLink;
     if (twitterLink !== undefined) setting.twitterLink = twitterLink;
     if (youtubeLink !== undefined) setting.youtubeLink = youtubeLink;
     if (linkedinLink !== undefined) setting.linkedinLink = linkedinLink;
     if (geminiApiKey !== undefined) setting.geminiApiKey = geminiApiKey;
+    if (openAiApiKey !== undefined) setting.openAiApiKey = openAiApiKey;
+    if (navigationMenuItems !== undefined) setting.navigationMenuItems = navigationMenuItems;
+    if (homeSectionsActive !== undefined) setting.homeSectionsActive = homeSectionsActive;
+    if (showTrendingProducts !== undefined) setting.showTrendingProducts = showTrendingProducts;
+    if (showTrendingB2BBanner !== undefined) setting.showTrendingB2BBanner = showTrendingB2BBanner;
     if (trendingCategories !== undefined) setting.trendingCategories = trendingCategories;
+    if (whatsappNumber !== undefined) setting.whatsappNumber = whatsappNumber;
     
     if (serviceCard1Title !== undefined) setting.serviceCard1Title = serviceCard1Title;
     if (serviceCard1Subtitle !== undefined) setting.serviceCard1Subtitle = serviceCard1Subtitle;

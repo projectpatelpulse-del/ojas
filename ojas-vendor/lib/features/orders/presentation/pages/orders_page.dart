@@ -54,9 +54,24 @@ class _OrdersPageState extends State<OrdersPage> {
         body: ListenableBuilder(
           listenable: _controller,
           builder: (context, _) {
+            final query = _searchController.text.trim().toLowerCase();
             final orders = _controller.orders.where((o) {
-               if (_selectedStatus == 'All Status') return true;
-               return o['status'] == _selectedStatus;
+               // 1. Status Filter
+               if (_selectedStatus != 'All Status') {
+                 final status = o['status'].toString().toUpperCase();
+                 final selected = _selectedStatus.toUpperCase();
+                 if (status != selected) return false;
+               }
+               // 2. Search Query Filter
+               if (query.isNotEmpty) {
+                 final orderId = (o['orderId'] ?? '').toString().toLowerCase();
+                 final customerName = (o['user'] != null ? o['user']['name'] ?? '' : '').toString().toLowerCase();
+                 final items = o['items'] as List? ?? [];
+                 final productNames = items.map((item) => (item['name'] ?? '').toString().toLowerCase()).join(' ');
+                 
+                 return orderId.contains(query) || customerName.contains(query) || productNames.contains(query);
+               }
+               return true;
             }).toList();
 
             return SingleChildScrollView(

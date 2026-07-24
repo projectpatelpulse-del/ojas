@@ -31,7 +31,7 @@ class TopBrandsSection extends StatelessWidget {
                     width: 160,
                     margin: const EdgeInsets.only(right: 24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.borderLight),
                     ),

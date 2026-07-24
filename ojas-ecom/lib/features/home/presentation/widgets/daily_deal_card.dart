@@ -23,154 +23,149 @@ class DailyDealCard extends StatelessWidget {
         final Widget content = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Category/Brand Label
+            Text(
+              (product.brand ?? product.category ?? 'Ojas Premium').toUpperCase(),
+              style: GoogleFonts.inter(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF94A3B8),
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 5),
+
+            // Product Name
             Text(
               product.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            // Description
+            Text(
+              product.shortDescription ?? 'Premium quality guaranteed. High durability and modern design.',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: AppColors.textPrimary,
+                color: const Color(0xFF64748B), 
+                fontSize: 12,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
+            const SizedBox(height: 12),
+            
+            // Pricing Block
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  '₹${product.price.ceil()}',
+                  style: GoogleFonts.outfit(
+                    color: AppColors.primaryPink,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                if (product.oldPrice != null) ...[
+                  const SizedBox(width: 8),
                   Text(
-                    '₹${product.price.ceil()}',
+                    '₹${product.oldPrice!.ceil()}',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFFF01B6B),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                      color: const Color(0xFF94A3B8),
+                      decoration: TextDecoration.lineThrough,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  if (product.oldPrice != null)
-                    Text(
-                      '₹${product.oldPrice!.ceil()}',
-                      style: GoogleFonts.inter(
-                        color: Colors.grey,
-                        decoration: TextDecoration.lineThrough,
-                        fontSize: 14,
-                      ),
-                    ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Premium quality guaranteed. High durability and modern design.',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(color: Colors.grey, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            
-            // Progress Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(child: Text('Available: ${product.available}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
-                const SizedBox(width: 8),
-                Flexible(child: Text('Sold: ${product.sold}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFF01B6B)), overflow: TextOverflow.ellipsis)),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.grey[200],
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF01B6B)),
-                minHeight: 6,
+                backgroundColor: const Color(0xFFF1F5F9),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryPink),
+                minHeight: 4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             
-            // Buttons
-            // Buttons
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                InkWell(
-                  onTap: () => Navigator.pushNamed(context, '/product-detail?id=${product.id}', arguments: product),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.remove_red_eye_outlined, size: 20, color: Colors.grey),
-                  ),
+            // Actions
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final success = await CartController.instance.addToCart(product.id);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(success ? '${product.name} added to cart' : 'Failed to add to cart. Please login first.'),
+                        backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.shopping_bag_outlined, size: 14, color: AppColors.white),
+                label: const Text('Add to Cart'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1E293B),
+                  foregroundColor: AppColors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final success = await CartController.instance.addToCart(product.id);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(success ? '${product.name} added to cart' : 'Failed to add to cart. Please login first.'),
-                          backgroundColor: success ? Colors.green : Colors.red,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF01B6B),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    minimumSize: const Size(100, 40),
-                  ),
-                  child: const FittedBox(
-                    child: Text(
-                      'Add to Cart', 
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         );
 
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderLight),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
+        return InkWell(
+          onTap: () => Navigator.pushNamed(
+            context,
+            '/product-detail?id=${product.id}',
+            arguments: product,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryPink.withOpacity(0.02),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: AppColors.black.withOpacity(0.01),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildImage(isWishlisted),
+                const SizedBox(height: 14),
+              content,
             ],
           ),
-          child: isMobile 
-            ? Column(
-                children: [
-                  _buildImage(isWishlisted),
-                  const SizedBox(height: 20),
-                  content,
-                ],
-              )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildImage(isWishlisted),
-                  const SizedBox(width: 24),
-                  Expanded(child: content),
-                ],
-              ),
-        );
+        ));
       },
     );
   }
@@ -179,45 +174,63 @@ class DailyDealCard extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          width: 180,
-          height: 180,
+          width: double.infinity,
+          height: 130,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            color: const Color(0xFFF8FAFC),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              product.imageUrl,
-              fit: BoxFit.contain,
-              errorBuilder: (context, _, __) => const Center(
-                child: Icon(Icons.image_not_supported_outlined, size: 40, color: Colors.grey),
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Image.network(
+                product.imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, _, __) => const Center(
+                  child: Icon(Icons.image_not_supported_outlined, size: 36, color: Color(0xFF94A3B8)),
+                ),
               ),
             ),
           ),
         ),
-        Positioned(
-          top: 12,
-          left: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF01B6B),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '-${product.discount}%',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+        
+        // Discount Badge
+        if (product.discount > 0)
+          Positioned(
+            top: 10,
+            left: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.errorRed.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Text(
+                '${product.discount}% OFF',
+                style: GoogleFonts.inter(
+                  color: AppColors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ),
-        ),
+          
+        // Wishlist Button
         Positioned(
-          top: 12,
-          right: 12,
+          top: 10,
+          right: 10,
           child: GestureDetector(
             onTap: () {
               final productMap = {
@@ -230,15 +243,21 @@ class DailyDealCard extends StatelessWidget {
             },
             child: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: AppColors.white,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.black.withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
-                isWishlisted ? Icons.favorite : Icons.favorite_border, 
-                size: 18, 
-                color: isWishlisted ? const Color(0xFFF01B6B) : Colors.grey,
+                isWishlisted ? Icons.favorite : Icons.favorite_border_rounded, 
+                size: 16, 
+                color: isWishlisted ? AppColors.primaryPink : const Color(0xFF94A3B8),
               ),
             ),
           ),

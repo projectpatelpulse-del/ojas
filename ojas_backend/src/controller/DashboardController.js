@@ -100,23 +100,33 @@ const getDashboardStats = async (req, res) => {
             },
             { $sort: { "_id": 1 } }
         ]);
+//  const trendingProducts = await Order.aggregate([
+//             { $match: { status: { $ne: "Cancelled" } } },
+//             { $unwind: "$items" },
+//             {
+//                 $group: {
+//                     _id: "$items.product",
+//                     name: { $first: "$items.name" },
+//                     image: { $first: "$items.image" },
+//                     count: { $sum: "$items.quantity" },
+//                     totalSales: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
+//                 }
+//             },
+//             { $sort: { count: -1 } },
+//             { $limit: 5 }
+//         ]);
+        // 4. Trending Products (Top 5 configured for Trending page)
+        const trendingProductsList = await Product.find({
+            showOnPages: { $in: ["Trending"] }
+        }).limit(5);
 
-        // 4. Trending Products (Top 5)
-        const trendingProducts = await Order.aggregate([
-            { $match: { status: { $ne: "Cancelled" } } },
-            { $unwind: "$items" },
-            {
-                $group: {
-                    _id: "$items.product",
-                    name: { $first: "$items.name" },
-                    image: { $first: "$items.image" },
-                    count: { $sum: "$items.quantity" },
-                    totalSales: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
-                }
-            },
-            { $sort: { count: -1 } },
-            { $limit: 5 }
-        ]);
+        const trendingProducts = trendingProductsList.map(p => ({
+            _id: p._id,
+            name: p.name,
+            image: p.image,
+            count: p.stock,
+            price: p.price
+        }));
 
         // 5. Top Revenue Vendors (Top 5)
         const topVendors = await Order.aggregate([

@@ -19,7 +19,7 @@ class ServiceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderLight),
       ),
@@ -29,7 +29,7 @@ class ServiceCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: AppColors.grey[50],
               shape: BoxShape.circle,
             ),
             child: Image.network(iconUrl, width: 32, height: 32, errorBuilder: (context, error, stackTrace) => const Icon(Icons.help_outline)),
@@ -56,7 +56,7 @@ class ServiceCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 11,
-              color: Colors.grey,
+              color: AppColors.grey,
             ),
           ),
         ],

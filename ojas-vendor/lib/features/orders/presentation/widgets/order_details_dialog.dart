@@ -510,8 +510,8 @@ class _OrderDetailsDialogState extends State<OrderDetailsDialog> {
                               children: [
                                 Text(widget.order['user'] != null ? widget.order['user']['name'] : 'Guest Customer', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13)),
                                 const SizedBox(height: 6),
-                                Text(widget.order['user'] != null ? widget.order['user']['email'] : '-', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
-                                Text(widget.order['user'] != null ? widget.order['user']['mobile'] : '-', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
+                                // Text(widget.order['user'] != null ? widget.order['user']['email'] : '-', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
+                                // Text(widget.order['user'] != null ? widget.order['user']['mobile'] : '-', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                                 const SizedBox(height: 8),
                                 const Divider(height: 1),
                                 const SizedBox(height: 8),

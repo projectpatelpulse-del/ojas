@@ -117,14 +117,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
             width: double.infinity,
             child: Column(
               children: [
-                Icon(Icons.location_off_outlined, size: 64, color: Colors.grey[300]),
+                Icon(Icons.location_off_outlined, size: 64, color: AppColors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   'No saved addresses found',
                   style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
+                    color: AppColors.grey[600],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -148,13 +148,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 padding: const EdgeInsets.all(24),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: Colors.grey[100]!)),
+                  color: AppColors.white,
+                  border: Border(top: BorderSide(color: AppColors.grey[100]!)),
                 ),
                 child: ElevatedButton(
                   onPressed: () => setState(() => _activeStep = 1),
                   style: ElevatedButton.styleFrom(
-backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Colors.white,
+backgroundColor: AppColors.primaryPink,                    foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
@@ -192,7 +192,7 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3), style: BorderStyle.solid),
         ),
@@ -227,7 +227,7 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
             children: [
               Text(
                 'Order confirmation email will be sent to ${SessionService.instance.currentUser?.email ?? 'your email'}',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                style: TextStyle(color: AppColors.grey[600], fontSize: 12),
               ),
               ElevatedButton(
                 onPressed: () => setState(() => _activeStep = 2),
@@ -238,7 +238,7 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
                 ),
                 child: const Text(
                   'CONTINUE',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -251,10 +251,55 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
   Widget _buildSummaryItem(dynamic item) {
     final product = item['product'];
     if (product == null) return const SizedBox();
+
+    double price =
+        (product['discountPrice'] != null && product['discountPrice'] > 0
+                ? product['discountPrice']
+                : (product['price'] ?? 0))
+            .toDouble();
+    final double oldPrice = (product['price'] ?? 0).toDouble();
+    final int quantity = item['quantity'] ?? 1;
+
+    final int moq = product['moq'] ?? 1;
+    final double moqDiscount = (product['moqDiscount'] ?? 0).toDouble();
+    final String moqTiers = product['moqTiers']?.toString() ?? '';
+
+    double appliedDiscount = moqDiscount;
+    if (moqTiers.isNotEmpty) {
+      double matchedDiscount = 0.0;
+      int highestQty = 0;
+      final parts = moqTiers.split(',');
+      for (var part in parts) {
+        final subParts = part.trim().split(':');
+        if (subParts.length == 2) {
+          final q = int.tryParse(subParts[0].trim()) ?? 0;
+          final d = double.tryParse(subParts[1].replaceAll('%', '').trim()) ?? 0.0;
+          if (quantity >= q && q > highestQty) {
+            highestQty = q;
+            matchedDiscount = d;
+          }
+        }
+      }
+      if (highestQty > 0) {
+        appliedDiscount = matchedDiscount;
+      }
+    }
+
+    if ((quantity >= moq && appliedDiscount > 0) || (moqTiers.isNotEmpty && appliedDiscount > 0)) {
+      price = price - (price * (appliedDiscount / 100));
+    }
+    price = price.roundToDouble();
+
+    final variation = item['variation'];
+    String name = product['name'] ?? 'Product';
+    if (variation != null && variation['title'] != null && variation['title'].toString().trim().isNotEmpty) {
+      name = "$name - ${variation['title']}";
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[100]!)),
+        border: Border(bottom: BorderSide(color: AppColors.grey[100]!)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,29 +319,40 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product['name'],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  name,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Seller: ${product['vendor'] ?? 'Ojas'}',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
-                      '\u20b9${(product['discountPrice'] ?? product['price'])}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      '\u20b9${price.ceil()}',
+                      style: GoogleFonts.hind(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: const Color(0xFF0F172A),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    if (product['discountPrice'] != null)
+                    if (oldPrice > price)
                       Text(
-                        '\u20b9${product['price']}',
-                        style: TextStyle(
-                          color: Colors.grey[500],
+                        '\u20b9${oldPrice.ceil()}',
+                        style: GoogleFonts.hind(
+                          color: const Color(0xFF94A3B8),
                           fontSize: 12,
                           decoration: TextDecoration.lineThrough,
                         ),
@@ -306,7 +362,13 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
               ],
             ),
           ),
-          Text('Qty: ${item['quantity']}'),
+          Text(
+            'Qty: $quantity',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF0F172A),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -341,13 +403,13 @@ backgroundColor: const Color(0xFFF01B6B),                    foregroundColor: Co
               onPressed: _isLoading ? null : _handlePlaceOrder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentOrange,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.white,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
               child: _isLoading 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

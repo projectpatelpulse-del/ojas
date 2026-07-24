@@ -200,8 +200,8 @@ class InvoiceService {
                             pw.SizedBox(height: 5),
                             pw.Text(customer['name'] ?? 'Guest Customer', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, font: fontBold)),
                             pw.Text('Customer', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
-                            pw.Text('Phone: ${customer['phone'] ?? 'N/A'}', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
-                            pw.Text('Email: ${customer['email'] ?? 'N/A'}', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                            // pw.Text('Phone: ${customer['phone'] ?? 'N/A'}', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+                            // pw.Text('Email: ${customer['email'] ?? 'N/A'}', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
                           ],
                         ),
                         pw.Column(

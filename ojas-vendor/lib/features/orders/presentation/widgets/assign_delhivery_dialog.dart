@@ -27,6 +27,7 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
   late TextEditingController shippingCityController;
   late TextEditingController shippingPinController;
   late TextEditingController shippingPhoneController;
+  String _realShippingPhone = '';
   bool isLoading = false;
 
   @override
@@ -58,7 +59,14 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
     shippingAddressController = TextEditingController(text: shipping['street'] ?? '');
     shippingCityController = TextEditingController(text: shipping['city'] ?? '');
     shippingPinController = TextEditingController(text: shipping['zipCode']?.toString() ?? '');
-    shippingPhoneController = TextEditingController(text: user['mobile']?.toString() ?? '');
+    
+    final rawPhone = user['mobile']?.toString() ?? '';
+    _realShippingPhone = rawPhone;
+    shippingPhoneController = TextEditingController(
+      text: rawPhone.length >= 10
+          ? '${rawPhone.substring(0, 2)}******${rawPhone.substring(rawPhone.length - 2)}'
+          : rawPhone
+    );
   }
 
   @override
@@ -148,7 +156,7 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
                       children: [
                         Expanded(child: _buildTextField('Customer Name', shippingNameController, Icons.person)),
                         const SizedBox(width: 16),
-                        Expanded(child: _buildTextField('Phone', shippingPhoneController, Icons.phone_android)),
+                        Expanded(child: _buildTextField('Phone', shippingPhoneController, Icons.phone_android, readOnly: true)),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -193,13 +201,13 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
                               setState(() => isLoading = true);
                               try {
                                 final data = {
-                                  'customShipping': {
-                                    'name': shippingNameController.text,
-                                    'add': shippingAddressController.text,
-                                    'city': shippingCityController.text,
-                                    'pin': shippingPinController.text,
-                                    'phone': shippingPhoneController.text,
-                                  },
+                                    'customShipping': {
+                                      'name': shippingNameController.text,
+                                      'add': shippingAddressController.text,
+                                      'city': shippingCityController.text,
+                                      'pin': shippingPinController.text,
+                                      'phone': _realShippingPhone,
+                                    },
                                   'dimensions': {
                                     'weight': 0.5,
                                     'length': 10,
@@ -254,7 +262,7 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool readOnly = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -269,6 +277,7 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
         const SizedBox(height: 6),
         TextField(
           controller: controller,
+          readOnly: readOnly,
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 20, color: Colors.blue.shade400),
             isDense: true,

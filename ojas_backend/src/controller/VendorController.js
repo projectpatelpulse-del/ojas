@@ -22,7 +22,7 @@ const createVendorProduct = async (req, res) => {
             trackQuantity, weight, length, width, height, requiresShipping,
             seoTitle, seoDescription, slug, youtubeLink, status, visibility,
             attributes, specs, tags, variations, showOnPages, relatedProducts,
-            gst, hsnCode, moq
+            gst, hsnCode, moq, moqDiscount
         } = req.body;
 
         let imageUrl = "";
@@ -68,29 +68,57 @@ const createVendorProduct = async (req, res) => {
             counter++;
         }
 
+        // Helper to parse JSON safely
+        const safeParse = (data, fallback) => {
+            if (!data) return fallback;
+            if (typeof data !== 'string') return data;
+            try {
+                return JSON.parse(data);
+            } catch (e) {
+                console.error("JSON parse error:", e);
+                return fallback;
+            }
+        };
+
         const productData = {
-            name, title, price, discountPrice, description, shortDescription,
-            category, subCategory, brand: brand || "Generic", stock,
+            name,
+            title: title || name,
+            price: price ? Number(price) : 0,
+            discountPrice: discountPrice ? Number(discountPrice) : 0,
+            description,
+            shortDescription,
+            category,
+            subCategory,
+            brand: brand || "Generic",
+            stock: stock ? Number(stock) : 0,
             sku: (sku && sku.trim() !== "") ? sku : undefined,
-            lowStockThreshold, trackQuantity, weight,
+            lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : 5,
+            trackQuantity: trackQuantity === 'false' ? false : true,
+            weight: weight ? Number(weight) : undefined,
             dimensions: (length || width || height) ? {
                 length: length ? Number(length) : 0,
                 width: width ? Number(width) : 0,
                 height: height ? Number(height) : 0
             } : undefined,
-            requiresShipping, image: imageUrl, gallery: galleryUrls,
-            seoTitle, seoDescription,
+            requiresShipping: requiresShipping === 'false' ? false : true,
+            image: imageUrl,
+            gallery: galleryUrls,
+            seoTitle,
+            seoDescription,
             slug: finalSlug,
-            youtubeLink, status, visibility,
-            attributes: attributes ? JSON.parse(attributes) : {},
-            variations: variations ? JSON.parse(variations) : [],
-            specs: specs ? JSON.parse(specs) : [],
-            tags: tags ? JSON.parse(tags) : [],
-            showOnPages: showOnPages ? (typeof showOnPages === 'string' ? JSON.parse(showOnPages) : showOnPages) : ["Shop"],
-            relatedProducts: relatedProducts ? (typeof relatedProducts === 'string' ? JSON.parse(relatedProducts) : relatedProducts) : [],
+            youtubeLink,
+            status: status || "Draft",
+            visibility: visibility || "Public",
+            attributes: safeParse(attributes, {}),
+            variations: safeParse(variations, []),
+            specs: safeParse(specs, []),
+            tags: safeParse(tags, []),
+            showOnPages: safeParse(showOnPages, ["Shop"]),
+            relatedProducts: safeParse(relatedProducts, []),
             gst: gst ? Number(gst) : 0,
             hsnCode: hsnCode,
             moq: moq ? Number(moq) : 1,
+            moqDiscount: moqDiscount ? Number(moqDiscount) : 0,
             user: req.user._id || req.user.id
         };
 
@@ -313,7 +341,12 @@ const generateAIContent = async (req, res) => {
         // 2. Fetch Configuration
         const Setting = require("../model/Setting");
         const setting = await Setting.findOne();
+
+        /* --- Gemini Implementation (Commented Out) ---
         const apiKey = setting?.geminiApiKey || process.env.GEMINI_API_KEY;
+        console.log("==================================================");
+        console.log("[AI Product Generator] Gemini API Key in Use:", apiKey);
+        console.log("==================================================");
 
         if (!apiKey) {
             console.error("[generateAIContent] Missing API Key");
@@ -355,37 +388,72 @@ Return the response in the following JSON format ONLY:
 
         const data = response.data;
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        // 4. Upstream API Call with Timeout Configuration
-        // const response = await axios.post(
-        //     `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        //     // `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        //     {
-        //         contents: [{ parts: [{ text: prompt }] }]
-        //     },
-        //     {
-        //         timeout: 15000, // 15-second timeout for AI generation
-        //         headers: { 'Content-Type': 'application/json' }
-        //     }
-        // );
+        --- End of Gemini Implementation --- */
 
-        // 5. Parse Third-Party Response
-        // const data = response.data;
-        // const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const apiKey = setting?.openAiApiKey || process.env.OPENAI_API_KEY;
+        console.log("==================================================");
+        console.log("[AI Product Generator] Request URL: https://api.openai.com/v1/chat/completions");
+        console.log("[AI Product Generator] Authorization Bearer Key:", apiKey);
+        console.log("==================================================");
+
+        if (!apiKey) {
+            console.error("[generateAIContent] Missing OpenAI API Key");
+            return res.status(503).json({
+                success: false,
+                message: "AI generation service is currently unavailable (Missing OpenAI Configuration)."
+            });
+        }
+
+        // 3. Construct Payload
+        const prompt = `You are an expert copywriter and product manager. Generate a professional and detailed product listing for an e-commerce store.
+        
+Product Name: ${productName}
+Short Description: ${shortDescription || 'N/A'}
+
+Please generate:
+1. A detailed product description (HTML formatted, use bullet points, bold text where necessary).
+2. A list of 5 key specifications/features.
+3. A list of 5-10 relevant search tags (comma-separated).
+
+Return the response in the following JSON format ONLY:
+{
+  "description": "...",
+  "specs": ["spec1", "spec2", ...],
+  "tags": ["tag1", "tag2", ...]
+}`;
+
+        // Send request to OpenAI API
+        const response = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                response_format: { type: "json_object" }
+            },
+            {
+                timeout: 15000,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                }
+            }
+        );
+
+        const data = response.data;
+        const text = data?.choices?.[0]?.message?.content;
 
         if (!text) {
             throw new Error("Invalid response format received from upstream AI service");
         }
 
-        let jsonStr = text;
-        if (text.includes("```json")) {
-            jsonStr = text.split("```json")[1].split("```")[0].trim();
-        } else if (text.includes("```")) {
-            jsonStr = text.split("```")[1].split("```")[0].trim();
-        }
-
         let parsedData;
         try {
-            parsedData = JSON.parse(jsonStr);
+            parsedData = JSON.parse(text.trim());
         } catch (e) {
             console.warn("[generateAIContent] Failed to parse JSON strictly. Falling back.", text);
             parsedData = { description: text, specs: [], tags: [] };
@@ -662,6 +730,9 @@ const getVendorDashboard = async (req, res) => {
 };
 
 const vendorSignup = async (req, res) => {
+    // Track created user for rollback in case of partial failure
+    let createdUser = null;
+
     try {
         const {
             firstName, lastName, email, phone, password,
@@ -680,7 +751,7 @@ const vendorSignup = async (req, res) => {
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         // Create User
-        const user = await User.create({
+        createdUser = await User.create({
             name: `${firstName} ${lastName}`,
             email,
             password: hashedPassword,
@@ -702,7 +773,7 @@ const vendorSignup = async (req, res) => {
 
         // Create Vendor Profile
         const vendor = await Vendor.create({
-            user: user._id,
+            user: createdUser._id,
             businessName,
             businessType,
             website,
@@ -734,7 +805,7 @@ const vendorSignup = async (req, res) => {
         await WhatsAppService.sendOTP(phone, otp);
 
         // ---------------------------------------------------------
-        // AUTOMATIC DELHI VERY WAREHOUSE CREATION
+        // AUTOMATIC DELHIVERY WAREHOUSE CREATION
         // ---------------------------------------------------------
         try {
             const DelhiveryService = require("../service/DelhiveryService");
@@ -754,6 +825,18 @@ const vendorSignup = async (req, res) => {
         res.status(201).json({ message: "OTP sent to your WhatsApp number. Please verify to complete registration.", data: vendor });
     } catch (error) {
         console.error("Vendor signup error:", error);
+
+        // ROLLBACK: Agar user create ho gaya tha lekin baad mein kuch fail hua,
+        // toh us orphan user ko delete karo taaki same email se dobara register ho sake.
+        if (createdUser) {
+            try {
+                await User.findByIdAndDelete(createdUser._id);
+                console.log(`[Rollback] Orphan user deleted: ${createdUser.email}`);
+            } catch (rollbackError) {
+                console.error("[Rollback] Failed to delete orphan user:", rollbackError.message);
+            }
+        }
+
         res.status(500).json({ message: error.message });
     }
 };
@@ -873,6 +956,24 @@ const updateVendorCommission = async (req, res) => {
         }
 
         res.status(200).json({ message: `Vendor commission updated to ${commissionRate}%`, data: vendor });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const updateVendorMaxProductsLimit = async (req, res) => {
+    try {
+        const { maxProductsOnOtherPages } = req.body;
+        if (maxProductsOnOtherPages === undefined) {
+            return res.status(400).json({ message: "Max products limit is required" });
+        }
+
+        const vendor = await Vendor.findByIdAndUpdate(req.params.id, { maxProductsOnOtherPages }, { new: true });
+        if (!vendor) {
+            return res.status(404).json({ message: "Vendor not found" });
+        }
+
+        res.status(200).json({ message: `Vendor max products limit updated to ${maxProductsOnOtherPages}`, data: vendor });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -1282,6 +1383,7 @@ const deleteVendor = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// Trigger nodemon reload for .env changes
 
 module.exports = {
     createVendorProduct,
@@ -1299,6 +1401,7 @@ module.exports = {
     getAllVendorRequests,
     updateVendorStatus,
     updateVendorCommission,
+    updateVendorMaxProductsLimit,
     updateAllVendorsCommission,
     getVendorLedger,
     createVendorSubCategory,

@@ -71,7 +71,7 @@ class _PremiumAnimatedNavbarState extends State<PremiumAnimatedNavbar>
                 ),
                 border: Border(
                   bottom: BorderSide(
-                    color: Colors.white.withOpacity(0.08),
+                    color: AppColors.white.withOpacity(0.08),
                     width: 1.5,
                   ),
                 ),
@@ -106,9 +106,9 @@ class _TopUtilityBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: AppColors.black.withOpacity(0.5),
         border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+          bottom: BorderSide(color: AppColors.white.withOpacity(0.1), width: 1),
         ),
       ),
       child: Row(
@@ -117,7 +117,7 @@ class _TopUtilityBar extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             'good message ',
-            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+            style: GoogleFonts.poppins(color: AppColors.white70, fontSize: 12),
           ),
           Text(
             'Learn More',
@@ -153,11 +153,11 @@ class _TopLink extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, color: Colors.white70, size: 16),
+          Icon(icon, color: AppColors.white70, size: 16),
           const SizedBox(width: 4),
           Text(
             text,
-            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+            style: GoogleFonts.poppins(color: AppColors.white70, fontSize: 12),
           ),
         ],
       ),
@@ -191,7 +191,7 @@ class _MainNavbar extends StatelessWidget {
               child: Text(
                 'OJAS',
                 style: GoogleFonts.spectral(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
                   letterSpacing: 1.2,
@@ -335,7 +335,7 @@ class _HoverMenuActionState extends State<_HoverMenuAction>
                   Text(
                     widget.title,
                     style: GoogleFonts.poppins(
-                      color: isEffectiveActive ? Colors.white : Colors.white70,
+                      color: isEffectiveActive ? AppColors.white : AppColors.white70,
                       fontSize: 14,
                       shadows: isEffectiveActive
                           ? [
@@ -405,7 +405,7 @@ class _UserActionSection extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFF01B6B),
+                        color: AppColors.primaryPink,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -415,7 +415,7 @@ class _UserActionSection extends StatelessWidget {
                       child: Text(
                         '$count',
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -433,7 +433,7 @@ class _UserActionSection extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: VerticalDivider(
-            color: Colors.white24,
+            color: AppColors.white24,
             indent: 20,
             endIndent: 20,
           ),
@@ -452,7 +452,7 @@ class _UserActionSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 15),
                   IconButton(
-                    icon: const Icon(Icons.logout, color: Colors.white70, size: 20),
+                    icon: const Icon(Icons.logout, color: AppColors.white70, size: 20),
                     onPressed: () async {
                        await SessionService.instance.logout();
                        if (context.mounted) {
@@ -471,7 +471,7 @@ class _UserActionSection extends StatelessWidget {
                   },
                   child: Text(
                     'Login',
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.poppins(color: AppColors.white, fontWeight: FontWeight.w600),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -480,8 +480,8 @@ class _UserActionSection extends StatelessWidget {
                     Navigator.of(context).pushReplacementNamed('/register');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.primaryPink,
+                    backgroundColor: AppColors.primaryBlue,
+                    foregroundColor: AppColors.charcoal,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
@@ -522,12 +522,12 @@ class _HoverIconActionState extends State<_HoverIconAction> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(widget.icon, color: _isHovered ? Colors.white : Colors.white70),
+            Icon(widget.icon, color: _isHovered ? AppColors.white : AppColors.white70),
             const SizedBox(width: 6),
             Text(
               widget.label,
               style: GoogleFonts.poppins(
-                color: _isHovered ? Colors.white : Colors.white70,
+                color: _isHovered ? AppColors.white : AppColors.white70,
                 fontSize: 14,
               ),
             ),
@@ -594,12 +594,12 @@ class _PulseCartButtonState extends State<_PulseCartButton>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 20),
+                  const Icon(Icons.shopping_cart_outlined, color: AppColors.white, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'My Cart ($count)',
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -668,12 +668,12 @@ class _BecomeVendorButtonState extends State<_BecomeVendorButton> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.store_outlined, color: Colors.white),
+            const Icon(Icons.store_outlined, color: AppColors.white),
             const SizedBox(width: 10),
             Text(
               'BECOME VENDOR',
               style: GoogleFonts.poppins(
-                color: Colors.white,
+                color: AppColors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -720,7 +720,7 @@ class _AnimatedSearchBarState extends State<_AnimatedSearchBar> {
         curve: Curves.easeInOut,
         height: 60,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             if (_isFocused)
@@ -738,13 +738,13 @@ class _AnimatedSearchBarState extends State<_AnimatedSearchBar> {
               child: TextField(
                 focusNode: _focusNode,
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: AppColors.black,
                   fontSize: 16,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Enter your keyword...',
                   hintStyle: GoogleFonts.poppins(
-                    color: Colors.grey,
+                    color: AppColors.grey,
                     fontSize: 16,
                   ),
                   border: InputBorder.none,
@@ -760,7 +760,7 @@ class _AnimatedSearchBarState extends State<_AnimatedSearchBar> {
                 gradient: AppColors.pinkGradient,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.search, color: Colors.white, size: 28),
+              child: const Icon(Icons.search, color: AppColors.white, size: 28),
             ),
           ],
         ),

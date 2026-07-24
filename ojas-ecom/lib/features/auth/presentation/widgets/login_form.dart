@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
@@ -44,7 +45,7 @@ class _LoginFormState extends State<LoginForm> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.message), backgroundColor: Colors.red),
+            SnackBar(content: Text(response.message), backgroundColor: AppColors.errorRed),
           );
         }
       }
@@ -104,7 +105,7 @@ class _LoginFormState extends State<LoginForm> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: widget.onForgotPassword,
-              child: Text('Forgot Password?', style: GoogleFonts.inter(color: const Color(0xFFE91E63), fontSize: 12, fontWeight: FontWeight.w600)),
+              child: Text('Forgot Password?', style: GoogleFonts.inter(color: AppColors.accentOrange, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 16),
@@ -116,13 +117,13 @@ class _LoginFormState extends State<LoginForm> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleLogin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE91E63),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accentOrange,
+                foregroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
               ),
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -164,7 +165,7 @@ class _LoginFormState extends State<LoginForm> {
               } else {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(response.message), backgroundColor: Colors.red),
+                    SnackBar(content: Text(response.message), backgroundColor: AppColors.errorRed),
                   );
                 }
               }
@@ -181,7 +182,7 @@ class _LoginFormState extends State<LoginForm> {
               Text('Don\'t have an account? ', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 14)),
               InkWell(
                 onTap: widget.onToggle,
-                child: Text('Create Account', style: GoogleFonts.inter(color: const Color(0xFFE91E63), fontSize: 14, fontWeight: FontWeight.bold)),
+                child: Text('Create Account', style: GoogleFonts.inter(color: AppColors.accentOrange, fontSize: 14, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -222,7 +223,7 @@ class _LoginFormState extends State<LoginForm> {
         prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 18),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -230,7 +231,7 @@ class _LoginFormState extends State<LoginForm> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE91E63)),
+          borderSide: const BorderSide(color: AppColors.accentOrange),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -264,7 +265,7 @@ class _SocialLoginButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(0xFFE2E8F0)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.white,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

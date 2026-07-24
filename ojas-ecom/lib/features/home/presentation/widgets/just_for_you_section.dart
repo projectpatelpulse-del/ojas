@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
@@ -18,7 +19,7 @@ class JustForYouSection extends StatelessWidget {
     return ListenableBuilder(
       listenable: HomeController.instance,
       builder: (context, _) {
-        final products = HomeController.instance.homeProducts;
+        final products = HomeController.instance.justForYouProducts;
         final List<ProductModel> productModels = products.map((p) => ProductModel.fromMap(p)).toList();
 
         return CenteredContent(
@@ -36,7 +37,7 @@ class JustForYouSection extends StatelessWidget {
                       style: GoogleFonts.outfit(
                         fontSize: isMobile ? 20 : 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: AppColors.black87,
                       ),
                     ),
                     TextButton(
@@ -46,7 +47,7 @@ class JustForYouSection extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFF01B6B),
+                          color: AppColors.primaryPink,
                         ),
                       ),
                     ),
@@ -59,19 +60,19 @@ class JustForYouSection extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: AppColors.grey50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: AppColors.grey200),
                     ),
                     child: Column(
                       children: [
-                        Icon(Icons.shopping_bag_outlined, size: 48, color: Colors.grey.shade300),
+                        Icon(Icons.shopping_bag_outlined, size: 48, color: AppColors.grey300),
                         const SizedBox(height: 16),
                         Text(
                           'No products available in this section yet.',
                           style: GoogleFonts.inter(
                             fontSize: 15,
-                            color: Colors.grey.shade500,
+                            color: AppColors.grey500,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

@@ -117,7 +117,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     // Row 2: Products & Vendors
                     Row(
                       children: [
-                        Expanded(child: _buildListCard('Trending Products', 'Top selling items', Icons.widgets_outlined, Colors.blue, trendingProducts, (item) => '${item['name']}', (item) => 'Sales: ${item['count']}', imageFn: (item) => item['image'])),
+                        Expanded(child: _buildListCard('Trending Products', 'Configured trending items', Icons.widgets_outlined, Colors.blue, trendingProducts, (item) => '${item['name']}', (item) => 'Stock: ${item['count'] ?? 0} | Price: ₹${item['price'] ?? 0}', imageFn: (item) => item['image'])),
                         const SizedBox(width: 20),
                         Expanded(child: _buildListCard('Top Revenue Vendors', 'Highest earning sellers', Icons.store_outlined, Colors.purple, topVendors, (item) => '${item['businessName']}', (item) => 'Revenue: ₹${item['revenue']}', imageFn: (item) => item['photo'])),
                       ],

@@ -72,6 +72,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     logout.mutate(undefined, {
       onSuccess: () => {
         qc.clear();
+        localStorage.removeItem("auth_token");
+        navigate("/login");
+      },
+      onError: () => {
+        qc.clear();
+        localStorage.removeItem("auth_token");
         navigate("/login");
       }
     });

@@ -97,7 +97,8 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
           SessionService.instance.setUser(user, token: token);
         }
 
-        final resellerPanelUrl = 'http://localhost:23080/#/?token=$token';
+        final resellerPanelUrl = 'http://reseller.ojasindia.com/#/?token=$token';
+        print('Reseller Panel Redirect URL: $resellerPanelUrl');
         Future.delayed(const Duration(seconds: 1), () {
           html.window.location.href = resellerPanelUrl;
         });
@@ -272,12 +273,12 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: AppColors.black.withOpacity(0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -326,12 +327,12 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
       width: isMobile ? double.infinity : 500,
       padding: EdgeInsets.all(isMobile ? 24 : 48),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: AppColors.black.withOpacity(0.03),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -379,21 +380,21 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _loginReseller,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryIndigo,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accentOrange,
+                foregroundColor: AppColors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 0,
               ),
               child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: AppColors.white)
                   : Text(
                       'Sign In',
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.white,
+                        // color: AppColors.white,
                       ),
                     ),
             ),
@@ -419,12 +420,12 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
       width: isMobile ? double.infinity : 650,
       padding: EdgeInsets.all(isMobile ? 20 : 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: AppColors.black.withOpacity(0.03),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -623,14 +624,15 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitApplication,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryIndigo,
+                  backgroundColor: AppColors.accentOrange,
+                  foregroundColor: AppColors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(color: AppColors.white)
                     : const Text(
                         'Apply as Reseller',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle( fontWeight: FontWeight.bold, fontSize: 16),
                       ),
               ),
             ),
@@ -663,10 +665,10 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
           obscureText: obscureText,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
-          style: const TextStyle(color: Colors.black),
+          style: const TextStyle(color: AppColors.black),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(color: Colors.grey, fontSize: 14),
+            hintStyle: GoogleFonts.inter(color: AppColors.grey, fontSize: 14),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primaryIndigo, width: 2)),
@@ -693,7 +695,7 @@ class _ToggleButton extends StatelessWidget {
       width: fullWidth ? double.infinity : 200,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryIndigo : Colors.transparent,
+        color: isActive ? AppColors.primaryBlue : AppColors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       alignment: Alignment.center,
@@ -702,7 +704,7 @@ class _ToggleButton extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: isActive ? Colors.white : const Color(0xFF64748B),
+          color: isActive ? AppColors.black : const Color(0xFF64748B),
         ),
       ),
     );

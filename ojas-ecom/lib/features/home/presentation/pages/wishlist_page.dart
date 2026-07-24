@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -50,7 +51,7 @@ class WishlistPage extends StatelessWidget {
                   if (isLoading)
                     const Center(child: Padding(
                       padding: EdgeInsets.all(100.0),
-                      child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+                      child: CircularProgressIndicator(color: AppColors.primaryPink),
                     ))
                   else if (items.isEmpty)
                     _buildEmptyState(context)
@@ -99,8 +100,8 @@ class WishlistPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Navigator.pushReplacementNamed(context, '/'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF01B6B),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primaryPink,
+              foregroundColor: AppColors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               elevation: 0,
@@ -152,11 +153,11 @@ class _WishlistItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -184,9 +185,9 @@ class _WishlistItemCard extends StatelessWidget {
                   top: 12,
                   right: 12,
                   child: CircleAvatar(
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.white,
                     child: IconButton(
-                      icon: const Icon(Icons.favorite, color: Color(0xFFF01B6B)),
+                      icon: const Icon(Icons.favorite, color: AppColors.primaryPink),
                       onPressed: () => WishlistController.instance.removeFromWishlist(product['_id']),
                     ),
                   ),
@@ -222,7 +223,7 @@ class _WishlistItemCard extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFF01B6B),
+                          color: AppColors.primaryPink,
                         ),
                       ),
                     ],
@@ -245,7 +246,7 @@ class _WishlistItemCard extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('${product['name'] ?? 'Item'} moved to cart!'),
-                                backgroundColor: Colors.green,
+                                backgroundColor: AppColors.successGreen,
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -255,7 +256,7 @@ class _WishlistItemCard extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Failed to add to cart. Please check your connection.'),
-                                backgroundColor: Colors.red,
+                                backgroundColor: AppColors.errorRed,
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -263,14 +264,14 @@ class _WishlistItemCard extends StatelessWidget {
                         }
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFF01B6B)),
+                        side: const BorderSide(color: AppColors.primaryPink),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       child: Text(
                         'Move to Cart',
                         style: GoogleFonts.inter(
-                          color: const Color(0xFFF01B6B),
+                          color: AppColors.primaryPink,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

@@ -75,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _fetchCategories() async {
     try {
-      final cats = await sl<CategoryService>().getCategories();
+      final cats = await sl<CategoryService>().getPublicCategories();
       setState(() {
         _categories = cats.map((e) => e['name'].toString()).toList();
         _isLoadingCategories = false;
@@ -174,7 +174,7 @@ class _RegisterPageState extends State<RegisterPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFF01B6B)),
+        child: CircularProgressIndicator(color: Color(0xFF5C0B1B)),
       ),
     );
 
@@ -273,14 +273,14 @@ class _RegisterPageState extends State<RegisterPage> {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF01B6B).withOpacity(0.1),
+                  color: const Color(0xFF5C0B1B).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'OTP: $otp',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFF01B6B),
+                    color: const Color(0xFF5C0B1B),
                     fontSize: 16,
                   ),
                 ),
@@ -350,7 +350,7 @@ class _RegisterPageState extends State<RegisterPage> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF01B6B),
+              backgroundColor: const Color(0xFF5C0B1B),
               foregroundColor: Colors.white,
             ),
             child: const Text('Verify'),
@@ -403,143 +403,180 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isMobile = MediaQuery.of(context).size.width < 900;
+    final bool isMobile = MediaQuery.of(context).size.width < 1100;
+    final Color ojasMaroon = const Color(0xFF5C0B1B);
+
+    Widget formContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isMobile) ...[
+          _MobileProgress(currentStep: _currentStep),
+        ] else ...[
+          _DesktopProgress(currentStep: _currentStep),
+        ],
+
+        const SizedBox(height: 12),
+        const Divider(),
+        const SizedBox(height: 12),
+
+        _buildStepContent(isMobile),
+
+        const SizedBox(height: 12),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentStep > 0)
+              _NavBtn(
+                label: 'Back',
+                icon: Icons.arrow_back,
+                onPressed: () => setState(() => _currentStep--),
+                isPrimary: false,
+              )
+            else
+              const SizedBox(),
+            _NavBtn(
+              label: _currentStep == 4
+                  ? 'Submit Application'
+                  : 'Next Step',
+              icon: _currentStep == 4
+                  ? Icons.check_circle_outline
+                  : Icons.arrow_forward,
+              onPressed: _nextStep,
+              isPrimary: true,
+              color: _currentStep == 4
+                  ? const Color(0xFF10B981)
+                  : ojasMaroon,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    if (isMobile) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFBECEB),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Premium Header
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 40,
+                  horizontal: 20,
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Become a Vendor',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: ojasMaroon,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Join thousands of successful vendors and grow your business with Ojas India.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: const Color(0xFF475569),
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Benefit Cards
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: [
+                  _BenefitCard(
+                    icon: Icons.attach_money,
+                    title: 'Commission',
+                    desc: 'Low platform fees',
+                    isMobile: isMobile,
+                  ),
+                  _BenefitCard(
+                    icon: Icons.public,
+                    title: 'Global',
+                    desc: 'Reach customers worldwide',
+                    isMobile: isMobile,
+                  ),
+                  _BenefitCard(
+                    icon: Icons.security,
+                    title: 'Secure',
+                    desc: 'Safe & timely payments',
+                    isMobile: isMobile,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Form Container
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: formContent,
+              ),
+              const SizedBox(height: 60),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SingleChildScrollView(
-        child: Column(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/auth.png'),
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: Row(
           children: [
-            // Premium Header
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(
-                vertical: isMobile ? 40 : 80,
-                horizontal: 20,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Become a Vendor',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      fontSize: isMobile ? 32 : 48,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
+            const Spacer(flex: 58),
+            Expanded(
+              flex: 38,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 450),
+                    child: formContent,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Join thousands of successful vendors and grow your business with Ojas India.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: isMobile ? 15 : 18,
-                      color: const Color(0xFF475569),
-                      height: 1.5,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-
-            const SizedBox(height: 48),
-
-            // Benefit Cards
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              alignment: WrapAlignment.center,
-              children: [
-                _BenefitCard(
-                  icon: Icons.attach_money,
-                  title: 'Commission',
-                  desc: 'Low platform fees',
-                  isMobile: isMobile,
-                ),
-                _BenefitCard(
-                  icon: Icons.public,
-                  title: 'Global',
-                  desc: 'Reach customers worldwide',
-                  isMobile: isMobile,
-                ),
-                _BenefitCard(
-                  icon: Icons.security,
-                  title: 'Secure',
-                  desc: 'Safe & timely payments',
-                  isMobile: isMobile,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 48),
-
-            // Form Container
-            Container(
-              // maxWidth: 900,
-              margin: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 40),
-              padding: EdgeInsets.all(isMobile ? 24 : 48),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  if (isMobile)
-                    _MobileProgress(currentStep: _currentStep)
-                  else
-                    _DesktopProgress(currentStep: _currentStep),
-
-                  const SizedBox(height: 40),
-                  const Divider(),
-                  const SizedBox(height: 40),
-
-                  _buildStepContent(isMobile),
-
-                  const SizedBox(height: 48),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_currentStep > 0)
-                        _NavBtn(
-                          label: 'Back',
-                          icon: Icons.arrow_back,
-                          onPressed: () => setState(() => _currentStep--),
-                          isPrimary: false,
-                        )
-                      else
-                        const SizedBox(),
-                      _NavBtn(
-                        label: _currentStep == 4
-                            ? 'Submit Application'
-                            : 'Next Step',
-                        icon: _currentStep == 4
-                            ? Icons.check_circle_outline
-                            : Icons.arrow_forward,
-                        onPressed: _nextStep,
-                        isPrimary: true,
-                        color: _currentStep == 4
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFF01B6B),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 100),
+            const Spacer(flex: 4),
           ],
         ),
       ),
@@ -571,7 +608,7 @@ class _RegisterPageState extends State<RegisterPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _stepTitle('Personal Information'),
-        const SizedBox(height: 24),
+        const SizedBox(height: 10),
         _rowOrCol(isMobile, [
           Expanded(
             flex: isMobile ? 0 : 1,
@@ -581,7 +618,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _firstNameController,
             ),
           ),
-          SizedBox(width: isMobile ? 0 : 24, height: isMobile ? 24 : 0),
+          SizedBox(width: isMobile ? 0 : 24, height: isMobile ? 10 : 0),
           Expanded(
             flex: isMobile ? 0 : 1,
             child: _FormField(
@@ -591,7 +628,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ]),
-        const SizedBox(height: 24),
+        const SizedBox(height: 10),
         _rowOrCol(isMobile, [
           Expanded(
             flex: isMobile ? 0 : 1,
@@ -611,7 +648,7 @@ class _RegisterPageState extends State<RegisterPage> {
               },
             ),
           ),
-          SizedBox(width: isMobile ? 0 : 24, height: isMobile ? 24 : 0),
+          SizedBox(width: isMobile ? 0 : 24, height: isMobile ? 10 : 0),
           Expanded(
             flex: isMobile ? 0 : 1,
             child: _FormField(
@@ -630,7 +667,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ]),
-        const SizedBox(height: 24),
+        const SizedBox(height: 10),
         _FormField(
           label: 'Password *',
           hintText: 'Create password',
@@ -1034,7 +1071,7 @@ class _BenefitCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFFF01B6B), size: 36),
+          Icon(icon, color: const Color(0xFF5C0B1B), size: 36),
           const SizedBox(height: 16),
           Text(
             title,
@@ -1099,7 +1136,7 @@ class _MobileProgress extends StatelessWidget {
           child: CircleAvatar(
             radius: 4,
             backgroundColor: currentStep >= index
-                ? const Color(0xFFF01B6B)
+                ? const Color(0xFF5C0B1B)
                 : const Color(0xFFE2E8F0),
           ),
         ),
@@ -1124,7 +1161,7 @@ class _StepIcon extends StatelessWidget {
         CircleAvatar(
           radius: 24,
           backgroundColor: active
-              ? const Color(0xFFF01B6B)
+              ? const Color(0xFF5C0B1B)
               : const Color(0xFFF1F5F9),
           child: Icon(
             icon,
@@ -1138,7 +1175,7 @@ class _StepIcon extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: active ? FontWeight.bold : FontWeight.normal,
-            color: active ? const Color(0xFFF01B6B) : const Color(0xFF64748B),
+            color: active ? const Color(0xFF5C0B1B) : const Color(0xFF64748B),
           ),
         ),
       ],
@@ -1187,7 +1224,7 @@ class _FormField extends StatelessWidget {
             color: const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         TextFormField(
           controller: controller,
           obscureText: isPassword && isObscured,
@@ -1201,6 +1238,7 @@ class _FormField extends StatelessWidget {
             counterText: "",
             filled: true,
             fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             suffixIcon: isPassword
                 ? IconButton(
                     icon: Icon(
@@ -1284,7 +1322,7 @@ class _CheckboxItem extends StatelessWidget {
         Checkbox(
           value: value,
           onChanged: onChanged,
-          activeColor: const Color(0xFFF01B6B),
+          activeColor: const Color(0xFF5C0B1B),
         ),
         Expanded(child: Text(label, style: GoogleFonts.inter(fontSize: 14))),
       ],
@@ -1335,7 +1373,7 @@ class _DashedUploadBox extends StatelessWidget {
                 const Icon(
                   Icons.cloud_upload_outlined,
                   size: 48,
-                  color: Color(0xFFF01B6B),
+                  color: Color(0xFF5C0B1B),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -1373,7 +1411,7 @@ class _NavBtn extends StatelessWidget {
       label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor:
-            color ?? (isPrimary ? const Color(0xFFF01B6B) : Colors.white),
+            color ?? (isPrimary ? const Color(0xFF5C0B1B) : Colors.white),
         foregroundColor: isPrimary ? Colors.white : const Color(0xFF475569),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(

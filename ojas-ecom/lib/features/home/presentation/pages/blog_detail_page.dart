@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -101,9 +102,9 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
     return OjasLayout(
       activeTitle: 'BLOG',
       child: Container(
-        color: Colors.white,
+        color: AppColors.white,
         child: _isLoading && _blog == null
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFFF01B6B)))
+            ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPink))
             : _blog == null
                 ? const Center(child: Text('Blog not found'))
                 : SingleChildScrollView(
@@ -126,36 +127,36 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFF01B6B).withOpacity(0.1),
+                                        color: AppColors.primaryPink.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
                                         _blog!['category'] ?? 'General',
                                         style: GoogleFonts.inter(
-                                          color: const Color(0xFFF01B6B),
+                                          color: AppColors.primaryPink,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                         ),
                                       ),
                                     ),
                                     const SizedBox(width: 16),
-                                    Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
+                                    Icon(Icons.access_time, size: 16, color: AppColors.grey[600]),
                                     const SizedBox(width: 4),
                                     Text(
                                       _blog!['readingTime'] ?? '5 min read',
-                                      style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 13),
+                                      style: GoogleFonts.inter(color: AppColors.grey[600], fontSize: 13),
                                     ),
                                     const Spacer(),
                                     // Mark as Read Button
                                     ElevatedButton.icon(
                                       onPressed: _isMarkingRead ? null : _markAsRead,
                                       icon: _isMarkingRead 
-                                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
                                         : const Icon(Icons.check_circle_outline, size: 18),
                                       label: Text(_isMarkingRead ? 'Processing...' : 'Mark Read'),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFF01B6B),
-                                        foregroundColor: Colors.white,
+                                        backgroundColor: AppColors.primaryPink,
+                                        foregroundColor: AppColors.white,
                                         elevation: 0,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -211,7 +212,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                                         ),
                                         Text(
                                           'Author',
-                                          style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 13),
+                                          style: GoogleFonts.inter(color: AppColors.grey[600], fontSize: 13),
                                         ),
                                       ],
                                     ),
@@ -221,7 +222,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                                       children: [
                                         Row(
                                           children: [
-                                            const Icon(Icons.remove_red_eye_outlined, size: 18, color: Color(0xFFF01B6B)),
+                                            const Icon(Icons.remove_red_eye_outlined, size: 18, color: AppColors.primaryPink),
                                             const SizedBox(width: 8),
                                             Text(
                                               '${_blog!['views'] ?? 0} Views',
@@ -235,7 +236,7 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
                                         ),
                                         Text(
                                           'Total Reads',
-                                          style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 13),
+                                          style: GoogleFonts.inter(color: AppColors.grey[600], fontSize: 13),
                                         ),
                                       ],
                                     ),
@@ -286,13 +287,13 @@ class _BlogDetailPageState extends State<BlogDetailPage> {
       height: isMobile ? 300 : 500,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: AppColors.grey[200],
       ),
       child: Image.network(
         _blog!['image'] ?? '',
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.image_not_supported, size: 100, color: Colors.grey),
+          child: Icon(Icons.image_not_supported, size: 100, color: AppColors.grey),
         ),
       ),
     );

@@ -54,7 +54,7 @@ class _OrderSuccessDialogState extends State<OrderSuccessDialog> {
     final isReferral = widget.referredProductId != null;
 
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
       child: Container(
         padding: const EdgeInsets.all(40),
@@ -65,7 +65,7 @@ class _OrderSuccessDialogState extends State<OrderSuccessDialog> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.green[50],
+                color: AppColors.successGreen[50],
                 shape: BoxShape.circle,
               ),
               child: isReferral
@@ -75,10 +75,10 @@ class _OrderSuccessDialogState extends State<OrderSuccessDialog> {
                       width: 100,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.check_circle_rounded, color: Colors.green, size: 80);
+                        return const Icon(Icons.check_circle_rounded, color: AppColors.successGreen, size: 80);
                       },
                     )
-                  : const Icon(Icons.check_circle_rounded, color: Colors.green, size: 80),
+                  : const Icon(Icons.check_circle_rounded, color: AppColors.successGreen, size: 80),
             ),
             const SizedBox(height: 32),
             Text(
@@ -114,7 +114,7 @@ class _OrderSuccessDialogState extends State<OrderSuccessDialog> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0,

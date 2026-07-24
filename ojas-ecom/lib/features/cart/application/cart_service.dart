@@ -19,7 +19,7 @@ class CartService {
     ));
   }
 
-  Future<bool> addToCart(String productId, {int quantity = 1, String? referralCode}) async {
+  Future<bool> addToCart(String productId, {int quantity = 1, String? referralCode, String? variationId}) async {
     try {
       final Map<String, dynamic> body = {
         'productId': productId,
@@ -27,6 +27,9 @@ class CartService {
       };
       if (referralCode != null) {
         body['referralCode'] = referralCode;
+      }
+      if (variationId != null) {
+        body['variationId'] = variationId;
       }
       final response = await _dio.post(
         '/user/cart/add',
@@ -50,11 +53,15 @@ class CartService {
     }
   }
 
-  Future<bool> removeFromCart(String productId) async {
+  Future<bool> removeFromCart(String productId, {String? variationId}) async {
     try {
+      final Map<String, dynamic> body = {'productId': productId};
+      if (variationId != null) {
+        body['variationId'] = variationId;
+      }
       final response = await _dio.post(
         '/user/cart/remove',
-        data: {'productId': productId},
+        data: body,
       );
       return response.statusCode == 200;
     } catch (e) {

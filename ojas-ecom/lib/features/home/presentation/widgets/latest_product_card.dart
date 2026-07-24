@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
@@ -41,11 +42,11 @@ class _LatestProductCardState extends State<LatestProductCard> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _isHovered ? Colors.orange.shade300 : Colors.grey.shade200),
+                border: Border.all(color: _isHovered ? Colors.orange.shade300 : AppColors.grey200),
                 boxShadow: _isHovered
-                    ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 6))]
+                    ? [BoxShadow(color: AppColors.black.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 6))]
                     : [],
               ),
               child: Column(
@@ -62,7 +63,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                             widget.product.imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (context, _, __) => const Center(
-                              child: Icon(Icons.image_not_supported_outlined, size: 40, color: Colors.grey),
+                              child: Icon(Icons.image_not_supported_outlined, size: 40, color: AppColors.grey),
                             ),
                           ),
                         ),
@@ -80,7 +81,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                 'BEST\nSELLER',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   height: 1.1,
@@ -105,16 +106,16 @@ class _LatestProductCardState extends State<LatestProductCard> {
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.9),
+                                color: AppColors.white.withOpacity(0.9),
                                 shape: BoxShape.circle,
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+                                  BoxShadow(color: AppColors.black.withOpacity(0.1), blurRadius: 4),
                                 ],
                               ),
                               child: Icon(
                                 isWishlisted ? Icons.favorite : Icons.favorite_border,
                                 size: 16,
-                                color: isWishlisted ? const Color(0xFFF01B6B) : Colors.grey,
+                                color: isWishlisted ? AppColors.primaryPink : AppColors.grey,
                               ),
                             ),
                           ),
@@ -157,7 +158,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                   '₹${widget.product.oldPrice!.ceil()}',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
-                                    color: Colors.grey.shade500,
+                                    color: AppColors.grey500,
                                     decoration: TextDecoration.lineThrough,
                                   ),
                                 ),
@@ -176,7 +177,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                   Icon(
                                     Icons.inventory_2_outlined,
                                     size: 12,
-                                    color: (widget.product.available ?? 0) > 0 ? Colors.green : Colors.red,
+                                    color: (widget.product.available ?? 0) > 0 ? AppColors.successGreen : AppColors.errorRed,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
@@ -184,7 +185,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                     style: GoogleFonts.inter(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: (widget.product.available ?? 0) > 0 ? Colors.green : Colors.red,
+                                      color: (widget.product.available ?? 0) > 0 ? AppColors.successGreen : AppColors.errorRed,
                                     ),
                                   ),
                                 ],
@@ -193,16 +194,16 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
+                                    color: AppColors.blue50,
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: Colors.blue.shade200),
+                                    border: Border.all(color: AppColors.blue200),
                                   ),
                                   child: Text(
                                     'MOQ: ${widget.product.moq}',
                                     style: GoogleFonts.inter(
                                       fontSize: 8,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade700,
+                                      color: AppColors.blue700,
                                     ),
                                   ),
                                 ),
@@ -220,7 +221,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                   style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFFE91E63),
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                                 elevation: 0,

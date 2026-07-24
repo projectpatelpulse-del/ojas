@@ -47,6 +47,14 @@ class VendorService {
     }
   }
 
+  Future<void> updateVendorMaxProductsLimit(String id, int maxProductsLimit) async {
+    try {
+      await _apiService.dio.put('/admin/vendor-max-products/$id', data: {'maxProductsOnOtherPages': maxProductsLimit});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> updateAllVendorsCommission(double commissionRate) async {
     try {
       await _apiService.dio.put('/admin/vendor-commission-all', data: {'commissionRate': commissionRate});

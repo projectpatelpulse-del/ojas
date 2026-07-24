@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/features/home/presentation/widgets/category_promo_card.dart';
@@ -24,7 +25,7 @@ class PromoGridSection extends StatelessWidget {
             // UI Styles to preserve the original look
             final List<Map<String, dynamic>> promoStyles = [
               {
-                'color': Colors.blue,
+                'color': AppColors.blue500,
                 'badgeTextMobile': 'BEST SALE',
                 'badgeTextDesktop': 'BEST SALE',
                 'badgeIcon': Icons.bolt,
@@ -46,7 +47,7 @@ class PromoGridSection extends StatelessWidget {
                 'defaultSubtitleDesktop': 'Toys & Games',
               },
               {
-                'color': Colors.green,
+                'color': AppColors.successGreen,
                 'badgeTextMobile': '15% OFF',
                 'badgeTextDesktop': 'OFF 15%',
                 'badgeIcon': Icons.local_offer_outlined,

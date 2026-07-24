@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 // import 'package:flutter/material.dart';
 // import 'package:google_fonts/google_fonts.dart';
 // import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -216,7 +217,7 @@
 //     return Container(
 //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
 //       decoration: BoxDecoration(
-//         color: Colors.white,
+//         color: AppColors.white,
 //         borderRadius: BorderRadius.circular(10),
 //         border: Border.all(color: const Color(0xFFE2E8F0)),
 //       ),
@@ -263,7 +264,7 @@
 //           builder: (context) => Container(
 //             height: MediaQuery.of(context).size.height * 0.8,
 //             padding: const EdgeInsets.all(20),
-//             color: Colors.white,
+//             color: AppColors.white,
 //             child: SingleChildScrollView(child: _buildSidebar()),
 //           ),
 //         );
@@ -271,11 +272,11 @@
 //       child: Row(
 //         mainAxisSize: MainAxisSize.min,
 //         children: [
-//           const Icon(Icons.filter_list, size: 20, color: Color(0xFFF01B6B)),
+//           const Icon(Icons.filter_list, size: 20, color: AppColors.primaryPink),
 //           const SizedBox(width: 8),
 //           Text(
 //             'Filters',
-//             style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFFF01B6B)),
+//             style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primaryPink),
 //           ),
 //         ],
 //       ),
@@ -286,12 +287,12 @@
 //     return Container(
 //       padding: EdgeInsets.symmetric(horizontal: Responsive.isMobile(context) ? 8 : 14, vertical: 4),
 //       decoration: BoxDecoration(
-//         color: Colors.white,
+//         color: AppColors.white,
 //         border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
 //         borderRadius: BorderRadius.circular(8),
 //         boxShadow: [
 //           BoxShadow(
-//             color: Colors.black.withOpacity(0.02),
+//             color: AppColors.black.withOpacity(0.02),
 //             blurRadius: 6,
 //             offset: const Offset(0, 2),
 //           ),
@@ -301,7 +302,7 @@
 //         child: DropdownButton<String>(
 //           value: _sortBy,
 //           isDense: true,
-//           dropdownColor: Colors.white,
+//           dropdownColor: AppColors.white,
 //           icon: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFF64748B)),
 //           style: GoogleFonts.inter(
 //             fontSize: 13, 
@@ -325,21 +326,21 @@
 //       children: [
 //         Container(
 //           decoration: BoxDecoration(
-//             color: const Color(0xFFF01B6B),
+//             color: AppColors.primaryPink,
 //             borderRadius: BorderRadius.circular(4),
 //           ),
 //           padding: const EdgeInsets.all(6),
-//           child: const Icon(Icons.grid_view, color: Colors.white, size: 18),
+//           child: const Icon(Icons.grid_view, color: AppColors.white, size: 18),
 //         ),
 //         const SizedBox(width: 6),
 //         Container(
 //           decoration: BoxDecoration(
-//             color: Colors.white,
+//             color: AppColors.white,
 //             border: Border.all(color: const Color(0xFFE2E8F0)),
 //             borderRadius: BorderRadius.circular(4),
 //           ),
 //           padding: const EdgeInsets.all(6),
-//           child: const Icon(Icons.view_list, color: Colors.grey, size: 18),
+//           child: const Icon(Icons.view_list, color: AppColors.grey, size: 18),
 //         ),
 //       ],
 //     );
@@ -349,7 +350,7 @@
 //     return Container(
 //       width: 250,
 //       decoration: BoxDecoration(
-//         color: Colors.white,
+//         color: AppColors.white,
 //         borderRadius: BorderRadius.circular(12),
 //         border: Border.all(color: const Color(0xFFE2E8F0)),
 //       ),
@@ -368,7 +369,7 @@
 //             child: Row(
 //               children: [
 //                 const SizedBox(width: 12),
-//                 const Icon(Icons.search, size: 18, color: Colors.grey),
+//                 const Icon(Icons.search, size: 18, color: AppColors.grey),
 //                 const SizedBox(width: 8),
 //                 Expanded(
 //                   child: TextField(
@@ -434,7 +435,7 @@
 //             children: [
 //               SizedBox(
 //                 width: 20, height: 20,
-//                 child: Checkbox(value: _inStockOnly, onChanged: (v) => setState(() => _inStockOnly = v!), activeColor: const Color(0xFFF01B6B)),
+//                 child: Checkbox(value: _inStockOnly, onChanged: (v) => setState(() => _inStockOnly = v!), activeColor: AppColors.primaryPink),
 //               ),
 //               const SizedBox(width: 12),
 //               Text('In Stock Only', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF334155))),
@@ -516,7 +517,7 @@
 //                       return Icon(
 //                         index < startsCount ? Icons.star : Icons.star_border,
 //                         size: 14,
-//                         color: index < startsCount ? Colors.amber : Colors.grey.shade400,
+//                         color: index < startsCount ? Colors.amber : AppColors.grey400,
 //                       );
 //                     }),
 //                   ),
@@ -558,12 +559,12 @@
 //           onTap: () => Navigator.pushNamed(context, '/product-detail', arguments: ProductModel.fromMap(product)),
 //           child: Container(
 //             decoration: BoxDecoration(
-//             color: Colors.white,
+//             color: AppColors.white,
 //             borderRadius: BorderRadius.circular(12),
 //             border: Border.all(color: const Color(0xFFE2E8F0)),
 //             boxShadow: [
 //               BoxShadow(
-//                 color: Colors.black.withOpacity(0.03),
+//                 color: AppColors.black.withOpacity(0.03),
 //                 offset: const Offset(0, 4),
 //                 blurRadius: 12,
 //               )
@@ -579,7 +580,7 @@
 //                   fit: StackFit.expand,
 //                   children: [
 //                     Container(
-//                       color: Colors.white,
+//                       color: AppColors.white,
 //                       width: double.infinity,
 //                       child: Center(
 //                         child: Padding(
@@ -607,7 +608,7 @@
 //                           ),
 //                           child: Text(
 //                             '$discount% OFF',
-//                             style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+//                             style: GoogleFonts.inter(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold),
 //                           ),
 //                         ),
 //                       ),
@@ -617,7 +618,7 @@
 //                       child: _actionButton(
 //                         isWishlisted ? Icons.favorite : Icons.favorite_border, 
 //                         () => WishlistController.instance.toggleWishlist(product),
-//                         color: isWishlisted ? const Color(0xFFF01B6B) : const Color(0xFF475569),
+//                         color: isWishlisted ? AppColors.primaryPink : const Color(0xFF475569),
 //                       ),
 //                     ),
 //                   ],
@@ -650,7 +651,7 @@
 //                       children: [
 //                         Text(
 //                           '₹${price.toInt()}',
-//                           style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w900, color: const Color(0xFFF01B6B)),
+//                           style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primaryPink),
 //                         ),
 //                         if (discount > 0) ...[
 //                           const SizedBox(width: 8),
@@ -667,7 +668,7 @@
 //                         Icon(
 //                           Icons.inventory_2_outlined,
 //                           size: 13,
-//                           color: (product['stock'] ?? 0) > 0 ? Colors.green.shade600 : Colors.red.shade600,
+//                           color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
 //                         ),
 //                         const SizedBox(width: 4),
 //                         Text(
@@ -675,7 +676,7 @@
 //                           style: GoogleFonts.inter(
 //                             fontSize: 11,
 //                             fontWeight: FontWeight.w600,
-//                             color: (product['stock'] ?? 0) > 0 ? Colors.green.shade600 : Colors.red.shade600,
+//                             color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
 //                           ),
 //                         ),
 //                         if ((product['moq'] ?? 1) > 1) ...[
@@ -683,16 +684,16 @@
 //                           Container(
 //                             // padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
 //                             decoration: BoxDecoration(
-//                               color: Colors.blue.shade50,
+//                               color: AppColors.blue50,
 //                               borderRadius: BorderRadius.circular(4),
-//                               border: Border.all(color: Colors.blue.shade200),
+//                               border: Border.all(color: AppColors.blue200),
 //                             ),
 //                             child: Text(
 //                               'MOQ: ${product['moq']}',
 //                               style: GoogleFonts.inter(
 //                                 fontSize: 9,
 //                                 fontWeight: FontWeight.bold,
-//                                 color: Colors.blue.shade700,
+//                                 color: AppColors.blue700,
 //                               ),
 //                             ),
 //                           ),
@@ -719,7 +720,7 @@
 //                             ScaffoldMessenger.of(context).showSnackBar(
 //                               SnackBar(
 //                                 content: Text(success ? '$name added to cart' : 'Failed to add to cart. Please login first.'),
-//                                 backgroundColor: success ? Colors.green : Colors.red,
+//                                 backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
 //                                 behavior: SnackBarBehavior.floating,
 //                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 //                                 margin: const EdgeInsets.all(20),
@@ -735,7 +736,7 @@
 //                         ),
 //                         style: ElevatedButton.styleFrom(
 //                           backgroundColor: const Color(0xFF0F172A),
-//                           foregroundColor: Colors.white,
+//                           foregroundColor: AppColors.white,
 //                           padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 14),
 //                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 //                           elevation: 0,
@@ -760,7 +761,7 @@
 //       child: Container(
 //         padding: const EdgeInsets.all(6),
 //         decoration: BoxDecoration(
-//           color: Colors.white,
+//           color: AppColors.white,
 //           shape: BoxShape.circle,
 //           boxShadow: const [BoxShadow(color: Color(0x1A000000), offset: Offset(0, 2), blurRadius: 4)],
 //           border: Border.all(color: const Color(0xFFF1F5F9)),

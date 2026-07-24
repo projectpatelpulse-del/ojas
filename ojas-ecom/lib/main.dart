@@ -11,6 +11,7 @@ import 'package:ojas_user/features/home/presentation/pages/home_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/features_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/deals_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/shop_page.dart';
+import 'package:ojas_user/features/home/presentation/pages/about_us_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/blog_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/become_vendor_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/become_reseller_page.dart';
@@ -29,6 +30,7 @@ import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/cart/presentation/pages/cart_page.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sizer/sizer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -114,6 +116,7 @@ class _MyAppState extends State<MyApp> {
             '/terms': (context) => const TermsConditionsPage(),
             '/privacy': (context) => const PrivacyPolicyPage(),
             '/contact': (context) => const ContactPage(),
+            '/about-us': (context) => const AboutUsPage(),
             '/login': (context) => const AuthScreen(isInitialLogin: true),
             '/register': (context) => const AuthScreen(isInitialLogin: false),
             '/welcome': (context) {
@@ -130,100 +133,222 @@ class _MyAppState extends State<MyApp> {
             },
           };
 
-          return MaterialApp(
-            navigatorKey: _navigatorKey,
-            debugShowCheckedModeBanner: false,
-            title: settings.marketplaceName,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.dark,
-            initialRoute: '/',
-            onGenerateRoute: (routeSettings) {
-              final name = routeSettings.name ?? '/';
-              final uri = Uri.parse(name);
-              final path = uri.path;
+   return Sizer(
+  builder: (context, orientation, deviceType) {
+    return MaterialApp(
+      navigatorKey: _navigatorKey,
+      debugShowCheckedModeBanner: false,
+      title: settings.marketplaceName,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.dark,
+      initialRoute: '/',
+      onGenerateRoute: (routeSettings) {
+        final name = routeSettings.name ?? '/';
+        final uri = Uri.parse(name);
+        final path = uri.path;
 
-              final pathSegments = uri.pathSegments;
-              final isProductPath = pathSegments.length == 2 && pathSegments[0] == 'product';
+        final pathSegments = uri.pathSegments;
+        final isProductPath =
+            pathSegments.length == 2 && pathSegments[0] == 'product';
 
-              final ref = uri.queryParameters['ref'];
-              if (ref != null) {
-                final id = path == '/product-detail' ? uri.queryParameters['id'] : (pathSegments.length == 2 ? pathSegments[1] : null);
-                if (id != null) {
-                  SessionService.instance.setReferral(ref, id);
-                }
+        final ref = uri.queryParameters['ref'];
+        if (ref != null) {
+          final id = path == '/product-detail'
+              ? uri.queryParameters['id']
+              : (pathSegments.length == 2 ? pathSegments[1] : null);
+
+          if (id != null) {
+            SessionService.instance.setReferral(ref, id);
+          }
+        }
+
+        // Commented out referral redirect hijacking logic.
+        // Previously, if refCode was present in session, navigating to '/' or other unallowed paths
+        // would forcibly redirect user to the referred ProductDetailPage instead of home page.
+        // if (SessionService.instance.refCode != null) {
+        //   final allowedPaths = {
+        //     '/product-detail',
+        //     '/cart',
+        //     '/login',
+        //     '/register',
+        //     '/welcome',
+        //     '/profile',
+        //     '/orders',
+        //     '/returns',
+        //     '/terms',
+        //     '/privacy',
+        //     '/contact',
+        //   };
+        // 
+        //   if (!allowedPaths.contains(path) && !isProductPath) {
+        //     final targetProductId =
+        //         SessionService.instance.referredProductId;
+        // 
+        //     if (targetProductId != null) {
+        //       return MaterialPageRoute(
+        //         settings: RouteSettings(
+        //           name:
+        //               '/product-detail?id=$targetProductId&ref=${SessionService.instance.refCode}',
+        //         ),
+        //         builder: (context) => ProductDetailPage(
+        //           productId: targetProductId,
+        //           refCode: SessionService.instance.refCode,
+        //         ),
+        //       );
+        //     }
+        //   }
+        // }
+
+        if (path == '/product-detail' || isProductPath) {
+          ProductModel? product;
+
+          if (routeSettings.arguments is ProductModel) {
+            product = routeSettings.arguments as ProductModel;
+          } else {
+            final id = path == '/product-detail'
+                ? uri.queryParameters['id']
+                : pathSegments[1];
+
+            if (id != null) {
+              final found = HomeController.instance.products.firstWhere(
+                (p) => p['_id'] == id,
+                orElse: () => null,
+              );
+
+              if (found != null) {
+                product = ProductModel.fromMap(found);
               }
+            }
+          }
 
-              if (SessionService.instance.refCode != null) {
-                final allowedPaths = {
-                  '/product-detail',
-                  '/cart',
-                  '/login',
-                  '/register',
-                  '/welcome',
-                  '/profile',
-                  '/orders',
-                  '/returns',
-                  '/terms',
-                  '/privacy',
-                  '/contact',
-                };
-                if (!allowedPaths.contains(path) && !isProductPath) {
-                  final targetProductId = SessionService.instance.referredProductId;
-                  if (targetProductId != null) {
-                    return MaterialPageRoute(
-                      settings: RouteSettings(
-                        name: '/product-detail?id=$targetProductId&ref=${SessionService.instance.refCode}',
-                      ),
-                      builder: (context) => ProductDetailPage(
-                        productId: targetProductId,
-                        refCode: SessionService.instance.refCode,
-                      ),
-                    );
-                  }
-                }
-              }
+          final id = path == '/product-detail'
+              ? uri.queryParameters['id']
+              : (pathSegments.length == 2 ? pathSegments[1] : null);
 
-              if (path == '/product-detail' || isProductPath) {
-                ProductModel? product;
-                if (routeSettings.arguments is ProductModel) {
-                  product = routeSettings.arguments as ProductModel;
-                } else {
-                  final id = path == '/product-detail' ? uri.queryParameters['id'] : pathSegments[1];
-                  if (id != null) {
-                    final found = HomeController.instance.products.firstWhere(
-                      (p) => p['_id'] == id,
-                      orElse: () => null,
-                    );
-                    if (found != null) {
-                      product = ProductModel.fromMap(found);
-                    }
-                  }
-                }
+          final refCodeVal =
+              ref ?? uri.queryParameters['ref'] ?? SessionService.instance.refCode;
 
-                final id = path == '/product-detail' ? uri.queryParameters['id'] : (pathSegments.length == 2 ? pathSegments[1] : null);
-                final refCodeVal = ref ?? uri.queryParameters['ref'] ?? SessionService.instance.refCode;
-
-                return MaterialPageRoute(
-                  settings: routeSettings,
-                  builder: (context) => ProductDetailPage(
-                    product: product,
-                    productId: id,
-                    refCode: refCodeVal,
-                  ),
-                );
-              }
-
-              final builder = routes[path];
-              if (builder != null) {
-                return MaterialPageRoute(
-                  settings: routeSettings,
-                  builder: builder,
-                );
-              }
-              return null;
-            },
+          return MaterialPageRoute(
+            settings: routeSettings,
+            builder: (context) => ProductDetailPage(
+              product: product,
+              productId: id,
+              refCode: refCodeVal,
+            ),
           );
+        }
+
+        final builder = routes[path];
+
+        if (builder != null) {
+          return MaterialPageRoute(
+            settings: routeSettings,
+            builder: builder,
+          );
+        }
+
+        return null;
+      },
+    );
+  },
+);
+          // MaterialApp(
+          //   navigatorKey: _navigatorKey,
+          //   debugShowCheckedModeBanner: false,
+          //   title: settings.marketplaceName,
+          //   theme: AppTheme.lightTheme,
+          //   darkTheme: AppTheme.darkTheme,
+          //   themeMode: ThemeMode.dark,
+          //   initialRoute: '/',
+          //   onGenerateRoute: (routeSettings) {
+          //     final name = routeSettings.name ?? '/';
+          //     final uri = Uri.parse(name);
+          //     final path = uri.path;
+
+          //     final pathSegments = uri.pathSegments;
+          //     final isProductPath = pathSegments.length == 2 && pathSegments[0] == 'product';
+
+          //     final ref = uri.queryParameters['ref'];
+          //     if (ref != null) {
+          //       final id = path == '/product-detail' ? uri.queryParameters['id'] : (pathSegments.length == 2 ? pathSegments[1] : null);
+          //       if (id != null) {
+          //         SessionService.instance.setReferral(ref, id);
+          //       }
+          //     }
+
+          //     if (SessionService.instance.refCode != null) {
+          //       final allowedPaths = {
+          //         '/product-detail',
+          //         '/cart',
+          //         '/login',
+          //         '/register',
+          //         '/welcome',
+          //         '/profile',
+          //         '/orders',
+          //         '/returns',
+          //         '/terms',
+          //         '/privacy',
+          //         '/contact',
+          //       };
+          //       if (!allowedPaths.contains(path) && !isProductPath) {
+          //         final targetProductId = SessionService.instance.referredProductId;
+          //         if (targetProductId != null) {
+          //           return MaterialPageRoute(
+          //             settings: RouteSettings(
+          //               name: '/product-detail?id=$targetProductId&ref=${SessionService.instance.refCode}',
+          //             ),
+          //             builder: (context) => ProductDetailPage(
+          //               productId: targetProductId,
+          //               refCode: SessionService.instance.refCode,
+          //             ),
+          //           );
+          //         }
+          //       }
+          //     }
+
+          //     if (path == '/product-detail' || isProductPath) {
+          //       ProductModel? product;
+          //       if (routeSettings.arguments is ProductModel) {
+          //         product = routeSettings.arguments as ProductModel;
+          //       } else {
+          //         final id = path == '/product-detail' ? uri.queryParameters['id'] : pathSegments[1];
+          //         if (id != null) {
+          //           final found = HomeController.instance.products.firstWhere(
+          //             (p) => p['_id'] == id,
+          //             orElse: () => null,
+          //           );
+          //           if (found != null) {
+          //             product = ProductModel.fromMap(found);
+          //           }
+          //         }
+          //       }
+
+          //       final id = path == '/product-detail' ? uri.queryParameters['id'] : (pathSegments.length == 2 ? pathSegments[1] : null);
+          //       final refCodeVal = ref ?? uri.queryParameters['ref'] ?? SessionService.instance.refCode;
+
+          //       return MaterialPageRoute(
+          //         settings: routeSettings,
+          //         builder: (context) => ProductDetailPage(
+          //           product: product,
+          //           productId: id,
+          //           refCode: refCodeVal,
+          //         ),
+          //       );
+          //     }
+
+          //     final builder = routes[path];
+          //     if (builder != null) {
+          //       return MaterialPageRoute(
+          //         settings: routeSettings,
+          //         builder: builder,
+          //       );
+          //     }
+          //     return null;
+          //   },
+          // );
+      
+      
         },
       ),
     );

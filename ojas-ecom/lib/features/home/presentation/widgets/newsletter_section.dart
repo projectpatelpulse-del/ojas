@@ -25,7 +25,7 @@ class NewsletterSection extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -33,7 +33,7 @@ class NewsletterSection extends StatelessWidget {
                     'Get the latest deals, news and product updates directly to your inbox.',
                     style: GoogleFonts.inter(
                       fontSize: 16,
-                      color: Colors.white70,
+                      color: AppColors.white70,
                     ),
                   ),
                 ],
@@ -46,7 +46,7 @@ class NewsletterSection extends StatelessWidget {
                 height: 56,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -66,7 +66,7 @@ class NewsletterSection extends StatelessWidget {
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryBlue,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                       ),

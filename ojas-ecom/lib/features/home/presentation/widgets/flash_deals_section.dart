@@ -35,19 +35,19 @@ class FlashDealsSection extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 60),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade200),
+                    border: Border.all(color: AppColors.grey200),
                   ),
                   child: Column(
                     children: [
-                      Icon(Icons.bolt_outlined, size: 48, color: Colors.grey.shade300),
+                      Icon(Icons.bolt_outlined, size: 48, color: AppColors.grey300),
                       const SizedBox(height: 16),
                       Text(
                         'No flash deals at the moment.',
                         style: GoogleFonts.inter(
                           fontSize: 15,
-                          color: Colors.grey.shade500,
+                          color: AppColors.grey500,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -75,7 +75,7 @@ class FlashDealsSection extends StatelessWidget {
                                   content: Text(
                                     success ? 'Added to cart' : 'Failed to add to cart. Please login.',
                                   ),
-                                  backgroundColor: success ? Colors.green : Colors.red,
+                                  backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                                   duration: const Duration(seconds: 1),
                                 ),
                               );
@@ -124,7 +124,7 @@ class _TimeBox extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontWeight: FontWeight.bold,
         ),
       ),

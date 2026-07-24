@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:ojas_admin/features/products/data/models/product_model.dart';
+import 'package:ojas_admin/core/services/product_service.dart';
+import 'package:ojas_admin/core/services/service_locator.dart';
 
 class ProductDetailsDialog extends StatefulWidget {
   final ProductModel product;
+  final VoidCallback? onRefresh;
 
-  const ProductDetailsDialog({super.key, required this.product});
+  const ProductDetailsDialog({super.key, required this.product, this.onRefresh});
 
   @override
   State<ProductDetailsDialog> createState() => _ProductDetailsDialogState();
@@ -15,17 +18,61 @@ class ProductDetailsDialog extends StatefulWidget {
 class _ProductDetailsDialogState extends State<ProductDetailsDialog> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _selectedImageIndex = 0;
+  late List<String> _selectedPages;
+  bool _isSavingPages = false;
+
+  final List<String> _availablePages = const [
+    'Shop',
+    'Home',
+    'Features',
+    'Deals',
+    'Trending',
+    'Daily Deals',
+    'Just For You',
+    'Latest Products',
+  ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _selectedPages = List<String>.from(widget.product.showOnPages);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _savePageVisibility() async {
+    setState(() => _isSavingPages = true);
+    try {
+      await sl<ProductService>().updateProductShowOnPages(widget.product.id, _selectedPages);
+      
+      // Update local object to reflect the saved state immediately
+      widget.product.showOnPages.clear();
+      widget.product.showOnPages.addAll(_selectedPages);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product page visibility updated successfully!')),
+        );
+      }
+      if (widget.onRefresh != null) {
+        widget.onRefresh!();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating visibility: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingPages = false);
+      }
+    }
   }
 
   Future<void> _launchURL(String urlString) async {
@@ -388,7 +435,7 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                           final variantLabel = labelParts.isEmpty ? 'Default Variant' : labelParts.join(' | ');
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             child: Row(
                               children: [
                                 Expanded(
@@ -472,7 +519,7 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   title: 'Pricing & Margins',
                   child: Column(
                     children: [
-                      _buildFinancialRow('MRP (Old Price)', p.oldPrice != null ? '₹${p.oldPrice!.toStringAsFixed(2)}' : '₹${p.price.toStringAsFixed(2)}'),
+                      _buildFinancialRow('MRP', p.oldPrice != null ? '₹${p.oldPrice!.toStringAsFixed(2)}' : '₹${p.price.toStringAsFixed(2)}'),
                       const Divider(height: 16),
                       _buildFinancialRow('Vendor Cost Price', p.originalPrice != null ? '₹${p.originalPrice!.toStringAsFixed(2)}' : 'Not specified', isCost: true),
                       const Divider(height: 16),
@@ -527,6 +574,10 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                       _buildInfoRow('Minimum Order Qty (MOQ)', '${p.moq}', icon: Icons.shopping_bag_outlined),
                       const Divider(height: 16),
                       _buildInfoRow('MOQ Bulk Discount', p.moqDiscount > 0 ? '${p.moqDiscount}%' : 'No discount', icon: Icons.discount_outlined),
+                      if (p.moqTiers.isNotEmpty) ...[
+                        const Divider(height: 16),
+                        _buildInfoRow('MOQ Tiered Discounts', p.moqTiers, icon: Icons.playlist_add_check_circle_outlined),
+                      ],
                     ],
                   ),
                 ),
@@ -601,17 +652,43 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   'Page Visibility Listings',
                   style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey.shade700),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: p.showOnPages.map((page) {
-                    return Chip(
-                      label: Text(page, style: GoogleFonts.inter(fontSize: 12)),
-                      backgroundColor: Colors.teal.shade50,
-                      side: BorderSide.none,
+                  children: _availablePages.map((page) {
+                    final isSelected = _selectedPages.any((p) => p.toLowerCase() == page.toLowerCase());
+                    return FilterChip(
+                      label: Text(page, style: GoogleFonts.inter(fontSize: 12, color: isSelected ? Colors.teal.shade900 : Colors.grey.shade700)),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedPages.add(page);
+                          } else {
+                            _selectedPages.removeWhere((p) => p.toLowerCase() == page.toLowerCase());
+                          }
+                        });
+                      },
+                      selectedColor: Colors.teal.shade100,
+                      backgroundColor: Colors.grey.shade100,
+                      checkmarkColor: Colors.teal.shade900,
                     );
                   }).toList(),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _isSavingPages ? null : _savePageVisibility,
+                  icon: _isSavingPages 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.save_outlined, size: 16),
+                  label: const Text('Save Page Visibility'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6B21A8),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
               ],
             ),

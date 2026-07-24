@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/features/home/presentation/widgets/latest_product_card.dart';
@@ -31,7 +32,7 @@ class LatestProductsSection extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: isMobile ? 20 : 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: AppColors.black87,
                   ),
                 ),
                 TextButton(
@@ -41,7 +42,7 @@ class LatestProductsSection extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFFF01B6B),
+                      color: AppColors.primaryPink,
                     ),
                   ),
                 ),
@@ -52,26 +53,26 @@ class LatestProductsSection extends StatelessWidget {
             ListenableBuilder(
               listenable: HomeController.instance,
               builder: (context, _) {
-                final backendProducts = HomeController.instance.homeProducts;
+                final backendProducts = HomeController.instance.latestProducts;
 
                 if (backendProducts.isEmpty) {
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 40),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: AppColors.grey50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade100),
+                      border: Border.all(color: AppColors.grey100),
                     ),
                     child: Column(
                       children: [
-                        Icon(Icons.new_releases_outlined, size: 40, color: Colors.grey.shade300),
+                        Icon(Icons.new_releases_outlined, size: 40, color: AppColors.grey300),
                         const SizedBox(height: 12),
                         Text(
                           'Stay tuned! New products arriving soon.',
                           style: GoogleFonts.inter(
                             fontSize: 14,
-                            color: Colors.grey.shade500,
+                            color: AppColors.grey500,
                           ),
                         ),
                       ],
@@ -103,7 +104,7 @@ class LatestProductsSection extends StatelessWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(success ? 'Added to cart!' : 'Failed. Please login.'),
-                            backgroundColor: success ? Colors.green : Colors.red,
+                            backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
                           ));

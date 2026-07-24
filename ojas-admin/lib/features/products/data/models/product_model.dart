@@ -214,6 +214,7 @@ class ProductModel {
   final String status;
   final String visibility;
   final double moqDiscount;
+  final String moqTiers;
   final List<String> showOnPages;
   
   // Pricing calculation fields
@@ -265,6 +266,7 @@ class ProductModel {
     this.status = 'Draft',
     this.visibility = 'Public',
     this.moqDiscount = 0,
+    this.moqTiers = '',
     this.showOnPages = const ['Shop'],
     this.originalPrice,
     this.commissionPercent,
@@ -372,6 +374,7 @@ class ProductModel {
       status: p['status'] ?? 'Draft',
       visibility: p['visibility'] ?? 'Public',
       moqDiscount: _toDouble(p['moqDiscount']),
+      moqTiers: p['moqTiers']?.toString() ?? '',
       showOnPages: (p['showOnPages'] as List?)?.map((e) => e.toString()).toList() ?? ['Shop'],
       originalPrice: _toDouble(p['originalPrice']),
       commissionPercent: _toDouble(p['commissionPercent']),

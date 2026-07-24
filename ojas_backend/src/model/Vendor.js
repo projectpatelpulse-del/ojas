@@ -89,6 +89,10 @@ const vendorSchema = new mongoose.Schema(
             type: Number,
             default: 10 // e.g. 10% platform commission
         },
+        maxProductsOnOtherPages: {
+            type: Number,
+            default: 5
+        },
     },
     {
         timestamps: true,

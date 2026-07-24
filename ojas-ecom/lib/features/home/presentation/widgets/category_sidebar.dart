@@ -11,12 +11,12 @@ class CategorySidebar extends StatelessWidget {
     return Container(
       width: 280,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderLight),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -28,7 +28,7 @@ class CategorySidebar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: const BoxDecoration(
-              color: Color(0xFFF01B6B), // Match the pinkish header in reference
+              color: AppColors.primaryPink, // Match the pinkish header in reference
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
@@ -36,12 +36,12 @@ class CategorySidebar extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.list, color: Colors.white, size: 20),
+                const Icon(Icons.list, color: AppColors.white, size: 20),
                 const SizedBox(width: 12),
                 Text(
                   'All Categories',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -58,7 +58,7 @@ class CategorySidebar extends StatelessWidget {
                 if (HomeController.instance.isLoading && categories.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFFF01B6B),
+                      color: AppColors.primaryPink,
                       strokeWidth: 2,
                     ),
                   );
@@ -69,7 +69,7 @@ class CategorySidebar extends StatelessWidget {
                     child: Text(
                       'No categories found',
                       style: GoogleFonts.inter(
-                        color: Colors.grey,
+                        color: AppColors.grey,
                         fontSize: 13,
                       ),
                     ),
@@ -79,7 +79,7 @@ class CategorySidebar extends StatelessWidget {
                 return Theme(
                   data: Theme.of(
                     context,
-                  ).copyWith(dividerColor: Colors.transparent),
+                  ).copyWith(dividerColor: AppColors.transparent),
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: categories.length,
@@ -108,7 +108,7 @@ class CategorySidebar extends StatelessWidget {
                             errorBuilder: (_, __, ___) => const Icon(
                               Icons.category_outlined,
                               size: 20,
-                              color: Colors.grey,
+                              color: AppColors.grey,
                             ),
                           ),
                         );
@@ -116,7 +116,7 @@ class CategorySidebar extends StatelessWidget {
                         leadingWidget = const Icon(
                           Icons.category_outlined,
                           size: 20,
-                          color: Colors.grey,
+                          color: AppColors.grey,
                         );
                       }
 
@@ -134,7 +134,7 @@ class CategorySidebar extends StatelessWidget {
                           trailing: const Icon(
                             Icons.chevron_right,
                             size: 16,
-                            color: Colors.grey,
+                            color: AppColors.grey,
                           ),
                           onTap: () {
                             Navigator.pushNamed(
@@ -163,8 +163,8 @@ class CategorySidebar extends StatelessWidget {
                         ),
                         tilePadding: const EdgeInsets.only(left: 16, right: 16),
                         childrenPadding: const EdgeInsets.only(left: 12),
-                        collapsedIconColor: Colors.grey,
-                        iconColor: const Color(0xFFF01B6B),
+                        collapsedIconColor: AppColors.grey,
+                        iconColor: AppColors.primaryPink,
                         children: subcategories.map((sub) {
                           return ListTile(
                             contentPadding: const EdgeInsets.only(
@@ -175,7 +175,7 @@ class CategorySidebar extends StatelessWidget {
                               sub['name'] ?? '',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: Colors.grey.shade600,
+                                color: AppColors.grey600,
                               ),
                             ),
                             onTap: () {

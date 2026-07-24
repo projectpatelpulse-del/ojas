@@ -4,6 +4,18 @@ const imagekit = require("../config/imagekit.js");
 const createBanner = async (req, res) => {
     try {
         const { title, subtitle, link, tag, type } = req.body;
+
+        // Validation for carousel types vs non-carousel types
+        const carouselTypes = ["main_slider", "promo"];
+        if (type && !carouselTypes.includes(type)) {
+            const existing = await Banner.findOne({ type });
+            if (existing) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `A banner of type "${type}" already exists. Please delete it first before creating a new one.` 
+                });
+            }
+        }
         
         let imageUrl = "";
         if (req.file) {
@@ -74,6 +86,18 @@ const updateBanner = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, subtitle, link, tag, type, isActive } = req.body;
+
+        // Validation for carousel types vs non-carousel types
+        const carouselTypes = ["main_slider", "promo"];
+        if (type && !carouselTypes.includes(type)) {
+            const existing = await Banner.findOne({ type, _id: { $ne: id } });
+            if (existing) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `A banner of type "${type}" already exists. Please delete it first before setting this type.` 
+                });
+            }
+        }
         
         let updateData = { title, subtitle, link, tag, type, isActive };
         

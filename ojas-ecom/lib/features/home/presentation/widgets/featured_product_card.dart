@@ -59,7 +59,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _isHovered ? AppColors.primaryBlue.withOpacity(0.5) : AppColors.borderLight,
@@ -68,7 +68,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
               boxShadow: [
                 if (_isHovered)
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: AppColors.black.withOpacity(0.05),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -88,8 +88,8 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                           widget.imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[100],
-                            child: const Icon(Icons.image_outlined, color: Colors.grey, size: 40),
+                            color: AppColors.grey[100],
+                            child: const Icon(Icons.image_outlined, color: AppColors.grey, size: 40),
                           ),
                         ),
                       ),
@@ -131,13 +131,13 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: AppColors.errorRed,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             '-${widget.discount}%',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -162,17 +162,17 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.white,
                               shape: BoxShape.circle,
                               boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+                                BoxShadow(color: AppColors.black.withOpacity(0.1), blurRadius: 4),
                               ],
                             ),
                             padding: const EdgeInsets.all(8),
                             child: Icon(
                               isWishlisted ? Icons.favorite : Icons.favorite_border, 
                               size: 18, 
-                              color: isWishlisted ? const Color(0xFFF01B6B) : Colors.grey,
+                              color: isWishlisted ? AppColors.primaryPink : AppColors.grey,
                             ),
                           ),
                         ),
@@ -194,7 +194,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                         style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Colors.black87,
+                          color: AppColors.black87,
                           height: 1.2,
                         ),
                       ),
@@ -205,7 +205,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                         '${widget.brand} • ${widget.category}',
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: Colors.grey[600],
+                          color: AppColors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -228,7 +228,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                             '${widget.rating} (${widget.ratingCount})',
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: Colors.grey[500],
+                              color: AppColors.grey[500],
                             ),
                           ),
                         ],
@@ -242,7 +242,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.grey[600],
                           height: 1.4,
                         ),
                       ),
@@ -266,7 +266,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                             style: GoogleFonts.outfit(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black,
+                              color: AppColors.black,
                             ),
                           ),
                           if (widget.oldPrice != null) ...[
@@ -275,7 +275,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                               '₹${widget.oldPrice!.ceil()}',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
-                                color: Colors.grey[400],
+                                color: AppColors.grey[400],
                                 decoration: TextDecoration.lineThrough,
                               ),
                             ),
@@ -291,7 +291,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                           label: Text('Add to Cart', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE91E63),
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppColors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             elevation: 0,
@@ -313,14 +313,14 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.grey[100],
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         label,
         style: GoogleFonts.inter(
           fontSize: 10,
-          color: Colors.grey[700],
+          color: AppColors.grey[700],
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -330,6 +330,6 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
   Color _getBadgeTextColor(String badge) {
     if (badge == "Premium") return const Color(0xFF4338CA);
     if (badge == "New") return const Color(0xFF0D9488);
-    return Colors.black87;
+    return AppColors.black87;
   }
 }

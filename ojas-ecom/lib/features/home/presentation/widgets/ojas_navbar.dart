@@ -15,7 +15,7 @@ class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
   const OjasNavbar({super.key, this.activeTitle = 'HOME'});
 
   @override
-  Size get preferredSize => Size.fromHeight(SessionService.instance.refCode != null ? 110 : 180);
+  Size get preferredSize => Size.fromHeight(SessionService.instance.refCode != null ? 0 : 0);
   
   @override
   Widget build(BuildContext context) {
@@ -33,14 +33,14 @@ class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
       return Column(
         children: [
           // 1. Top Info Bar
-          Container(
-            height: 40,
-            color: AppColors.primaryIndigo.withOpacity(0.95),
-            child: const CenteredContent(
-              horizontalPadding: 40,
-              child: _TopInfoBarContent(),
-            ),
-          ),
+          // Container(
+          //   height: 40,
+          //   color: AppColors.primaryIndigo.withOpacity(0.95),
+          //   child: const CenteredContent(
+          //     horizontalPadding: 40,
+          //     child: _TopInfoBarContent(),
+          //   ),
+          // ),
           
           // 2. Main Navigation Bar
           Container(
@@ -58,14 +58,14 @@ class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
     return Column(
         children: [
           // 1. Top Info Bar
-          Container(
-            height: 40,
-            color: AppColors.primaryIndigo.withOpacity(0.95),
-            child: const CenteredContent(
-              horizontalPadding: 40,
-              child: _TopInfoBarContent(),
-            ),
-          ),
+          // Container(
+          //   height: 40,
+          //   color: AppColors.primaryIndigo.withOpacity(0.95),
+          //   child: const CenteredContent(
+          //     horizontalPadding: 40,
+          //     child: _TopInfoBarContent(),
+          //   ),
+          // ),
           
           // 2. Main Navigation Bar
           Container(
@@ -128,7 +128,7 @@ class _MobileNavbarState extends State<_MobileNavbar> {
         color: AppColors.primaryIndigo,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: AppColors.black.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -146,7 +146,7 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                 SessionService.instance.refCode != null
                     ? const SizedBox(width: 48)
                     : IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.white),
+                        icon: const Icon(Icons.menu, color: AppColors.black),
                         onPressed: () => Scaffold.of(context).openDrawer(),
                       ),
                 Expanded(
@@ -173,7 +173,7 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                                 style: GoogleFonts.outfit(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   letterSpacing: 1.5,
                                 ),
                               ),
@@ -183,7 +183,7 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                               style: GoogleFonts.outfit(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppColors.white,
                                 letterSpacing: 1.5,
                               ),
                             ),
@@ -193,14 +193,14 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 22),
+                      icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.black, size: 22),
                       onPressed: () => Navigator.pushNamed(context, '/cart'),
                     ),
                     ValueListenableBuilder<UserModel?>(
                       valueListenable: SessionService.instance.userNotifier,
                       builder: (context, user, _) {
                         return IconButton(
-                          icon: const Icon(Icons.person_outline, color: Colors.white, size: 22),
+                          icon: const Icon(Icons.person_outline, color: AppColors.black, size: 22),
                           onPressed: () {
                             if (user != null) {
                               Navigator.pushNamed(context, '/profile', arguments: user);
@@ -224,11 +224,11 @@ class _MobileNavbarState extends State<_MobileNavbar> {
               child: Container(
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: AppColors.black.withOpacity(0.08),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),
@@ -242,10 +242,10 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                         child: TextField(
                           controller: _searchController,
                           onSubmitted: (_) => _handleSearch(),
-                          style: const TextStyle(color: Colors.black, fontSize: 14),
+                          style: const TextStyle(color: AppColors.black, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: 'Search products...',
-                            hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                            hintStyle: TextStyle(color: AppColors.grey[500], fontSize: 14),
                             border: InputBorder.none,
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -267,7 +267,7 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                         ),
                         child: const Icon(
                           Icons.search,
-                          color: Colors.white,
+                          color: AppColors.white,
                           size: 20,
                         ),
                       ),
@@ -289,47 +289,41 @@ class _TopInfoBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width - 80, // Accounts for padding
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                const Icon(Icons.flash_on, color: AppColors.accentOrange, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'Good Deals Every Day!',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'Learn More',
-                  style: GoogleFonts.inter(
-                    color: AppColors.accentOrange,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ],
+            const Icon(Icons.flash_on, color: AppColors.accentOrange, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              'Good Deals Every Day!',
+              style: GoogleFonts.inter(color: AppColors.black, fontSize: 12),
             ),
-            Row(
-              children: [
-                _TopInfoItem(
-                  icon: Icons.location_on_outlined, 
-                  label: 'Track Order',
-                  onTap: () => Navigator.pushNamed(context, '/orders'),
-                ),
-                const SizedBox(width: 24),
-                _TopInfoItem(icon: Icons.phone_outlined, label: SettingsController.instance.settings.supportPhone),
-              ],
+            const SizedBox(width: 16),
+            Text(
+              'Learn More',
+              style: GoogleFonts.inter(
+                color: AppColors.accentOrange,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ],
         ),
-      ),
+        Row(
+          children: [
+            _TopInfoItem(
+              icon: Icons.location_on_outlined, 
+              label: 'Track Order',
+              onTap: () => Navigator.pushNamed(context, '/orders'),
+            ),
+            const SizedBox(width: 24),
+            _TopInfoItem(icon: Icons.phone_outlined, label: SettingsController.instance.settings.supportPhone),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -346,11 +340,11 @@ class _TopInfoItem extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(icon, color: Colors.white70, size: 14),
+          Icon(icon, color: AppColors.black, size: 14),
           const SizedBox(width: 8),
           Text(
             label,
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+            style: GoogleFonts.inter(color: AppColors.black, fontSize: 12),
           ),
         ],
       ),
@@ -389,7 +383,7 @@ class _MainNavBarContent extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.white,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -399,27 +393,49 @@ class _MainNavBarContent extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.white,
                     letterSpacing: 1.5,
                   ),
                 ),
         ),
         const SizedBox(width: 20), // Reduced width
         
-        // Menu Items
         Expanded(
           child: SessionService.instance.refCode != null
               ? const SizedBox.shrink()
               : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _NavItem(key: const ValueKey('nav_home'), title: 'HOME', isActive: activeTitle == 'HOME', onTap: () => Navigator.pushNamed(context, '/')),
-                      _NavItem(key: const ValueKey('nav_features'), title: 'FEATURES', isActive: activeTitle == 'FEATURES', onTap: () => Navigator.pushNamed(context, '/features')),
-                      _NavItem(key: const ValueKey('nav_deals'), title: 'DEALS', isActive: activeTitle == 'DEALS', onTap: () => Navigator.pushNamed(context, '/deals')),
-                      _NavItem(key: const ValueKey('nav_shop'), title: 'SHOP', isActive: activeTitle == 'SHOP', onTap: () => Navigator.pushNamed(context, '/shop')),
-                      _NavItem(key: const ValueKey('nav_blog'), title: 'BLOG', isActive: activeTitle == 'BLOG', onTap: () => Navigator.pushNamed(context, '/blog')),
-                    ],
+                  child: ListenableBuilder(
+                    listenable: SettingsController.instance,
+                    builder: (context, _) {
+                      final itemsString = SettingsController.instance.settings.navigationMenuItems;
+                      final items = itemsString
+                          .split(',')
+                          .map((e) => e.trim())
+                          .where((e) => e.isNotEmpty)
+                          .toList();
+
+                      final routeMap = {
+                        'HOME': '/',
+                        'FEATURES': '/features',
+                        'DEALS': '/deals',
+                        'SHOP': '/shop',
+                        'BLOG': '/blog',
+                      };
+
+                      return Row(
+                        children: items.map((item) {
+                          final upperItem = item.toUpperCase();
+                          final route = routeMap[upperItem] ?? '/';
+                          return _NavItem(
+                            key: ValueKey('nav_${item.toLowerCase()}'),
+                            title: item,
+                            isActive: activeTitle.toUpperCase() == upperItem,
+                            onTap: () => Navigator.pushNamed(context, route),
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
                 ),
         ),
@@ -449,7 +465,7 @@ class _MainNavBarContent extends StatelessWidget {
               onPressed: () => Scaffold.of(context).openEndDrawer(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBlue,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.black,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -474,7 +490,7 @@ class _MainNavBarContent extends StatelessWidget {
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _AuthLink(key: ValueKey('nav_login'), title: 'Login'),
+                const _AuthLink(key: ValueKey('nav_login'), title: 'User Login'),
                 const SizedBox(width: 8),
                 _RegisterButton(key: const ValueKey('nav_register')),
               ],
@@ -505,18 +521,18 @@ class _UserInfo extends StatelessWidget {
               height: 32,
               width: 32,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: AppColors.black.withOpacity(0.15),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.blue.withOpacity(0.5), width: 1.5),
+                border: Border.all(color: AppColors.blue500.withOpacity(0.5), width: 1.5),
               ),
               child: ClipOval(
                 child: user.photo != null && user.photo!.isNotEmpty
                   ? Image.network(
                       user.photo!,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: Colors.white, size: 16),
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.black, size: 16),
                     )
-                  : const Icon(Icons.person, color: Colors.white, size: 16),
+                  : const Icon(Icons.person, color: AppColors.black, size: 16),
               ),
             ),
             const SizedBox(width: 8),
@@ -530,7 +546,7 @@ class _UserInfo extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      color: isActive ? AppColors.accentOrange : Colors.white,
+                      color: isActive ? AppColors.accentOrange : AppColors.black,
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
@@ -540,7 +556,7 @@ class _UserInfo extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      color: isActive ? AppColors.accentOrange.withOpacity(0.8) : Colors.white70,
+                      color: isActive ? AppColors.accentOrange.withOpacity(0.8) : AppColors.black87,
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
                     ),
@@ -593,7 +609,7 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
             onPressed: () => Navigator.pushNamed(context, '/become-vendor'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accentOrange,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.black,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
@@ -617,7 +633,7 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
                 onPressed: () => Navigator.pushNamed(context, '/become-reseller'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.black,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -637,7 +653,7 @@ Expanded(
   child: Container(
     height: 45,
     decoration: BoxDecoration(
-      color: Colors.grey[300],
+      color: AppColors.grey[300],
       borderRadius: BorderRadius.circular(8),
       border: Border.all( // Added border
         color: AppColors.primaryBlue,
@@ -652,12 +668,12 @@ Expanded(
             child: TextField(
               controller: _searchController,
               onSubmitted: (_) => _handleSearch(),
-              style: const TextStyle(color: Colors.black, fontSize: 14),
+              style: const TextStyle(color: AppColors.black, fontSize: 14),
               decoration: const InputDecoration(
                 hintText: 'Enter your keyword...',
                 border: InputBorder.none,
                 hintStyle: TextStyle(
-                  color: Colors.grey,
+                  color: AppColors.grey,
                   fontSize: 14,
                 ),
               ),
@@ -678,7 +694,7 @@ Expanded(
             ),
             child: const Icon(
               Icons.search,
-              color: Colors.white,
+              color: AppColors.white,
             ),
           ),
         ),
@@ -692,7 +708,7 @@ Expanded(
         //   child: Container(
         //     height: 45,
         //     decoration: BoxDecoration(
-        //       color: Colors.grey[300],
+        //       color: AppColors.grey[300],
         //       borderRadius: BorderRadius.circular(8),
         //     ),
         //     child: Row(
@@ -706,7 +722,7 @@ Expanded(
         //               decoration: const InputDecoration(
         //                 hintText: 'Enter your keyword...',
         //                 border: InputBorder.none,
-        //                 hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+        //                 hintStyle: TextStyle(color: AppColors.grey, fontSize: 14),
         //               ),
         //             ),
         //           ),
@@ -723,7 +739,7 @@ Expanded(
         //                 bottomRight: Radius.circular(8),
         //               ),
         //             ),
-        //             child: const Icon(Icons.search, color: Colors.white),
+        //             child: const Icon(Icons.search, color: AppColors.black),
         //           ),
         //         ),
         //       ],
@@ -755,7 +771,7 @@ class _NavItem extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isActive ? AppColors.accentOrange : Colors.transparent,
+                color: isActive ? AppColors.accentOrange : AppColors.transparent,
                 width: 2.0,
               ),
             ),
@@ -765,7 +781,7 @@ class _NavItem extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              color: isActive ? AppColors.accentOrange : Colors.white,
+              color: isActive ? AppColors.accentOrange : AppColors.black,
               fontSize: 13,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
@@ -801,14 +817,14 @@ class _IconAction extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.white, size: 20),
+            Icon(icon, color: AppColors.black, size: 20),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
                 '$label $count',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                style: GoogleFonts.inter(color: AppColors.black, fontSize: 13, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -831,7 +847,7 @@ class _AuthLink extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Text(
           title,
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(color: AppColors.black, fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -848,13 +864,13 @@ class _RegisterButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           'Register',
           style: GoogleFonts.inter(
-            color: AppColors.primaryIndigo,
+            color: AppColors.charcoal,
             fontSize: 14,
             fontWeight: FontWeight.bold,
           ),

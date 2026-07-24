@@ -138,7 +138,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         width: 500,
@@ -160,7 +160,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                  icon: const Icon(Icons.close_rounded, color: AppColors.grey),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -248,7 +248,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFFF01B6B),
+                                color: AppColors.primaryPink,
                               ),
                             )
                           : null,
@@ -278,7 +278,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
                 child: Text(
                   _errorMessage!,
                   style: GoogleFonts.inter(
-                    color: Colors.red[600],
+                    color: AppColors.errorRed[600],
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -295,7 +295,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      side: BorderSide(color: Colors.grey[200]!),
+                      side: BorderSide(color: AppColors.grey[200]!),
                     ),
                     child: Text(
                       'CANCEL',
@@ -401,8 +401,8 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF01B6B),
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primaryPink,
+                      foregroundColor: AppColors.white,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -464,7 +464,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
           style: GoogleFonts.inter(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: AppColors.black,
           ),
           decoration: InputDecoration(
             prefixIcon: Icon(
@@ -483,14 +483,14 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
               vertical: 16,
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: AppColors.grey[50],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: AppColors.grey[200]!),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: AppColors.grey[200]!),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -500,7 +500,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
               ),
             ),
             hintText: 'Enter $label',
-            hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
+            hintStyle: GoogleFonts.inter(color: AppColors.grey[400], fontSize: 14),
           ),
         ),
         if (helperText != null) ...[
@@ -509,7 +509,7 @@ class _AddressFormDialogState extends State<AddressFormDialog> {
             helperText,
             style: GoogleFonts.inter(
               fontSize: 11,
-              color: Colors.grey[600],
+              color: AppColors.grey[600],
               fontWeight: FontWeight.w500,
             ),
           ),

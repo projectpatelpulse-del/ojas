@@ -95,7 +95,7 @@
 //         color: AppColors.primaryIndigo,
 //         boxShadow: [
 //           BoxShadow(
-//             color: Colors.black.withOpacity(0.1),
+//             color: AppColors.black.withOpacity(0.1),
 //             blurRadius: 10,
 //             offset: const Offset(0, 2),
 //           ),
@@ -111,7 +111,7 @@
 //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 //               children: [
 //                 IconButton(
-//                   icon: const Icon(Icons.menu, color: Colors.white),
+//                   icon: const Icon(Icons.menu, color: AppColors.white),
 //                   onPressed: () => Scaffold.of(context).openDrawer(),
 //                 ),
 //                 Expanded(
@@ -129,7 +129,7 @@
 //                               style: GoogleFonts.outfit(
 //                                 fontSize: 24,
 //                                 fontWeight: FontWeight.bold,
-//                                 color: Colors.white,
+//                                 color: AppColors.white,
 //                                 letterSpacing: 1.5,
 //                               ),
 //                             ),
@@ -139,14 +139,14 @@
 //                 Row(
 //                   children: [
 //                     IconButton(
-//                       icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 22),
+//                       icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.white, size: 22),
 //                       onPressed: () => Scaffold.of(context).openEndDrawer(),
 //                     ),
 //                     ValueListenableBuilder<UserModel?>(
 //                       valueListenable: SessionService.instance.userNotifier,
 //                       builder: (context, user, _) {
 //                         return IconButton(
-//                           icon: const Icon(Icons.person_outline, color: Colors.white, size: 22),
+//                           icon: const Icon(Icons.person_outline, color: AppColors.white, size: 22),
 //                           onPressed: () {
 //                             if (user != null) {
 //                               Navigator.pushNamed(context, '/profile', arguments: user);
@@ -169,11 +169,11 @@
 //             child: Container(
 //               height: 46,
 //               decoration: BoxDecoration(
-//                 color: Colors.white,
+//                 color: AppColors.white,
 //                 borderRadius: BorderRadius.circular(30),
 //                 boxShadow: [
 //                   BoxShadow(
-//                     color: Colors.black.withOpacity(0.05),
+//                     color: AppColors.black.withOpacity(0.05),
 //                     blurRadius: 10,
 //                     offset: const Offset(0, 4),
 //                   ),
@@ -182,11 +182,11 @@
 //               child: TextField(
 //                 controller: _searchController,
 //                 onSubmitted: (_) => _handleSearch(),
-//                 style: const TextStyle(color: Colors.black87, fontSize: 14),
+//                 style: const TextStyle(color: AppColors.black87, fontSize: 14),
 //                 decoration: InputDecoration(
 //                   hintText: 'Search products...',
-//                   hintStyle: TextStyle(color: Colors.black45, fontSize: 14),
-//                   prefixIcon: const Icon(Icons.search, color: Colors.black45, size: 20),
+//                   hintStyle: TextStyle(color: AppColors.black45, fontSize: 14),
+//                   prefixIcon: const Icon(Icons.search, color: AppColors.black45, size: 20),
 //                   border: InputBorder.none,
 //                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
 //                 ),
@@ -218,7 +218,7 @@
 //                 const SizedBox(width: 8),
 //                 Text(
 //                   'Good Deals Every Day!',
-//                   style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+//                   style: GoogleFonts.inter(color: AppColors.white, fontSize: 12),
 //                 ),
 //                 const SizedBox(width: 16),
 //                 Text(
@@ -262,11 +262,11 @@
 //       onTap: onTap,
 //       child: Row(
 //         children: [
-//           Icon(icon, color: Colors.white70, size: 14),
+//           Icon(icon, color: AppColors.white70, size: 14),
 //           const SizedBox(width: 8),
 //           Text(
 //             label,
-//             style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+//             style: GoogleFonts.inter(color: AppColors.white70, fontSize: 12),
 //           ),
 //         ],
 //       ),
@@ -295,7 +295,7 @@
 //                     style: GoogleFonts.outfit(
 //                       fontSize: 28,
 //                       fontWeight: FontWeight.bold,
-//                       color: Colors.white,
+//                       color: AppColors.white,
 //                       letterSpacing: 1.5,
 //                     ),
 //                   ),
@@ -305,7 +305,7 @@
 //                   style: GoogleFonts.outfit(
 //                     fontSize: 28,
 //                     fontWeight: FontWeight.bold,
-//                     color: Colors.white,
+//                     color: AppColors.white,
 //                     letterSpacing: 1.5,
 //                   ),
 //                 ),
@@ -351,7 +351,7 @@
 //               onPressed: () => Scaffold.of(context).openEndDrawer(),
 //               style: ElevatedButton.styleFrom(
 //                 backgroundColor: AppColors.primaryBlue,
-//                 foregroundColor: Colors.white,
+//                 foregroundColor: AppColors.white,
 //                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
 //                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 //               ),
@@ -409,18 +409,18 @@
 //               height: 32,
 //               width: 32,
 //               decoration: BoxDecoration(
-//                 color: Colors.white.withOpacity(0.15),
+//                 color: AppColors.white.withOpacity(0.15),
 //                 shape: BoxShape.circle,
-//                 border: Border.all(color: Colors.blue.withOpacity(0.5), width: 1.5),
+//                 border: Border.all(color: AppColors.blue500.withOpacity(0.5), width: 1.5),
 //               ),
 //               child: ClipOval(
 //                 child: user.photo != null && user.photo!.isNotEmpty
 //                   ? Image.network(
 //                       user.photo!,
 //                       fit: BoxFit.cover,
-//                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: Colors.white, size: 16),
+//                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.person, color: AppColors.white, size: 16),
 //                     )
-//                   : const Icon(Icons.person, color: Colors.white, size: 16),
+//                   : const Icon(Icons.person, color: AppColors.white, size: 16),
 //               ),
 //             ),
 //             const SizedBox(width: 8),
@@ -434,7 +434,7 @@
 //                     maxLines: 1,
 //                     overflow: TextOverflow.ellipsis,
 //                     style: GoogleFonts.inter(
-//                       color: isActive ? AppColors.accentOrange : Colors.white,
+//                       color: isActive ? AppColors.accentOrange : AppColors.white,
 //                       fontSize: 13,
 //                       fontWeight: FontWeight.bold,
 //                     ),
@@ -444,7 +444,7 @@
 //                     maxLines: 1,
 //                     overflow: TextOverflow.ellipsis,
 //                     style: GoogleFonts.inter(
-//                       color: isActive ? AppColors.accentOrange.withOpacity(0.8) : Colors.white70,
+//                       color: isActive ? AppColors.accentOrange.withOpacity(0.8) : AppColors.white70,
 //                       fontSize: 10,
 //                       fontWeight: FontWeight.w500,
 //                     ),
@@ -497,7 +497,7 @@
 //             onPressed: () => Navigator.pushNamed(context, '/become-vendor'),
 //             style: ElevatedButton.styleFrom(
 //               backgroundColor: AppColors.accentOrange,
-//               foregroundColor: Colors.white,
+//               foregroundColor: AppColors.white,
 //               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 //               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 //             ),
@@ -514,7 +514,7 @@
 //           child: Container(
 //             height: 45,
 //             decoration: BoxDecoration(
-//               color: Colors.white,
+//               color: AppColors.white,
 //               borderRadius: BorderRadius.circular(8),
 //             ),
 //             child: Row(
@@ -528,7 +528,7 @@
 //                       decoration: const InputDecoration(
 //                         hintText: 'Enter your keyword...',
 //                         border: InputBorder.none,
-//                         hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+//                         hintStyle: TextStyle(color: AppColors.grey, fontSize: 14),
 //                       ),
 //                     ),
 //                   ),
@@ -545,7 +545,7 @@
 //                         bottomRight: Radius.circular(8),
 //                       ),
 //                     ),
-//                     child: const Icon(Icons.search, color: Colors.white),
+//                     child: const Icon(Icons.search, color: AppColors.white),
 //                   ),
 //                 ),
 //               ],
@@ -577,7 +577,7 @@
 //           decoration: BoxDecoration(
 //             border: Border(
 //               bottom: BorderSide(
-//                 color: isActive ? AppColors.accentOrange : Colors.transparent,
+//                 color: isActive ? AppColors.accentOrange : AppColors.transparent,
 //                 width: 2.0,
 //               ),
 //             ),
@@ -587,7 +587,7 @@
 //             maxLines: 1,
 //             overflow: TextOverflow.ellipsis,
 //             style: GoogleFonts.inter(
-//               color: isActive ? AppColors.accentOrange : Colors.white,
+//               color: isActive ? AppColors.accentOrange : AppColors.white,
 //               fontSize: 13,
 //               fontWeight: FontWeight.bold,
 //               letterSpacing: 0.5,
@@ -625,14 +625,14 @@
 //         child: Row(
 //           mainAxisSize: MainAxisSize.min,
 //           children: [
-//             Icon(icon, color: Colors.white, size: 20),
+//             Icon(icon, color: AppColors.white, size: 20),
 //             const SizedBox(width: 8),
 //             Flexible(
 //               child: Text(
 //                 '$label $count',
 //                 maxLines: 1,
 //                 overflow: TextOverflow.ellipsis,
-//                 style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+//                 style: GoogleFonts.inter(color: AppColors.white, fontSize: 13, fontWeight: FontWeight.w500),
 //               ),
 //             ),
 //           ],
@@ -657,7 +657,7 @@
 //         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
 //         child: Text(
 //           title,
-//           style: GoogleFonts.inter(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+//           style: GoogleFonts.inter(color: AppColors.white, fontSize: 14, fontWeight: FontWeight.w600),
 //         ),
 //       ),
 //     );
@@ -674,7 +674,7 @@
 //       child: Container(
 //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
 //         decoration: BoxDecoration(
-//           color: Colors.white,
+//           color: AppColors.white,
 //           borderRadius: BorderRadius.circular(4),
 //         ),
 //         child: Text(

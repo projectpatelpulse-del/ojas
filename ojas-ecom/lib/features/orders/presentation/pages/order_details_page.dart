@@ -80,7 +80,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           _otpController.clear();
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Order delivered successfully!'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Order delivered successfully!'), backgroundColor: AppColors.successGreen),
         );
       } else {
         setState(() {
@@ -120,7 +120,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('OTP resent: ${data['deliveryOtp']}'), backgroundColor: Colors.green),
+          SnackBar(content: Text('OTP resent: ${data['deliveryOtp']}'), backgroundColor: AppColors.successGreen),
         );
       } else {
         setState(() {
@@ -236,14 +236,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.blue.shade600],
+          colors: [AppColors.blue800, AppColors.blue600],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.shade200.withOpacity(0.4),
+            color: AppColors.blue200.withOpacity(0.4),
             blurRadius: 12,
             offset: const Offset(0, 6),
           )
@@ -254,14 +254,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.security_outlined, color: Colors.white, size: 24),
+              const Icon(Icons.security_outlined, color: AppColors.white, size: 24),
               const SizedBox(width: 12),
               Text(
                 'Secure Delivery OTP',
                 style: GoogleFonts.outfit(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
               ),
             ],
@@ -269,7 +269,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           const SizedBox(height: 16),
           Text(
             'Share this OTP with the delivery partner only when you receive your order safely.',
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            style: GoogleFonts.inter(color: AppColors.white70, fontSize: 13),
           ),
           const SizedBox(height: 24),
           Row(
@@ -277,16 +277,16 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: AppColors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.white.withOpacity(0.3)),
                 ),
                 child: Text(
                   otp,
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppColors.white,
                     letterSpacing: 2,
                   ),
                 ),
@@ -299,17 +299,17 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     const SnackBar(content: Text('OTP copied to clipboard!'), duration: Duration(seconds: 2)),
                   );
                 },
-                icon: const Icon(Icons.copy_rounded, color: Colors.white),
+                icon: const Icon(Icons.copy_rounded, color: AppColors.white),
                 tooltip: 'Copy OTP',
               ),
             ],
           ),
           //           const SizedBox(height: 24),
-          // const Divider(color: Colors.white24),
+          // const Divider(color: AppColors.white24),
           // const SizedBox(height: 16),
           // Text(
           //   'Delivery Partner OTP Verification (Agent Use Only)',
-          //   style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          //   style: GoogleFonts.inter(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.bold),
           // ),
           // const SizedBox(height: 12),
           // Row(
@@ -320,24 +320,24 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           //         child: TextField(
           //           controller: _otpController,
           //           keyboardType: TextInputType.number,
-          //           style: GoogleFonts.inter(color: Colors.white),
+          //           style: GoogleFonts.inter(color: AppColors.white),
           //           decoration: InputDecoration(
           //             hintText: 'Enter 6-digit OTP',
-          //             hintStyle: GoogleFonts.inter(color: Colors.white38),
+          //             hintStyle: GoogleFonts.inter(color: AppColors.white38),
           //             filled: true,
-          //             fillColor: Colors.white.withOpacity(0.1),
+          //             fillColor: AppColors.white.withOpacity(0.1),
           //             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           //             border: OutlineInputBorder(
           //               borderRadius: BorderRadius.circular(8),
-          //               borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+          //               borderSide: BorderSide(color: AppColors.white.withOpacity(0.2)),
           //             ),
           //             enabledBorder: OutlineInputBorder(
           //               borderRadius: BorderRadius.circular(8),
-          //               borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+          //               borderSide: BorderSide(color: AppColors.white.withOpacity(0.2)),
           //             ),
           //             focusedBorder: OutlineInputBorder(
           //               borderRadius: BorderRadius.circular(8),
-          //               borderSide: const BorderSide(color: Colors.white),
+          //               borderSide: const BorderSide(color: AppColors.white),
           //             ),
           //           ),
           //         ),
@@ -349,15 +349,15 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           //       child: ElevatedButton(
           //         onPressed: _verifyingOtp ? null : _verifyOtp,
           //         style: ElevatedButton.styleFrom(
-          //           backgroundColor: Colors.white,
-          //           foregroundColor: Colors.blue.shade900,
+          //           backgroundColor: AppColors.white,
+          //           foregroundColor: AppColors.blue900,
           //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           //           padding: const EdgeInsets.symmetric(horizontal: 20),
           //         ),
           //         child: _verifyingOtp
           //             ? const SizedBox(
           //                 width: 20, height: 20,
-          //                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
+          //                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.blue500),
           //               )
           //             : Text('Verify', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
           //       ),
@@ -368,18 +368,18 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           //   const SizedBox(height: 8),
           //   Text(
           //     _otpError!,
-          //     style: GoogleFonts.inter(color: Colors.red.shade200, fontSize: 12, fontWeight: FontWeight.bold),
+          //     style: GoogleFonts.inter(color: AppColors.red200, fontSize: 12, fontWeight: FontWeight.bold),
           //   ),
           // ],
           // const SizedBox(height: 16),
           // TextButton.icon(
           //   onPressed: _resendingOtp ? null : _resendOtp,
           //   icon: _resendingOtp
-          //       ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-          //       : const Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
+          //       ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
+          //       : const Icon(Icons.refresh_rounded, color: AppColors.white70, size: 16),
           //   label: Text(
           //     'Resend Delivery OTP',
-          //     style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+          //     style: GoogleFonts.inter(color: AppColors.white, fontSize: 13, fontWeight: FontWeight.bold),
           //   ),
           // ),
        
@@ -411,13 +411,13 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade50,
+                    color: AppColors.green50,
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.green.shade200),
+                    border: Border.all(color: AppColors.green200),
                   ),
                   child: Text(
                     'BUSINESS',
-                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.green700),
                   ),
                 ),
             ],
@@ -428,19 +428,22 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           _summaryRow('Status', _currentOrder.status, isStatus: true),
           _summaryRow('Payment', _currentOrder.paymentStatus, isStatus: true, statusColor: _getPaymentStatusColor()),
           const Divider(height: 32),
+          _summaryRow('Subtotal (Selling Value)', '\u20b9${_currentOrder.subtotal.ceil()}'),
+          _summaryRow('Taxes', '\u20b9${_currentOrder.totalGst.ceil()}'),
+          const Divider(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Total Amount',
-                style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.black87),
               ),
               Text(
-                '\u20b9${_currentOrder.totalAmount.ceil()}',
+                '\u20b9${(_currentOrder.subtotal.ceil() + _currentOrder.totalGst.ceil())}',
                 style: GoogleFonts.hind(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
-                  color: const Color(0xFFF01B6B),
+                  color: AppColors.primaryPink,
                 ),
               ),
             ],
@@ -455,10 +458,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               icon: const Icon(Icons.download_outlined, size: 18),
               label: const Text('Download Invoice'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF01B6B),
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.grey.shade200,
-                disabledForegroundColor: Colors.grey.shade500,
+                backgroundColor: AppColors.primaryPink,
+                foregroundColor: AppColors.white,
+                disabledBackgroundColor: AppColors.grey200,
+                disabledForegroundColor: AppColors.grey500,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
@@ -471,7 +474,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               child: Center(
                 child: Text(
                   'Invoice will be available after delivery',
-                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey600, fontStyle: FontStyle.italic),
                 ),
               ),
             ),
@@ -486,7 +489,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.inter(color: Colors.black87, fontSize: 14)),
+          Text(label, style: GoogleFonts.inter(color: AppColors.black87, fontSize: 14)),
           if (isStatus)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -504,7 +507,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               ),
             )
           else
-            Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.black)),
+            Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.black)),
         ],
       ),
     );
@@ -543,7 +546,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.track_changes, color: Color(0xFFF01B6B), size: 22),
+              const Icon(Icons.track_changes, color: AppColors.primaryPink, size: 22),
               const SizedBox(width: 12),
               Text(
                 'Order Tracking',
@@ -561,7 +564,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               final bool isCompleted = index <= currentStage;
               final bool isLast = index == stages.length - 1;
               final bool isCurrent = index == currentStage;
-              final Color activeColor = stage['status'] == 'CANCELLED' ? Colors.red : Colors.green;
+              final Color activeColor = stage['status'] == 'CANCELLED' ? AppColors.errorRed : AppColors.successGreen;
 
               return IntrinsicHeight(
                 child: Row(
@@ -572,18 +575,18 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                           width: 32,
                           height: 32,
                           decoration: BoxDecoration(
-                            color: isCompleted ? activeColor : Colors.grey.shade100,
+                            color: isCompleted ? activeColor : AppColors.grey100,
                             shape: BoxShape.circle,
                             border: isCurrent ? Border.all(color: activeColor.withOpacity(0.3), width: 6) : null,
                           ),
-                          child: Icon(stage['icon'], size: 16, color: isCompleted ? Colors.white : Colors.grey.shade400),
+                          child: Icon(stage['icon'], size: 16, color: isCompleted ? AppColors.white : AppColors.grey400),
                         ),
                         if (!isLast)
                           Expanded(
                             child: Container(
                               width: 2,
                               margin: const EdgeInsets.symmetric(vertical: 4),
-                              color: index < currentStage ? activeColor : Colors.grey.shade200,
+                              color: index < currentStage ? activeColor : AppColors.grey200,
                             ),
                           ),
                       ],
@@ -599,14 +602,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                               stage['title'],
                               style: GoogleFonts.inter(
                                 fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
-                                color: isCompleted ? Colors.black87 : Colors.grey.shade400,
+                                color: isCompleted ? AppColors.black87 : AppColors.grey400,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               stage['subtitle'],
-                              style: GoogleFonts.inter(color: isCompleted ? Colors.grey.shade600 : Colors.grey.shade300, fontSize: 13),
+                              style: GoogleFonts.inter(color: isCompleted ? AppColors.grey600 : AppColors.grey300, fontSize: 13),
                             ),
                           ],
                         ),
@@ -623,9 +626,9 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50.withOpacity(0.5),
+                color: AppColors.blue50.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade100),
+                border: Border.all(color: AppColors.blue100),
               ),
               child: Column(
                 children: [
@@ -633,16 +636,16 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.blue.shade100, shape: BoxShape.circle),
-                        child: Icon(Icons.local_shipping, color: Colors.blue.shade700, size: 18),
+                        decoration: BoxDecoration(color: AppColors.blue100, shape: BoxShape.circle),
+                        child: Icon(Icons.local_shipping, color: AppColors.blue700, size: 18),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(_currentOrder.courierPartner, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.blue.shade900)),
-                            Text('AWB: ${_currentOrder.awb}', style: GoogleFonts.inter(fontSize: 12, color: Colors.blue.shade700)),
+                            Text(_currentOrder.courierPartner, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.blue900)),
+                            Text('AWB: ${_currentOrder.awb}', style: GoogleFonts.inter(fontSize: 12, color: AppColors.blue700)),
                           ],
                         ),
                       ),
@@ -664,8 +667,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         icon: const Icon(Icons.open_in_new, size: 14),
                         label: const Text('Track Shipment'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade700,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.blue700,
+                          foregroundColor: AppColors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
@@ -712,7 +715,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     height: 80,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[200]!),
+                      border: Border.all(color: AppColors.grey[200]!),
                       image: DecorationImage(
                         image: NetworkImage(ApiService.formatImageUrl(item.image)),
                         fit: BoxFit.cover,
@@ -737,7 +740,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         const SizedBox(height: 8),
                         Text(
                           'Qty: ${item.quantity}',
-                          style: GoogleFonts.inter(color: Colors.black54, fontSize: 13),
+                          style: GoogleFonts.inter(color: AppColors.black54, fontSize: 13),
                         ),
                       ],
                     ),
@@ -748,7 +751,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     style: GoogleFonts.hind(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.black,
+                      color: AppColors.black,
                     ),
                   ),
                 ],
@@ -779,7 +782,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.location_on_outlined, color: Color(0xFFF01B6B), size: 20),
+              const Icon(Icons.location_on_outlined, color: AppColors.primaryPink, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -787,16 +790,16 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   children: [
                     Text(
                       _currentOrder.shippingAddress.street,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.black),
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.black),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${_currentOrder.shippingAddress.city}, ${_currentOrder.shippingAddress.state}',
-                      style: GoogleFonts.inter(color: Colors.black87, fontSize: 14),
+                      style: GoogleFonts.inter(color: AppColors.black87, fontSize: 14),
                     ),
                     Text(
                       _currentOrder.shippingAddress.zipCode,
-                      style: GoogleFonts.inter(color: Colors.black87, fontSize: 14),
+                      style: GoogleFonts.inter(color: AppColors.black87, fontSize: 14),
                     ),
                   ],
                 ),
@@ -807,7 +810,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             const Divider(height: 32),
             Row(
               children: [
-                const Icon(Icons.receipt_long_outlined, color: Color(0xFFF01B6B), size: 20),
+                const Icon(Icons.receipt_long_outlined, color: AppColors.primaryPink, size: 20),
                 const SizedBox(width: 12),
                 Text(
                   'Tax Invoice Details',
@@ -821,18 +824,18 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: AppColors.green50,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.green.shade200),
+                  border: Border.all(color: AppColors.green200),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.business_center_outlined, color: Colors.green.shade700, size: 14),
+                    Icon(Icons.business_center_outlined, color: AppColors.green700, size: 14),
                     const SizedBox(width: 6),
                     Text(
                       'Business Purchase enabled',
-                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.green.shade700),
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.green700),
                     ),
                   ],
                 ),
@@ -851,11 +854,11 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
-      color: Colors.white,
+      color: AppColors.white,
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
+          color: AppColors.black.withOpacity(0.04),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
@@ -868,28 +871,28 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
       case 'Pending':
         return Colors.amber;
       case 'Processing':
-        return Colors.blue;
+        return AppColors.blue500;
       case 'Shipped':
         return Colors.orange;
       case 'Delivered':
-        return Colors.green;
+        return AppColors.successGreen;
       case 'Cancelled':
-        return Colors.red;
+        return AppColors.errorRed;
       default:
-        return Colors.grey;
+        return AppColors.grey;
     }
   }
 
   Color _getPaymentStatusColor() {
     switch (_currentOrder.paymentStatus) {
       case 'Paid':
-        return Colors.green;
+        return AppColors.successGreen;
       case 'Unpaid':
         return Colors.amber;
       case 'Failed':
-        return Colors.red;
+        return AppColors.errorRed;
       default:
-        return Colors.grey;
+        return AppColors.grey;
     }
   }
 }

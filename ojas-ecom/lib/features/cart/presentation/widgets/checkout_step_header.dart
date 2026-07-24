@@ -27,11 +27,11 @@ class CheckoutStepHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: AppColors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -46,7 +46,7 @@ class CheckoutStepHeader extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                color: isActive ? AppColors.primaryBlue.withOpacity(0.05) : Colors.white,
+                color: isActive ? AppColors.primaryBlue.withOpacity(0.05) : AppColors.white,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -56,13 +56,13 @@ class CheckoutStepHeader extends StatelessWidget {
                     height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isActive ? AppColors.primaryBlue : Colors.grey[100],
+                      color: isActive ? AppColors.primaryBlue : AppColors.grey[100],
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       '${step + 1}',
                       style: GoogleFonts.outfit(
-                        color: isActive ? Colors.white : Colors.grey[500],
+                        color: isActive ? AppColors.white : AppColors.grey[500],
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -79,7 +79,7 @@ class CheckoutStepHeader extends StatelessWidget {
                   ),
                   const Spacer(),
                   if (isCompleted && !isActive)
-                    const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
+                    const Icon(Icons.check_circle_rounded, color: AppColors.successGreen, size: 20),
                   if (isCompleted && !isActive)
                     TextButton(
                       onPressed: onChangeTap,

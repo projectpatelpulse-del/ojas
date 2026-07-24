@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
@@ -17,7 +18,7 @@ class OjasFooter extends StatelessWidget {
     final settings = SettingsController.instance.settings;
 
     return Container(
-      color: const Color(0xFF1E1B4B), // Premium Dark Indigo matching navbar
+      color: AppColors.primaryIndigo, // Premium Dark Indigo matching navbar
       padding: EdgeInsets.only(top: isMobile ? 40 : 80, bottom: 40),
       child: CenteredContent(
         horizontalPadding: isMobile ? 16 : 40,
@@ -41,7 +42,7 @@ class OjasFooter extends StatelessWidget {
                           ? settings.tagline 
                           : 'Your trusted marketplace for quality products from verified vendors worldwide. Discover amazing deals and exceptional service.',
                         style: GoogleFonts.inter(
-                          color: Colors.white70,
+                          color: AppColors.black87,
                           height: 1.6,
                           fontSize: 13,
                         ),
@@ -49,32 +50,37 @@ class OjasFooter extends StatelessWidget {
                       const SizedBox(height: 24),
                       Row(
                         children: [
-                          _socialIcon(
-                            Ionicons.logo_facebook, 
-                            onTap: settings.facebookLink.isNotEmpty ? () => _launchURL(settings.facebookLink) : null
-                          ),
-                          _socialIcon(
-                            Ionicons.logo_instagram, 
-                            onTap: settings.instagramLink.isNotEmpty ? () => _launchURL(settings.instagramLink) : null
-                          ),
-                          _socialIcon(
-                            Ionicons.logo_twitter, 
-                            onTap: settings.twitterLink.isNotEmpty ? () => _launchURL(settings.twitterLink) : null
-                          ),
-                          _socialIcon(
-                            Ionicons.logo_youtube, 
-                            onTap: settings.youtubeLink.isNotEmpty ? () => _launchURL(settings.youtubeLink) : null
-                          ),
-                          _socialIcon(
-                            Ionicons.logo_linkedin, 
-                            onTap: settings.linkedinLink.isNotEmpty ? () => _launchURL(settings.linkedinLink) : null
-                          ),
+                          if (settings.facebookLink.isNotEmpty)
+                            _socialIcon(
+                              Ionicons.logo_facebook, 
+                              onTap: () => _launchURL(settings.facebookLink),
+                            ),
+                          if (settings.instagramLink.isNotEmpty)
+                            _socialIcon(
+                              Ionicons.logo_instagram, 
+                              onTap: () => _launchURL(settings.instagramLink),
+                            ),
+                          if (settings.twitterLink.isNotEmpty)
+                            _socialIcon(
+                              Ionicons.logo_twitter, 
+                              onTap: () => _launchURL(settings.twitterLink),
+                            ),
+                          if (settings.youtubeLink.isNotEmpty)
+                            _socialIcon(
+                              Ionicons.logo_youtube, 
+                              onTap: () => _launchURL(settings.youtubeLink),
+                            ),
+                          if (settings.linkedinLink.isNotEmpty)
+                            _socialIcon(
+                              Ionicons.logo_linkedin, 
+                              onTap: () => _launchURL(settings.linkedinLink),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 24),
                       Text(
                         settings.footerMessage,
-                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                        style: GoogleFonts.inter(color: AppColors.black38, fontSize: 11),
                       ),
                     ],
                   ),
@@ -88,7 +94,7 @@ class OjasFooter extends StatelessWidget {
                     children: [
                       _columnTitle('QUICK LINKS'),
                       _footerLink(context, 'Home', route: '/'),
-                      _footerLink(context, 'About Us', route: '/contact'), // Link to contact as placeholder for about
+                      _footerLink(context, 'About Us', route: '/about-us'),
                       _footerLink(context, 'Shop', route: '/shop'),
                       _footerLink(context, 'Offers', route: '/deals'),
                       const SizedBox(height: 8),
@@ -163,7 +169,7 @@ class OjasFooter extends StatelessWidget {
             ),
             
             // const SizedBox(height: 48),
-            // Divider(color: Colors.white10, thickness: 1),
+            // Divider(color: AppColors.black12, thickness: 1),
 
             
             /*
@@ -205,10 +211,10 @@ class OjasFooter extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFF01B6B),
+            color: AppColors.primaryPink,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(name.isNotEmpty ? name[0] : 'O', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          child: Text(name.isNotEmpty ? name[0] : 'O', style: const TextStyle(color: AppColors.black, fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         const SizedBox(width: 8),
         Text(
@@ -216,7 +222,7 @@ class OjasFooter extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.black,
           ),
         ),
       ],
@@ -262,20 +268,20 @@ class OjasFooter extends StatelessWidget {
       width: 140,
       height: 80,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.black,
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4),
+          BoxShadow(color: AppColors.black.withOpacity(0.02), blurRadius: 4),
         ],
       ),
       child: Center(
         child: isBoat
             ? RichText(
                 text: TextSpan(
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.normal, color: Colors.black87),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.normal, color: AppColors.black87),
                   children: [
                     const TextSpan(text: 'bo'),
-                    TextSpan(text: 'A', style: TextStyle(color: Colors.red[600], fontWeight: FontWeight.bold)),
+                    TextSpan(text: 'A', style: TextStyle(color: AppColors.errorRed[600], fontWeight: FontWeight.bold)),
                     const TextSpan(text: 't'),
                   ],
                 ),
@@ -283,7 +289,7 @@ class OjasFooter extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.shopping_cart, color: Colors.black87, size: 20),
+                  const Icon(Icons.shopping_cart, color: AppColors.black87, size: 20),
                   Text('SHOP SMART', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.pink, fontSize: 11)),
                 ],
               ),
@@ -299,7 +305,7 @@ class OjasFooter extends StatelessWidget {
         style: GoogleFonts.inter(
           fontWeight: FontWeight.bold,
           fontSize: 12,
-          color: Colors.white,
+          color: AppColors.black,
           letterSpacing: 1.0,
         ),
       ),
@@ -326,13 +332,13 @@ class OjasFooter extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: Colors.white54),
+          Icon(icon, size: 16, color: AppColors.black54),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
               style: GoogleFonts.inter(
-                color: Colors.white70,
+                color: AppColors.black87,
                 fontSize: 13,
               ),
             ),
@@ -350,10 +356,10 @@ class OjasFooter extends StatelessWidget {
         margin: const EdgeInsets.only(right: 16),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: AppColors.black.withOpacity(0.05),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: Colors.white70, size: 18),
+        child: Icon(icon, color: AppColors.black87, size: 18),
       ),
     );
   }
@@ -389,9 +395,9 @@ class _FooterLinkItemState extends State<_FooterLinkItem> {
   @override
   Widget build(BuildContext context) {
     // Primary pink color from branding, matches navbar hover
-    const Color activeColor = Color(0xFFF01B6B);
-    const Color normalColor = Colors.white70;
-    const Color hoverColor = Colors.white;
+    const Color activeColor = AppColors.primaryPink;
+    const Color normalColor = AppColors.black87;
+    const Color hoverColor = AppColors.black;
 
     return InkWell(
       onTap: widget.onTap,

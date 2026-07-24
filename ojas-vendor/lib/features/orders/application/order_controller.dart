@@ -11,10 +11,10 @@ class OrderController extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   int get totalOrders => _orders.length;
-  int get pendingOrders => _orders.where((o) => o['status'] == 'Pending').length;
-  int get processingOrders => _orders.where((o) => o['status'] == 'Processing').length;
-  int get deliveredOrders => _orders.where((o) => o['status'] == 'Delivered').length;
-  int get shippedOrders => _orders.where((o) => o['status'] == 'Shipped').length;
+  int get pendingOrders => _orders.where((o) => o['status'].toString().toUpperCase() == 'PENDING').length;
+  int get processingOrders => _orders.where((o) => o['status'].toString().toUpperCase() == 'PROCESSING').length;
+  int get deliveredOrders => _orders.where((o) => o['status'].toString().toUpperCase() == 'DELIVERED').length;
+  int get shippedOrders => _orders.where((o) => o['status'].toString().toUpperCase() == 'SHIPPED').length;
 
   Future<void> fetchVendorOrders() async {
     _isLoading = true;
@@ -37,7 +37,7 @@ class OrderController extends ChangeNotifier {
     try {
       final response = await _apiService.dio.put('/order/status', data: {
         'orderId': orderId,
-        'status': status,
+        'status': status.toUpperCase(),
       });
       if (response.statusCode == 200) {
         await fetchVendorOrders();

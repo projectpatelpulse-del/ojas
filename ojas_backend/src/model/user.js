@@ -76,6 +76,9 @@ const userSchema = new mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Product",
                 },
+                variationId: {
+                    type: String,
+                },
                 quantity: {
                     type: Number,
                     default: 1,

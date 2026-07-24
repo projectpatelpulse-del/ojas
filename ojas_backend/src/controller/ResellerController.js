@@ -115,6 +115,7 @@ exports.registerInfluencer = async (req, res) => {
         res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 24 * 60 * 60 * 1000 });
 
         res.status(201).json({
+            token,
             user: {
                 id: user._id,
                 name: user.name,
@@ -124,8 +125,8 @@ exports.registerInfluencer = async (req, res) => {
             message: "Reseller registered successfully"
         });
     } catch (err) {
-        console.error("Register reseller error:", err.message);
-        res.status(500).json({ message: err.message });
+      console.error("Register reseller error:", err.message);
+      res.status(500).json({ message: err.message });
     }
 };
 
@@ -154,6 +155,7 @@ exports.loginInfluencer = async (req, res) => {
         res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 24 * 60 * 60 * 1000 });
 
         res.status(200).json({
+            token,
             user: {
                 id: user._id,
                 name: user.name,

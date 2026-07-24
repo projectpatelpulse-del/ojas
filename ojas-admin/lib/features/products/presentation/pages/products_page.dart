@@ -441,7 +441,10 @@ class _ProductsPageState extends State<ProductsPage> {
                   onPressed: () {
                     showDialog(
                       context: context,
-                      builder: (context) => ProductDetailsDialog(product: p),
+                      builder: (context) => ProductDetailsDialog(
+                        product: p,
+                        onRefresh: _fetchProducts,
+                      ),
                     );
                   },
                 ),

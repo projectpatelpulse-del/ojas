@@ -35,4 +35,12 @@ class ProductService {
       rethrow;
     }
   }
+
+  Future<void> updateProductShowOnPages(String id, List<String> showOnPages) async {
+    try {
+      await _apiService.dio.put('/admin/product/$id', data: {'showOnPages': showOnPages});
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

@@ -25,6 +25,7 @@ class _UsersPageState extends State<UsersPage> {
   String _selectedRole = 'All';
   String _selectedStatus = 'All';
   String _searchQuery = '';
+  final Set<String> _selectedEmails = {};
 
   final List<String> _roleOptions = ['All', 'Admin', 'Customer', 'Vendor', 'Reseller'];
   final List<String> _statusOptions = ['All', 'Active', 'Inactive', 'Banned'];
@@ -52,6 +53,7 @@ class _UsersPageState extends State<UsersPage> {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
+      _selectedEmails.clear();
     });
     try {
       final users = await _userService.getUsers();
@@ -110,6 +112,15 @@ class _UsersPageState extends State<UsersPage> {
         break;
       case 'password':
         _showResetPasswordDialog(user);
+        break;
+      case 'email':
+        if (user['email'] != null && user['email'].toString().isNotEmpty) {
+          _showSendEmailDialog(sendToAll: false, targetEmail: user['email']);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('This user does not have a valid email address.'), backgroundColor: Colors.red),
+          );
+        }
         break;
       case 'delete':
         _showDeleteConfirmation(user);
@@ -264,6 +275,194 @@ class _UsersPageState extends State<UsersPage> {
     }
   }
 
+  void _showSendEmailDialog({bool sendToAll = false, String? targetEmail}) {
+    final TextEditingController subjectController = TextEditingController();
+    final TextEditingController bodyController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isSending = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  const Icon(Icons.mail_outline, color: Color(0xFF3B82F6)),
+                  const SizedBox(width: 8),
+                  Text(
+                    sendToAll
+                        ? 'Send Email to All Users'
+                        : (targetEmail != null ? 'Send Email to User' : 'Send Email to Selected Users'),
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ],
+              ),
+              content: Form(
+                key: formKey,
+                child: SizedBox(
+                  width: 600,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sendToAll
+                            ? 'This email will be sent to all $_totalUsersCount registered users.'
+                            : (targetEmail != null ? 'This email will be sent to $targetEmail.' : 'This email will be sent to ${_selectedEmails.length} selected recipients.'),
+                        style: GoogleFonts.inter(color: Colors.grey.shade600, fontSize: 13),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: subjectController,
+                        decoration: InputDecoration(
+                          labelText: 'Subject',
+                          labelStyle: GoogleFonts.inter(fontSize: 14),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          isDense: true,
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Subject is required';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: bodyController,
+                        maxLines: 8,
+                        decoration: InputDecoration(
+                          labelText: 'Email Content (HTML supported)',
+                          labelStyle: GoogleFonts.inter(fontSize: 14),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          alignLabelWithHint: true,
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Content is required';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSending ? null : () => Navigator.pop(context),
+                  child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey.shade600)),
+                ),
+                ElevatedButton(
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          if (formKey.currentState!.validate()) {
+                            setDialogState(() {
+                              isSending = true;
+                            });
+
+                            try {
+                              List<String> recipients = [];
+                              if (sendToAll) {
+                                recipients = _allUsers
+                                    .map((u) => u['email']?.toString() ?? '')
+                                    .where((e) => e.isNotEmpty)
+                                    .toList();
+                              } else if (targetEmail != null) {
+                                recipients = [targetEmail];
+                              } else {
+                                recipients = _selectedEmails.toList();
+                              }
+
+                              if (recipients.isEmpty) {
+                                throw 'No recipients found with valid email addresses.';
+                              }
+
+                              final result = await _userService.sendBulkEmail(
+                                emails: recipients,
+                                subject: subjectController.text.trim(),
+                                htmlContent: bodyController.text.trim(),
+                              );
+
+                              final successList = result['data']?['successful'] as List?;
+                              final failList = result['data']?['failed'] as List?;
+                              final successCount = successList?.length ?? 0;
+                              final failCount = failList?.length ?? 0;
+
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                if (failCount > 0 && successCount == 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Failed to send emails. Error: SMTP sending limit exceeded or credentials invalid.'),
+                                      backgroundColor: Colors.red,
+                                      duration: const Duration(seconds: 5),
+                                    ),
+                                  );
+                                } else if (failCount > 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Mixed results: Sent to $successCount users, failed for $failCount users. Check server logs.'),
+                                      backgroundColor: Colors.orange,
+                                      duration: const Duration(seconds: 5),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Emails sent successfully to $successCount users!'),
+                                      backgroundColor: const Color(0xFF22C55E),
+                                    ),
+                                  );
+                                }
+
+                                if (targetEmail == null) {
+                                  setState(() {
+                                    _selectedEmails.clear();
+                                  });
+                                }
+                              }
+                            } catch (e) {
+                              setDialogState(() {
+                                isSending = false;
+                              });
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to send emails: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: isSending
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : Text('Send', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AdminLayout(
@@ -315,17 +514,50 @@ class _UsersPageState extends State<UsersPage> {
                             ),
                           ],
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _fetchUsers,
-                          icon: const Icon(Icons.refresh, size: 18),
-                          label: Text('Refresh', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF22C55E), // Green
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            elevation: 0,
-                          ),
+                        Row(
+                          children: [
+                            if (_selectedEmails.isNotEmpty) ...[
+                              ElevatedButton.icon(
+                                onPressed: () => _showSendEmailDialog(sendToAll: false),
+                                icon: const Icon(Icons.mail_outline, size: 18),
+                                label: Text('Send to Selected (${_selectedEmails.length})', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF3B82F6),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ] else ...[
+                              ElevatedButton.icon(
+                                onPressed: () => _showSendEmailDialog(sendToAll: true),
+                                icon: const Icon(Icons.mail_outline, size: 18),
+                                label: Text('Send Email to All', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF3B82F6),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  elevation: 0,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            ElevatedButton.icon(
+                              onPressed: _fetchUsers,
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: Text('Refresh', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF22C55E), // Green
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -505,6 +737,29 @@ class _UsersPageState extends State<UsersPage> {
                             ),
                             child: Row(
                               children: [
+                                SizedBox(
+                                  width: 40,
+                                  child: Checkbox(
+                                    value: _filteredUsers.isNotEmpty &&
+                                        _filteredUsers.every((u) => u['email'] != null && _selectedEmails.contains(u['email'])),
+                                    tristate: true,
+                                    activeColor: const Color(0xFF22C55E),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        if (val == true) {
+                                          for (var u in _filteredUsers) {
+                                            if (u['email'] != null) {
+                                              _selectedEmails.add(u['email']);
+                                            }
+                                          }
+                                        } else {
+                                          _selectedEmails.clear();
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
                                 _tableHeader('USER/VENDOR DETAILS', flex: 3),
                                 _tableHeader('PHONE', flex: 2),
                                 _tableHeader('ROLE', flex: 1),
@@ -595,6 +850,25 @@ class _UsersPageState extends State<UsersPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         children: [
+          SizedBox(
+            width: 40,
+            child: user['email'] != null && user['email'].toString().isNotEmpty
+                ? Checkbox(
+                    value: _selectedEmails.contains(user['email']),
+                    activeColor: const Color(0xFF22C55E),
+                    onChanged: (val) {
+                      setState(() {
+                        if (val == true) {
+                          _selectedEmails.add(user['email']);
+                        } else {
+                          _selectedEmails.remove(user['email']);
+                        }
+                      });
+                    },
+                  )
+                : const SizedBox(),
+          ),
+          const SizedBox(width: 8),
           // User Details
           Expanded(
             flex: 3,
@@ -703,6 +977,16 @@ class _UsersPageState extends State<UsersPage> {
                         Icon(Icons.lock_reset, size: 18, color: Colors.orange),
                         SizedBox(width: 12),
                         Text('Reset Password', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'email',
+                    child: Row(
+                      children: [
+                        Icon(Icons.mail_outline, size: 18, color: Colors.blue),
+                        SizedBox(width: 12),
+                        Text('Send Email', style: TextStyle(fontSize: 14)),
                       ],
                     ),
                   ),

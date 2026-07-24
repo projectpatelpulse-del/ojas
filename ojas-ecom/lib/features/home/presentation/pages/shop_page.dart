@@ -1,3 +1,4 @@
+import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
@@ -36,18 +37,71 @@ class _ShopPageState extends State<ShopPage> {
   String _searchQuery = '';
   final TextEditingController _searchTextController = TextEditingController();
 
+  int _currentPage = 1;
+  int _pageSize = 50;
+
   @override
   void initState() {
     super.initState();
     if (widget.initialCategory != null) {
       _selectedCategory = widget.initialCategory!;
+      _resolveInitialCategory();
     }
     if (widget.initialSubCategory != null) {
       _selectedSubCategory = widget.initialSubCategory!;
+      _resolveInitialSubCategory();
     }
     if (widget.initialSearch != null) {
       _searchQuery = widget.initialSearch!;
       _searchTextController.text = _searchQuery;
+    }
+  }
+
+  void _resolveInitialCategory() {
+    final initial = widget.initialCategory;
+    if (initial == null || initial == 'All') return;
+    
+    final categories = HomeController.instance.categories;
+    final initialLower = initial.toLowerCase();
+    
+    for (final cat in categories) {
+      final String catName = (cat['name'] ?? '').toString();
+      final catLower = catName.toLowerCase();
+      
+      if (catLower == initialLower || 
+          catLower.contains(initialLower) || 
+          initialLower.contains(catLower) ||
+          (catLower.split(' ')[0].length > 2 && catLower.split(' ')[0] == initialLower.split(' ')[0])) {
+        _selectedCategory = catName;
+        break;
+      }
+    }
+  }
+
+  void _resolveInitialSubCategory() {
+    final initialSub = widget.initialSubCategory;
+    if (initialSub == null || initialSub == 'All') return;
+    
+    final cat = HomeController.instance.categories.firstWhere(
+      (c) => c['name'] == _selectedCategory,
+      orElse: () => null,
+    );
+    if (cat == null) return;
+    
+    final List<dynamic> subs = cat['subcategories'] ?? [];
+    final initialSubLower = initialSub.toLowerCase();
+    
+    for (final sub in subs) {
+      final String subName = (sub['name'] ?? '').toString();
+      final subLower = subName.toLowerCase();
+      
+      if (subLower == initialSubLower ||
+          subLower.contains(initialSubLower) ||
+          initialSubLower.contains(subLower) ||
+          (subLower.split(' ')[0].length > 2 && subLower.split(' ')[0] == initialSubLower.split(' ')[0])) {
+        _selectedSubCategory = subName;
+        break;
+      }
     }
   }
 
@@ -62,23 +116,99 @@ class _ShopPageState extends State<ShopPage> {
     
     // 0. Filtering by Search Query
     if (_searchQuery.isNotEmpty) {
-      list = list.where((p) {
-        final name = (p['name'] ?? '').toString().toLowerCase();
-        final brand = (p['brand'] ?? '').toString().toLowerCase();
-        final category = (p['category'] ?? '').toString().toLowerCase();
-        final query = _searchQuery.toLowerCase();
-        return name.contains(query) || brand.contains(query) || category.contains(query);
-      }).toList();
+      final words = _searchQuery.toLowerCase().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      if (words.isNotEmpty) {
+        list = list.where((p) {
+          final name = (p['name'] ?? '').toString().toLowerCase();
+          final brand = (p['brand'] ?? '').toString().toLowerCase();
+          
+          final categoryObj = p['category'];
+          String category = '';
+          if (categoryObj is Map) {
+            category = (categoryObj['name'] ?? '').toString().toLowerCase();
+          } else if (categoryObj is String) {
+            category = categoryObj.toLowerCase();
+          }
+
+          // Match if every search word is found in either name, brand, or category
+          return words.every((word) =>
+              name.contains(word) ||
+              brand.contains(word) ||
+              category.contains(word));
+        }).toList();
+      }
     }
     
     // 1. Filtering by Category
     if (_selectedCategory != 'All') {
-      list = list.where((p) => (p['category'] ?? '') == _selectedCategory).toList();
+      list = list.where((p) {
+        final category = p['category'];
+        String? catName;
+        if (category is Map) {
+          catName = category['name']?.toString();
+        } else if (category is String) {
+          catName = category;
+        }
+        if (p['categoryName'] != null) {
+          catName = p['categoryName'].toString();
+        }
+
+        if (catName == null) return false;
+        
+        final selectedLower = _selectedCategory.toLowerCase();
+        final catLower = catName.toLowerCase();
+        
+        if (selectedLower == catLower) return true;
+        
+        // Also check if they map to the same category object in HomeController.instance.categories
+        final matchedSelectedCat = HomeController.instance.categories.firstWhere(
+          (c) => (c['name'] ?? '').toString().toLowerCase() == selectedLower,
+          orElse: () => null,
+        );
+        final matchedProductCat = HomeController.instance.categories.firstWhere(
+          (c) => c['_id'] == catLower || c['id'] == catLower || (c['name'] ?? '').toString().toLowerCase() == catLower,
+          orElse: () => null,
+        );
+        if (matchedSelectedCat != null && matchedProductCat != null) {
+          if (matchedSelectedCat['_id'] == matchedProductCat['_id']) return true;
+        }
+
+        final firstWordSelected = selectedLower.split(' ')[0];
+        final firstWordProduct = catLower.split(' ')[0];
+        if (firstWordSelected.length > 2 && firstWordProduct.length > 2) {
+          if (firstWordSelected == firstWordProduct) return true;
+        }
+
+        return catLower.contains(selectedLower) || selectedLower.contains(catLower);
+      }).toList();
     }
 
     // 1.1 Filtering by SubCategory
     if (_selectedSubCategory != 'All') {
-      list = list.where((p) => (p['subCategory'] ?? '') == _selectedSubCategory).toList();
+      list = list.where((p) {
+        final subCategory = p['subCategory'];
+        String? subCatName;
+        if (subCategory is Map) {
+          subCatName = subCategory['name']?.toString();
+        } else if (subCategory is String) {
+          subCatName = subCategory;
+        }
+        
+        if (subCatName == null) return false;
+
+        final selectedLower = _selectedSubCategory.toLowerCase();
+        final subCatLower = subCatName.toLowerCase();
+
+        if (selectedLower == subCatLower) return true;
+
+        final firstWordSelected = selectedLower.split(' ')[0];
+        final firstWordSubCat = subCatLower.split(' ')[0];
+        if (firstWordSelected.length > 2 && firstWordSubCat.length > 2) {
+          if (firstWordSelected == firstWordSubCat) return true;
+        }
+
+        return subCatLower.contains(selectedLower) || selectedLower.contains(subCatLower);
+      }).toList();
     }
 
     // 2. Filtering by Brand
@@ -94,14 +224,14 @@ class _ShopPageState extends State<ShopPage> {
             : (p['price'] ?? 0)).toDouble();
             
         switch (_selectedPrice) {
-          case 'Under ₹50':
-            return price < 50;
-          case '₹50 - ₹100':
-            return price >= 50 && price <= 100;
-          case '₹100 - ₹200':
-            return price >= 100 && price <= 200;
-          case '₹200+':
-            return price > 200;
+          case '₹0 - ₹200':
+            return price >= 0 && price <= 200;
+          case '₹200 - ₹500':
+            return price >= 200 && price <= 500;
+          case '₹500 - ₹1000':
+            return price >= 500 && price <= 1000;
+          case '₹1000+':
+            return price > 1000;
           default:
             return true;
         }
@@ -137,6 +267,20 @@ class _ShopPageState extends State<ShopPage> {
     }
     
     return list;
+  }
+
+  int get _totalPages => (_shopProducts.length / _pageSize).ceil();
+
+  List<dynamic> get _paginatedProducts {
+    final fullList = _shopProducts;
+    final total = _totalPages;
+    if (_currentPage > total && total > 0) {
+      _currentPage = total;
+    }
+    final startIndex = (_currentPage - 1) * _pageSize;
+    if (startIndex >= fullList.length || startIndex < 0) return [];
+    final endIndex = (startIndex + _pageSize).clamp(0, fullList.length);
+    return fullList.sublist(startIndex, endIndex);
   }
 
   @override
@@ -185,11 +329,11 @@ class _ShopPageState extends State<ShopPage> {
                               ),
                             ),
                           ),
-                        if (!HomeController.instance.isLoading && _shopProducts.isNotEmpty)
+                        if (!HomeController.instance.isLoading && _shopProducts.isNotEmpty) ...[
                           GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _shopProducts.length,
+                            itemCount: _paginatedProducts.length,
                             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: isMobile ? 2 : (isTablet ? 2 : 3),
                               crossAxisSpacing: isMobile ? 12 : 20,
@@ -197,9 +341,11 @@ class _ShopPageState extends State<ShopPage> {
                               mainAxisExtent: isMobile ? 380 : 420,
                             ),
                             itemBuilder: (context, index) {
-                              return _ShopProductCard(product: _shopProducts[index]);
+                              return _ShopProductCard(product: _paginatedProducts[index]);
                             },
                           ),
+                          _buildPaginationControls(),
+                        ],
                       ],
                     ),
                   ),
@@ -212,11 +358,127 @@ class _ShopPageState extends State<ShopPage> {
     );
   }
 
+  Widget _buildPaginationControls() {
+    final total = _totalPages;
+    if (total <= 1) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 30),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(
+                'Page $_currentPage of $total',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Previous Button
+                IconButton(
+                  onPressed: _currentPage > 1 
+                      ? () => setState(() => _currentPage--) 
+                      : null,
+                  icon: const Icon(Icons.chevron_left),
+                ),
+                
+                // Page Numbers
+                ...List.generate(total, (index) {
+                  final page = index + 1;
+                  final isCurrent = page == _currentPage;
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ElevatedButton(
+                      onPressed: () => setState(() => _currentPage = page),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isCurrent ? AppColors.primaryPink : Colors.white,
+                        foregroundColor: isCurrent ? Colors.white : const Color(0xFF475569),
+                        elevation: 0,
+                        side: BorderSide(color: isCurrent ? Colors.transparent : const Color(0xFFCBD5E1)),
+                        minimumSize: const Size(40, 40),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text('$page', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
+                  );
+                }),
+
+                // Next Button
+                IconButton(
+                  onPressed: _currentPage < total 
+                      ? () => setState(() => _currentPage++) 
+                      : null,
+                  icon: const Icon(Icons.chevron_right),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageSizeDropdown() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: Responsive.isMobile(context) ? 8 : 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _pageSize,
+          isDense: true,
+          dropdownColor: AppColors.white,
+          icon: const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFF64748B)),
+          style: GoogleFonts.inter(
+            fontSize: 13, 
+            color: const Color(0xFF1E293B),
+            fontWeight: FontWeight.w500,
+          ),
+          items: [20, 50, 100].map((v) {
+            return DropdownMenuItem(
+              value: v, 
+              child: Text('Show $v', style: GoogleFonts.inter(color: const Color(0xFF1E293B))),
+            );
+          }).toList(),
+          onChanged: (v) {
+            if (v != null) {
+              setState(() {
+                _pageSize = v;
+                _currentPage = 1;
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopBar(bool isMobile) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -231,6 +493,7 @@ class _ShopPageState extends State<ShopPage> {
                 children: [
                   _buildFilterButton(),
                   _buildSortDropdown(),
+                  _buildPageSizeDropdown(),
                 ],
               )
             : Row(
@@ -242,6 +505,8 @@ class _ShopPageState extends State<ShopPage> {
                   ),
                   Row(
                     children: [
+                      _buildPageSizeDropdown(),
+                      const SizedBox(width: 12),
                       _buildSortDropdown(),
                       const SizedBox(width: 12),
                       _buildViewToggles(),
@@ -263,7 +528,7 @@ class _ShopPageState extends State<ShopPage> {
           builder: (context) => Container(
             height: MediaQuery.of(context).size.height * 0.8,
             padding: const EdgeInsets.all(20),
-            color: Colors.white,
+            color: AppColors.white,
             child: SingleChildScrollView(child: _buildSidebar()),
           ),
         );
@@ -271,11 +536,11 @@ class _ShopPageState extends State<ShopPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.filter_list, size: 20, color: Color(0xFFF01B6B)),
+          const Icon(Icons.filter_list, size: 20, color: AppColors.primaryPink),
           const SizedBox(width: 8),
           Text(
             'Filters',
-            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFFF01B6B)),
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primaryPink),
           ),
         ],
       ),
@@ -286,12 +551,12 @@ class _ShopPageState extends State<ShopPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: Responsive.isMobile(context) ? 8 : 14, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: AppColors.black.withOpacity(0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -301,7 +566,7 @@ class _ShopPageState extends State<ShopPage> {
         child: DropdownButton<String>(
           value: _sortBy,
           isDense: true,
-          dropdownColor: Colors.white,
+          dropdownColor: AppColors.white,
           icon: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFF64748B)),
           style: GoogleFonts.inter(
             fontSize: 13, 
@@ -314,7 +579,10 @@ class _ShopPageState extends State<ShopPage> {
               child: Text(v, style: GoogleFonts.inter(color: const Color(0xFF1E293B))),
             );
           }).toList(),
-          onChanged: (v) => setState(() => _sortBy = v!),
+          onChanged: (v) => setState(() {
+            _sortBy = v!;
+            _currentPage = 1;
+          }),
         ),
       ),
     );
@@ -325,21 +593,21 @@ class _ShopPageState extends State<ShopPage> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF01B6B),
+            color: AppColors.primaryPink,
             borderRadius: BorderRadius.circular(4),
           ),
           padding: const EdgeInsets.all(6),
-          child: const Icon(Icons.grid_view, color: Colors.white, size: 18),
+          child: const Icon(Icons.grid_view, color: AppColors.white, size: 18),
         ),
         const SizedBox(width: 6),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             border: Border.all(color: const Color(0xFFE2E8F0)),
             borderRadius: BorderRadius.circular(4),
           ),
           padding: const EdgeInsets.all(6),
-          child: const Icon(Icons.view_list, color: Colors.grey, size: 18),
+          child: const Icon(Icons.view_list, color: AppColors.grey, size: 18),
         ),
       ],
     );
@@ -349,7 +617,7 @@ class _ShopPageState extends State<ShopPage> {
     return Container(
       width: 250,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -368,19 +636,22 @@ class _ShopPageState extends State<ShopPage> {
             child: Row(
               children: [
                 const SizedBox(width: 12),
-                const Icon(Icons.search, size: 18, color: Colors.grey),
+                const Icon(Icons.search, size: 18, color: AppColors.grey),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _searchTextController,
-                    onChanged: (v) => setState(() => _searchQuery = v),
+                    onChanged: (v) => setState(() {
+                      _searchQuery = v;
+                      _currentPage = 1;
+                    }),
                     decoration: const InputDecoration(
                       hintText: 'Search...',
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
-                    style: GoogleFonts.inter(fontSize: 14, color: Colors.black),
+                    style: GoogleFonts.inter(fontSize: 14, color: AppColors.black),
                   ),
                 ),
               ],
@@ -396,6 +667,7 @@ class _ShopPageState extends State<ShopPage> {
               setState(() {
                 _selectedCategory = v!;
                 _selectedSubCategory = 'All'; // Reset subcategory when category changes
+                _currentPage = 1;
               });
             }
           ),
@@ -415,26 +687,31 @@ class _ShopPageState extends State<ShopPage> {
                 return _radioGroup(
                   ['All', ...subs.map((s) => s['name'].toString())],
                   _selectedSubCategory,
-                  (v) => setState(() => _selectedSubCategory = v!)
+                  (v) => setState(() {
+                    _selectedSubCategory = v!;
+                    _currentPage = 1;
+                  })
                 );
               },
             ),
           ],
           
           const SizedBox(height: 24),
-          _sidebarTitle('Brands'),
-          _radioGroup(['All', 'Official Store', 'Premium'], _selectedBrand, (v) => setState(() => _selectedBrand = v!)),
-          
-          const SizedBox(height: 24),
           _sidebarTitle('Price Range'),
-          _radioGroup(['All', 'Under ₹50', '₹50 - ₹100', '₹100 - ₹200', '₹200+'], _selectedPrice, (v) => setState(() => _selectedPrice = v!)),
+          _radioGroup(['All', '₹0 - ₹200', '₹200 - ₹500', '₹500 - ₹1000', '₹1000+'], _selectedPrice, (v) => setState(() {
+            _selectedPrice = v!;
+            _currentPage = 1;
+          })),
           
           const SizedBox(height: 24),
           Row(
             children: [
               SizedBox(
                 width: 20, height: 20,
-                child: Checkbox(value: _inStockOnly, onChanged: (v) => setState(() => _inStockOnly = v!), activeColor: const Color(0xFFF01B6B)),
+                child: Checkbox(value: _inStockOnly, onChanged: (v) => setState(() {
+                  _inStockOnly = v!;
+                  _currentPage = 1;
+                }), activeColor: AppColors.primaryPink),
               ),
               const SizedBox(width: 12),
               Text('In Stock Only', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF334155))),
@@ -516,7 +793,7 @@ class _ShopPageState extends State<ShopPage> {
                       return Icon(
                         index < startsCount ? Icons.star : Icons.star_border,
                         size: 14,
-                        color: index < startsCount ? Colors.amber : Colors.grey.shade400,
+                        color: index < startsCount ? Colors.amber : AppColors.grey400,
                       );
                     }),
                   ),
@@ -541,7 +818,7 @@ class _ShopProductCard extends StatelessWidget {
     final bool isMobile = Responsive.isMobile(context);
     final String id = product['_id'] ?? '';
     final String name = product['name'] ?? 'Product';
-    final String vendor = product['brand'] ?? 'Official Store';
+    // final String vendor = product['brand'] ?? 'Official Store';
     final double price = (product['discountPrice'] != null && product['discountPrice'] > 0 
         ? product['discountPrice'] 
         : (product['price'] ?? 0)).toDouble();
@@ -558,12 +835,12 @@ class _ShopProductCard extends StatelessWidget {
           onTap: () => Navigator.pushNamed(context, '/product-detail?id=$id', arguments: ProductModel.fromMap(product)),
           child: Container(
             decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: AppColors.black.withOpacity(0.03),
                 offset: const Offset(0, 4),
                 blurRadius: 12,
               )
@@ -579,7 +856,7 @@ class _ShopProductCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     Container(
-                      color: Colors.white,
+                      color: AppColors.white,
                       width: double.infinity,
                       child: Center(
                         child: Padding(
@@ -607,7 +884,7 @@ class _ShopProductCard extends StatelessWidget {
                           ),
                           child: Text(
                             '$discount% OFF',
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            style: GoogleFonts.inter(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -617,7 +894,7 @@ class _ShopProductCard extends StatelessWidget {
                       child: _actionButton(
                         isWishlisted ? Icons.favorite : Icons.favorite_border, 
                         () => WishlistController.instance.toggleWishlist(product),
-                        color: isWishlisted ? const Color(0xFFF01B6B) : const Color(0xFF475569),
+                        color: isWishlisted ? AppColors.primaryPink : const Color(0xFF475569),
                       ),
                     ),
                   ],
@@ -629,10 +906,10 @@ class _ShopProductCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      vendor,
-                      style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8), fontWeight: FontWeight.w600, letterSpacing: 0.5),
-                    ),
+                    // Text(
+                    //   vendor,
+                    //   style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8), fontWeight: FontWeight.w600, letterSpacing: 0.5),
+                    // ),
                     const SizedBox(height: 6),
                     Text(
                       name,
@@ -650,7 +927,7 @@ class _ShopProductCard extends StatelessWidget {
                       children: [
                         Text(
                           '₹${price.ceil()}',
-                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w900, color: const Color(0xFFF01B6B)),
+                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primaryPink),
                         ),
                         if (discount > 0) ...[
                           const SizedBox(width: 8),
@@ -667,7 +944,7 @@ class _ShopProductCard extends StatelessWidget {
                         Icon(
                           Icons.inventory_2_outlined,
                           size: 13,
-                          color: (product['stock'] ?? 0) > 0 ? Colors.green.shade600 : Colors.red.shade600,
+                          color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -675,7 +952,7 @@ class _ShopProductCard extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: (product['stock'] ?? 0) > 0 ? Colors.green.shade600 : Colors.red.shade600,
+                            color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
                           ),
                         ),
                         if ((product['moq'] ?? 1) > 1) ...[
@@ -683,16 +960,16 @@ class _ShopProductCard extends StatelessWidget {
                           Container(
                             // padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              color: AppColors.blue50,
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.blue.shade200),
+                              border: Border.all(color: AppColors.blue200),
                             ),
                             child: Text(
                               'MOQ: ${product['moq']}',
                               style: GoogleFonts.inter(
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
+                                color: AppColors.blue700,
                               ),
                             ),
                           ),
@@ -719,7 +996,7 @@ class _ShopProductCard extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(success ? '$name added to cart' : 'Failed to add to cart. Please login first.'),
-                                backgroundColor: success ? Colors.green : Colors.red,
+                                backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 margin: const EdgeInsets.all(20),
@@ -735,7 +1012,7 @@ class _ShopProductCard extends StatelessWidget {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0F172A),
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.white,
                           padding: EdgeInsets.symmetric(vertical: isMobile ? 10 : 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
@@ -760,7 +1037,7 @@ class _ShopProductCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           shape: BoxShape.circle,
           boxShadow: const [BoxShadow(color: Color(0x1A000000), offset: Offset(0, 2), blurRadius: 4)],
           border: Border.all(color: const Color(0xFFF1F5F9)),
