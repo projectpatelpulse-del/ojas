@@ -22,11 +22,7 @@ class ProductAttributes {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'size': size,
-      'color': color,
-      'material': material,
-    };
+    return {'size': size, 'color': color, 'material': material};
   }
 }
 
@@ -37,6 +33,7 @@ class ProductVariation {
   final String? material;
   final double price;
   final int stock;
+  final int? moq;
   final String? sku;
 
   ProductVariation({
@@ -46,6 +43,7 @@ class ProductVariation {
     this.material,
     required this.price,
     required this.stock,
+    this.moq,
     this.sku,
   });
 
@@ -57,6 +55,7 @@ class ProductVariation {
       material: map['material'],
       price: _toDouble(map['price']),
       stock: _toInt(map['stock']),
+      moq: map['moq'] != null ? _toInt(map['moq']) : null,
       sku: map['sku'],
     );
   }
@@ -69,6 +68,7 @@ class ProductVariation {
       'material': material,
       'price': price,
       'stock': stock,
+      'moq': moq,
       'sku': sku,
     };
   }
@@ -116,11 +116,7 @@ class ProductDimensions {
   final double width;
   final double height;
 
-  ProductDimensions({
-    this.length = 0,
-    this.width = 0,
-    this.height = 0,
-  });
+  ProductDimensions({this.length = 0, this.width = 0, this.height = 0});
 
   factory ProductDimensions.fromJson(Map<String, dynamic>? map) {
     if (map == null) return ProductDimensions();
@@ -132,11 +128,7 @@ class ProductDimensions {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'length': length,
-      'width': width,
-      'height': height,
-    };
+    return {'length': length, 'width': width, 'height': height};
   }
 }
 
@@ -160,11 +152,7 @@ class ProductSpecification {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      '_id': id,
-      'key': key,
-      'value': value,
-    };
+    return {'_id': id, 'key': key, 'value': value};
   }
 }
 
@@ -198,13 +186,13 @@ class ProductModel {
   final String? youtubeLink;
   final List<ProductSpecification>? specifications;
   final List<String>? tags;
-  
+
   // New aligned schema fields
   final ProductAttributes attributes;
   final List<ProductVariation> variations;
   final ProductDimensions dimensions;
   final VendorModel? vendor;
-  
+
   final int lowStockThreshold;
   final bool trackQuantity;
   final bool requiresShipping;
@@ -216,7 +204,7 @@ class ProductModel {
   final double moqDiscount;
   final String moqTiers;
   final List<String> showOnPages;
-  
+
   // Pricing calculation fields
   final double? originalPrice;
   final double? commissionPercent;
@@ -276,18 +264,26 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> p) {
     double discountPrice = _toDouble(p['discountPrice']);
-    double price = discountPrice > 0 ? discountPrice : _toDouble(p['price'] ?? 0);
+    double price = discountPrice > 0
+        ? discountPrice
+        : _toDouble(p['price'] ?? 0);
     double oldPrice = _toDouble(p['price']);
-    int disc = oldPrice > 0 && oldPrice > price ? _toInt(((oldPrice - price) / oldPrice) * 100) : 0;
+    int disc = oldPrice > 0 && oldPrice > price
+        ? _toInt(((oldPrice - price) / oldPrice) * 100)
+        : 0;
 
     String? imageUrl;
     List<String> images = [];
-    
+
     // Support gallery key mapping, fallback to images, and fallback to image url
     if (p['gallery'] != null && (p['gallery'] as List).isNotEmpty) {
-      images = (p['gallery'] as List).map((e) => ApiService.formatImageUrl(e.toString())).toList();
+      images = (p['gallery'] as List)
+          .map((e) => ApiService.formatImageUrl(e.toString()))
+          .toList();
     } else if (p['images'] != null && (p['images'] as List).isNotEmpty) {
-      images = (p['images'] as List).map((e) => ApiService.formatImageUrl(e.toString())).toList();
+      images = (p['images'] as List)
+          .map((e) => ApiService.formatImageUrl(e.toString()))
+          .toList();
     }
 
     if (images.isNotEmpty) {
@@ -300,11 +296,21 @@ class ProductModel {
     List<ProductSpecification>? specs;
     if (p['specs'] != null) {
       try {
-        specs = (p['specs'] as List).map((e) => ProductSpecification.fromJson(Map<String, dynamic>.from(e))).toList();
+        specs = (p['specs'] as List)
+            .map(
+              (e) =>
+                  ProductSpecification.fromJson(Map<String, dynamic>.from(e)),
+            )
+            .toList();
       } catch (e) {
         try {
           final decoded = jsonDecode(p['specs']);
-          specs = (decoded as List).map((e) => ProductSpecification.fromJson(Map<String, dynamic>.from(e))).toList();
+          specs = (decoded as List)
+              .map(
+                (e) =>
+                    ProductSpecification.fromJson(Map<String, dynamic>.from(e)),
+              )
+              .toList();
         } catch (_) {}
       }
     }
@@ -312,18 +318,22 @@ class ProductModel {
     List<ProductVariation> variations = [];
     if (p['variations'] != null) {
       try {
-        variations = (p['variations'] as List).map((e) => ProductVariation.fromJson(Map<String, dynamic>.from(e))).toList();
+        variations = (p['variations'] as List)
+            .map((e) => ProductVariation.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
       } catch (_) {}
     }
 
     ProductAttributes attributes = ProductAttributes.fromJson(
-      p['attributes'] != null ? Map<String, dynamic>.from(p['attributes']) : null
+      p['attributes'] != null
+          ? Map<String, dynamic>.from(p['attributes'])
+          : null,
     );
 
     ProductDimensions dimensions = ProductDimensions.fromJson(
-      p['dimensions'] != null 
-          ? Map<String, dynamic>.from(p['dimensions']) 
-          : Map<String, dynamic>.from(p)
+      p['dimensions'] != null
+          ? Map<String, dynamic>.from(p['dimensions'])
+          : Map<String, dynamic>.from(p),
     );
 
     VendorModel? vendor;
@@ -345,12 +355,15 @@ class ProductModel {
       discount: disc,
       isFlashDeal: disc > 20,
       stock: _toInt(p['stock'] ?? 0),
-      relatedProducts: (p['relatedProducts'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      relatedProducts:
+          (p['relatedProducts'] as List?)?.map((e) => e.toString()).toList() ??
+          [],
       gst: _toDouble(p['gst']),
       hsnCode: p['hsnCode'],
       moq: _toInt(p['moq'] ?? 1),
       shortDescription: p['shortDescription'],
-      fullDescription: p['description'], // Notice key is 'description' in backend Product schema
+      fullDescription:
+          p['description'], // Notice key is 'description' in backend Product schema
       brand: p['brand'] ?? '',
       category: p['category'] ?? '',
       subCategory: p['subCategory'],
@@ -375,7 +388,9 @@ class ProductModel {
       visibility: p['visibility'] ?? 'Public',
       moqDiscount: _toDouble(p['moqDiscount']),
       moqTiers: p['moqTiers']?.toString() ?? '',
-      showOnPages: (p['showOnPages'] as List?)?.map((e) => e.toString()).toList() ?? ['Shop'],
+      showOnPages:
+          (p['showOnPages'] as List?)?.map((e) => e.toString()).toList() ??
+          ['Shop'],
       originalPrice: _toDouble(p['originalPrice']),
       commissionPercent: _toDouble(p['commissionPercent']),
       commissionAmount: _toDouble(p['commissionAmount']),

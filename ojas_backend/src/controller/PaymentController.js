@@ -1,7 +1,9 @@
 const crypto = require("crypto");
+const axios = require("axios");
 const Order = require("../model/Order");
 const Payment = require("../model/Payment");
 const User = require("../model/user");
+const Admin = require("../model/Admin");
 const Setting = require("../model/Setting");
 
 // Helper to get PayU Credentials from database or env
@@ -302,4 +304,327 @@ exports.webCheckout = async (req, res) => {
 // 5. Refund Payment (Placeholder)
 exports.refundPayment = async (req, res) => {
     res.status(501).json({ success: false, message: "Refund API not implemented yet" });
+};
+
+// 7. Create Cashfree Order
+exports.createCashfreeOrder = async (req, res) => {
+    try {
+        const { orderIds, totalAmount, firstName, email, phone } = req.body;
+        
+        if (!orderIds || !totalAmount) {
+            return res.status(400).json({ success: false, message: "Missing order details" });
+        }
+
+        const txnid = "TXN" + Date.now() + Math.floor(Math.random() * 1000);
+        const buyer = req.user || {};
+
+        const isProd = process.env.CASHFREE_ENV === "production";
+        const cfUrl = isProd ? "https://api.cashfree.com/pg/orders" : "https://sandbox.cashfree.com/pg/orders";
+
+        const headers = {
+            "x-api-version": "2023-08-01",
+            "x-client-id": process.env.CASHFREE_APP_ID,
+            "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+            "Content-Type": "application/json"
+        };
+
+        let cleanPhone = (phone || buyer.mobile || "9999999999").replace(/\D/g, '');
+        if (cleanPhone.length > 10) {
+            cleanPhone = cleanPhone.substring(cleanPhone.length - 10);
+        }
+        if (cleanPhone.length < 10) {
+            cleanPhone = "9999999999";
+        }
+
+        let cleanEmail = email || buyer.email || "customer@example.com";
+        if (!cleanEmail.includes("@")) {
+            cleanEmail = "customer@example.com";
+        }
+
+        let cleanName = firstName || buyer.name || "Customer";
+
+        const data = {
+            order_id: txnid,
+            order_amount: parseFloat(totalAmount),
+            order_currency: "INR",
+            customer_details: {
+                customer_id: buyer._id ? buyer._id.toString() : "CUST_" + Date.now(),
+                customer_name: cleanName,
+                customer_email: cleanEmail,
+                customer_phone: cleanPhone
+            },
+            order_meta: {
+                return_url: req.get('origin') || "https://mycollectionsforyou.com"
+            }
+        };
+
+        const cfResponse = await axios.post(cfUrl, data, { headers });
+        const cfOrder = cfResponse.data;
+
+        const paymentLink = isProd 
+            ? `https://payments.cashfree.com/order/#/${cfOrder.payment_session_id}`
+            : `https://payments-test.cashfree.com/order/#/${cfOrder.payment_session_id}`;
+
+        // Create Payment Record
+        const payment = new Payment({
+            orderId: orderIds.join(","),
+            transactionId: txnid,
+            amount: totalAmount,
+            status: "PENDING",
+            gateway: "Cashfree",
+            paymentLink: paymentLink,
+            paymentSessionId: cfOrder.payment_session_id
+        });
+        await payment.save();
+
+        // Update Orders with Transaction ID and Status
+        await Order.updateMany(
+            { _id: { $in: orderIds } },
+            { 
+                $set: { 
+                    transactionId: txnid, 
+                    status: "PAYMENT_PENDING",
+                    paymentStatus: "PENDING" 
+                } 
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: {
+                txnid,
+                amount: totalAmount,
+                payment_link: paymentLink,
+                payment_session_id: cfOrder.payment_session_id
+            }
+        });
+
+    } catch (error) {
+        console.error("Create Cashfree Order Error:", error.response ? error.response.data : error.message);
+        res.status(500).json({ success: false, message: "Internal server error", error: error.response ? error.response.data : error.message });
+    }
+};
+
+const processPaymentSuccess = async (payment, gatewayResponse) => {
+    payment.status = "SUCCESS";
+    payment.rawResponse = gatewayResponse;
+    await payment.save();
+
+    const orderIds = payment.orderId.split(",");
+    await Order.updateMany(
+        { _id: { $in: orderIds } },
+        { 
+            $set: { 
+                paymentStatus: "SUCCESS", 
+                status: "PAID",
+                paidAt: new Date(),
+                gatewayResponse: gatewayResponse
+            } 
+        }
+    );
+
+    // Clear cart upon successful payment
+    try {
+        if (orderIds.length > 0) {
+            const firstOrder = await Order.findById(orderIds[0]);
+            if (firstOrder && firstOrder.user) {
+                const userId = firstOrder.user;
+                await User.findByIdAndUpdate(userId, { $set: { cart: [] } });
+                await Admin.findByIdAndUpdate(userId, { $set: { cart: [] } });
+                console.log(`[processPaymentSuccess] Cleared cart for user ID: ${userId}`);
+            }
+        }
+    } catch (cartErr) {
+        console.error("Failed to clear cart after payment success:", cartErr);
+    }
+
+    try {
+        const emailService = require("../service/emailService");
+        for (const oId of orderIds) {
+            emailService.sendOrderEmails(oId).catch(err => console.error("Email trigger failed:", err));
+        }
+    } catch (e) {
+        console.error("Email Service Error:", e);
+    }
+};
+
+// 8. Verify Cashfree Payment (API check)
+exports.verifyCashfreePayment = async (req, res) => {
+    try {
+        const { order_id } = req.body;
+        const txnid = order_id || req.query.order_id;
+
+        if (!txnid) {
+            return res.status(400).json({ success: false, message: "Missing order_id" });
+        }
+
+        const payment = await Payment.findOne({ transactionId: txnid });
+        if (!payment) {
+            return res.status(404).json({ success: false, message: "Transaction not found" });
+        }
+
+        if (payment.status === "SUCCESS") {
+            return res.status(200).json({ success: true, message: "Payment already processed" });
+        }
+
+        const isProd = process.env.CASHFREE_ENV === "production";
+        const cfUrl = isProd 
+            ? `https://api.cashfree.com/pg/orders/${txnid}` 
+            : `https://sandbox.cashfree.com/pg/orders/${txnid}`;
+
+        const headers = {
+            "x-api-version": "2025-01-01",
+            "x-client-id": process.env.CASHFREE_APP_ID,
+            "x-client-secret": process.env.CASHFREE_SECRET_KEY
+        };
+
+        const cfResponse = await axios.get(cfUrl, { headers });
+        const cfOrder = cfResponse.data;
+
+        if (cfOrder.order_status === "PAID") {
+            await processPaymentSuccess(payment, cfOrder);
+            return res.status(200).json({ success: true, message: "Payment verified successfully" });
+        } else if (cfOrder.order_status === "ACTIVE") {
+            return res.status(200).json({ success: false, message: "Payment is pending", status: cfOrder.order_status });
+        } else {
+            payment.status = "FAILED";
+            payment.rawResponse = cfOrder;
+            await payment.save();
+
+            const orderIds = payment.orderId.split(",");
+            await Order.updateMany(
+                { _id: { $in: orderIds } },
+                { $set: { paymentStatus: "FAILED" } }
+            );
+
+            return res.status(400).json({ success: false, message: "Payment failed", status: cfOrder.order_status });
+        }
+
+    } catch (error) {
+        console.error("Verify Cashfree Payment Error:", error.response ? error.response.data : error.message);
+        res.status(500).json({ success: false, message: "Internal server error", error: error.response ? error.response.data : error.message });
+    }
+};
+
+// 9. Redirect return handler from Cashfree
+exports.cashfreeVerifyRedirect = async (req, res) => {
+    try {
+        const { order_id, origin: queryOrigin } = req.query;
+        if (!order_id) return res.status(400).send("Missing order_id");
+
+        let origin = queryOrigin ? decodeURIComponent(queryOrigin) : "https://mycollectionsforyou.com";
+        if (origin.endsWith("/")) {
+            origin = origin.slice(0, -1);
+        }
+
+        const payment = await Payment.findOne({ transactionId: order_id });
+        if (!payment) return res.status(404).send("Transaction not found");
+
+        const isProd = process.env.CASHFREE_ENV === "production";
+        const cfUrl = isProd 
+            ? `https://api.cashfree.com/pg/orders/${order_id}` 
+            : `https://sandbox.cashfree.com/pg/orders/${order_id}`;
+
+        const headers = {
+            "x-api-version": "2025-01-01",
+            "x-client-id": process.env.CASHFREE_APP_ID,
+            "x-client-secret": process.env.CASHFREE_SECRET_KEY
+        };
+
+        const cfResponse = await axios.get(cfUrl, { headers });
+        const cfOrder = cfResponse.data;
+
+        let statusText = "Pending";
+        let success = false;
+
+        if (cfOrder.order_status === "PAID") {
+            await processPaymentSuccess(payment, cfOrder);
+            statusText = "Successful";
+            success = true;
+        } else {
+            payment.status = "FAILED";
+            payment.rawResponse = cfOrder;
+            await payment.save();
+
+            const orderIds = payment.orderId.split(",");
+            await Order.updateMany(
+                { _id: { $in: orderIds } },
+                { $set: { paymentStatus: "FAILED" } }
+            );
+            statusText = "Failed";
+        }
+
+        let redirectUrl = success ? `${origin}/orders` : `${origin}/#/cart`;
+        if (origin.includes("mycollectionsforyou.com") || origin.includes("collection") || origin.includes("localhost")) {
+            redirectUrl = origin;
+        }
+
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Payment Status</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                        margin: 0;
+                        background-color: #F8FAFC;
+                        color: #334155;
+                    }
+                    .card {
+                        background: white;
+                        padding: 40px;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                        text-align: center;
+                        max-width: 400px;
+                        width: 90%;
+                    }
+                    .icon {
+                        font-size: 64px;
+                        margin-bottom: 20px;
+                    }
+                    .success { color: #10B981; }
+                    .error { color: #EF4444; }
+                    h2 { margin-top: 0; font-weight: 700; }
+                    p { color: #64748B; line-height: 1.5; margin-bottom: 30px; }
+                    .btn {
+                        display: inline-block;
+                        background-color: #5C0B1B;
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        transition: background-color 0.2s;
+                    }
+                    .btn:hover { background-color: #4A0815; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon ${success ? 'success' : 'error'}">
+                        ${success ? '✓' : '✗'}
+                    </div>
+                    <h2>Payment ${statusText}</h2>
+                    <p>${success ? 'Your order has been successfully placed. Redirecting you back to the app...' : 'The payment transaction could not be completed. Redirecting you back...'}</p>
+                    <a href="${redirectUrl}" class="btn">Return to App</a>
+                </div>
+                <script>
+                    setTimeout(function() {
+                        window.location.href = "${redirectUrl}";
+                    }, 3000);
+                </script>
+            </body>
+            </html>
+        `);
+    } catch (e) {
+        console.error("Cashfree Redirect Verification Error:", e);
+        res.status(500).send("Internal Server Error");
+    }
 };

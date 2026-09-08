@@ -29,7 +29,16 @@ class _ProductCardState extends State<ProductCard> {
         final bool isWishlisted = WishlistController.instance.isWishlisted(widget.product.id);
         
         return GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/product-detail?id=${widget.product.id}', arguments: widget.product),
+          onTap: () {
+            final String refSuffix = (widget.product.resellerCode != null && widget.product.resellerCode!.isNotEmpty)
+                ? '&ref=${widget.product.resellerCode}'
+                : '';
+            Navigator.pushNamed(
+              context,
+              '/product-detail?id=${widget.product.id}$refSuffix',
+              arguments: widget.product,
+            );
+          },
           child: MouseRegion(
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
@@ -184,7 +193,7 @@ class _ProductCardState extends State<ProductCard> {
                                 ),
                               ],
                             ),
-                            if (widget.product.moq > 1)
+                             if (widget.product.getEffectiveMoq() > 1)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                 decoration: BoxDecoration(
@@ -193,7 +202,7 @@ class _ProductCardState extends State<ProductCard> {
                                   border: Border.all(color: AppColors.blue200),
                                 ),
                                 child: Text(
-                                  'MOQ: ${widget.product.moq}',
+                                  'MOQ: ${widget.product.getEffectiveMoq()}',
                                   style: GoogleFonts.inter(
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,

@@ -141,7 +141,7 @@ class OjasFooter extends StatelessWidget {
                 
                 // Col 4: Get In Touch
                 SizedBox(
-                  width: isMobile ? (MediaQuery.of(context).size.width - 52) / 2 : 200,
+                  width: isMobile ? double.infinity : 200,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -155,7 +155,7 @@ class OjasFooter extends StatelessWidget {
 
                 // Col 5: Legal
                 SizedBox(
-                  width: isMobile ? (MediaQuery.of(context).size.width - 52) / 2 : 180,
+                  width: isMobile ? double.infinity : 180,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

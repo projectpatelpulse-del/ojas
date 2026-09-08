@@ -356,7 +356,41 @@ class _ProductsPageState extends State<ProductsPage> {
           ),
           Expanded(
             flex: 1,
-            child: Text('₹${p.price.toStringAsFixed(0)}', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (p.discount > 0) ...[
+                  Text('₹${p.price.toStringAsFixed(0)}', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    '₹${(p.oldPrice ?? 0).toStringAsFixed(0)}',
+                    style: GoogleFonts.inter(
+                      color: Colors.grey.shade400,
+                      fontSize: 11,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${p.discount}% OFF',
+                      style: GoogleFonts.inter(
+                        color: Colors.green.shade700,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Text('₹${p.price.toStringAsFixed(0)}', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                ],
+              ],
+            ),
           ),
           Expanded(
             flex: 1,

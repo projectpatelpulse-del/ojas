@@ -3,12 +3,12 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/services/api_service.dart';
 
 class ProductAttributes {
-  final bool size;
+  final bool modelName;
   final bool color;
   final bool material;
 
   ProductAttributes({
-    this.size = false,
+    this.modelName = false,
     this.color = false,
     this.material = false,
   });
@@ -16,7 +16,7 @@ class ProductAttributes {
   factory ProductAttributes.fromMap(Map<String, dynamic>? map) {
     if (map == null) return ProductAttributes();
     return ProductAttributes(
-      size: map['size'] ?? false,
+      modelName: (map['modelName'] ?? map['size']) ?? false,
       color: map['color'] ?? false,
       material: map['material'] ?? false,
     );
@@ -24,7 +24,8 @@ class ProductAttributes {
 
   Map<String, dynamic> toMap() {
     return {
-      'size': size,
+      'modelName': modelName,
+      'size': modelName,
       'color': color,
       'material': material,
     };
@@ -34,12 +35,14 @@ class ProductAttributes {
 class ProductVariation {
   final String id;
   final String? title;
+  final String? modelName;
   final String? size;
   final String? color;
   final String? material;
   final double price;
   final double? oldPrice;
   final int stock;
+  final int? moq;
   final double? weight;
   final String? weightStr;
   final String? sku;
@@ -49,12 +52,14 @@ class ProductVariation {
   ProductVariation({
     required this.id,
     this.title,
+    this.modelName,
     this.size,
     this.color,
     this.material,
     required this.price,
     this.oldPrice,
     required this.stock,
+    this.moq,
     this.weight,
     this.weightStr,
     this.sku,
@@ -70,15 +75,19 @@ class ProductVariation {
           .where((e) => e.isNotEmpty)
           .toList();
     }
+    final String? rawSize = map['size']?.toString().trim();
+    final String? rawModelName = map['modelName']?.toString().trim();
     return ProductVariation(
       id: map['_id'] ?? '',
       title: map['title'],
-      size: map['size'],
+      modelName: (rawModelName != null && rawModelName.isNotEmpty) ? rawModelName : ((rawSize != null && rawSize.isNotEmpty) ? rawSize : null),
+      size: (rawSize != null && rawSize.isNotEmpty) ? rawSize : null,
       color: map['color'],
       material: map['material'],
       price: _toDouble(map['price']).ceilToDouble(),
       oldPrice: map['oldPrice'] != null ? _toDouble(map['oldPrice']).ceilToDouble() : null,
       stock: _toInt(map['stock']),
+      moq: map['moq'] != null ? _toInt(map['moq']) : null,
       weight: _toDouble(map['weight']),
       weightStr: map['weight']?.toString(),
       sku: map['sku'],
@@ -93,12 +102,14 @@ class ProductVariation {
     return {
       '_id': id,
       'title': title,
-      'size': size,
+      'modelName': modelName,
+      'size': size ?? modelName,
       'color': color,
       'material': material,
       'price': price,
       'oldPrice': oldPrice,
       'stock': stock,
+      'moq': moq,
       'weight': weightStr ?? weight,
       'sku': sku,
       'image': image,
@@ -255,6 +266,11 @@ class ProductModel {
 
   final List<String> relatedProducts;
 
+  // Reseller deep-link and tracking details
+  final String? resellerCode;
+  final String? resellerId;
+  final double? resellerMarkup;
+
   ProductModel({
     required this.id,
     required this.name,
@@ -302,6 +318,9 @@ class ProductModel {
     this.commissionPercent,
     this.commissionAmount,
     this.sellingPrice,
+    this.resellerCode,
+    this.resellerId,
+    this.resellerMarkup,
   });
 
   factory ProductModel.fromMap(Map<String, dynamic> p) {
@@ -317,18 +336,29 @@ class ProductModel {
     String? imageUrl;
     List<String> images = [];
     
-    // Support gallery key mapping, fallback to images, and fallback to image url
-    if (p['gallery'] != null && (p['gallery'] as List).isNotEmpty) {
-      images = (p['gallery'] as List).map((e) => ApiService.formatImageUrl(e.toString())).toList();
-    } else if (p['images'] != null && (p['images'] as List).isNotEmpty) {
-      images = (p['images'] as List).map((e) => ApiService.formatImageUrl(e.toString())).toList();
+    if (p['image'] != null && p['image'].toString().isNotEmpty) {
+      imageUrl = ApiService.formatImageUrl(p['image'].toString());
+      images.add(imageUrl);
     }
 
-    if (images.isNotEmpty) {
-      imageUrl = images[0];
-    } else if (p['image'] != null) {
-      imageUrl = ApiService.formatImageUrl(p['image'].toString());
-      images = [imageUrl];
+    if (p['gallery'] != null && (p['gallery'] as List).isNotEmpty) {
+      final galleryImages = (p['gallery'] as List)
+          .map((e) => ApiService.formatImageUrl(e.toString()))
+          .where((e) => e.isNotEmpty && !images.contains(e))
+          .toList();
+      images.addAll(galleryImages);
+    } else if (p['images'] != null && (p['images'] as List).isNotEmpty) {
+      final additionalImages = (p['images'] as List)
+          .map((e) => ApiService.formatImageUrl(e.toString()))
+          .where((e) => e.isNotEmpty && !images.contains(e))
+          .toList();
+      images.addAll(additionalImages);
+    }
+
+    if (imageUrl == null || imageUrl.isEmpty) {
+      if (images.isNotEmpty) {
+        imageUrl = images[0];
+      }
     }
 
     List<ProductSpecification>? specs;
@@ -419,12 +449,15 @@ class ProductModel {
       moqDiscount: _toDouble(p['moqDiscount']),
       moqTiers: p['moqTiers']?.toString() ?? '',
       showOnPages: (p['showOnPages'] as List?)?.map((e) => e.toString()).toList() ?? ['Shop'],
-      originalPrice: _toDouble(p['originalPrice']),
-      commissionPercent: _toDouble(p['commissionPercent']),
-      commissionAmount: _toDouble(p['commissionAmount']),
-      sellingPrice: _toDouble(p['sellingPrice']),
-    );
-  }
+       originalPrice: _toDouble(p['originalPrice']),
+       commissionPercent: _toDouble(p['commissionPercent']),
+       commissionAmount: _toDouble(p['commissionAmount']),
+       sellingPrice: _toDouble(p['sellingPrice']),
+       resellerCode: p['resellerCode']?.toString(),
+       resellerId: p['resellerId']?.toString(),
+       resellerMarkup: _toDouble(p['resellerMarkup']),
+     );
+   }
 
   static List<ProductModel> get dummyProducts {
     return HomeController.instance.products.map((p) => ProductModel.fromMap(p)).toList();
@@ -439,6 +472,13 @@ class ProductModel {
     final all = dummyProducts;
     if (all.isEmpty) return [];
     return all.take(2).toList();
+  }
+
+  int getEffectiveMoq([ProductVariation? selectedVar]) {
+    if (selectedVar != null && selectedVar.moq != null && selectedVar.moq! > 0) {
+      return selectedVar.moq!;
+    }
+    return moq > 0 ? moq : 1;
   }
 }
 

@@ -109,11 +109,12 @@ class InvoiceService {
     final double subtotal = (order['subtotal'] != null
         ? (double.tryParse(order['subtotal'].toString()) ?? 0.0)
         : items.fold(0.0, (sum, item) {
-            final price = double.tryParse(item['price']?.toString() ?? '0') ?? 0.0;
+            final price = double.tryParse(item['sellingPrice']?.toString() ?? item['price']?.toString() ?? '0') ?? 0.0;
             final qty = int.tryParse(item['quantity']?.toString() ?? '1') ?? 1;
             return sum + (price * qty);
-          })).ceilToDouble();
-    final double tax = (order['totalGst'] != null
+          })).roundToDouble();
+
+    final double rawTax = (order['totalGst'] != null
         ? (double.tryParse(order['totalGst'].toString()) ?? 0.0)
         : items.fold(0.0, (sum, item) {
             final gstAmount = double.tryParse(item['gstAmount']?.toString() ?? '0') ?? 0.0;
@@ -121,16 +122,46 @@ class InvoiceService {
             if (gstAmount > 0) {
               return sum + (gstAmount * qty);
             }
-            final price = double.tryParse(item['price']?.toString() ?? '0') ?? 0.0;
+            final price = double.tryParse(item['sellingPrice']?.toString() ?? item['price']?.toString() ?? '0') ?? 0.0;
             final double taxRate = double.tryParse(order['taxRate']?.toString() ?? '18') ?? 18.0;
             return sum + (price * qty * (taxRate / 100));
-          })).ceilToDouble();
+          }));
+
     final double deliveryFee = (order['deliveryFee'] != null
         ? (double.tryParse(order['deliveryFee'].toString()) ?? 0.0)
         : (order['deliveryCharge'] != null
             ? (double.tryParse(order['deliveryCharge'].toString()) ?? 0.0)
-            : 0.0)).ceilToDouble();
-    final double total = (subtotal + tax + deliveryFee).ceilToDouble();
+            : 0.0)).roundToDouble();
+    
+    final Map<double, double> gstGroups = {};
+    if (items.isNotEmpty) {
+      for (final item in items) {
+        final double gstPercent = double.tryParse(item['gstPercent']?.toString() ?? '') ?? 18.0;
+        final double gstAmount = double.tryParse(item['gstAmount']?.toString() ?? '') ?? 0.0;
+        final int qty = int.tryParse(item['quantity']?.toString() ?? '1') ?? 1;
+        
+        double calculatedGst = gstAmount * qty;
+        if (gstAmount <= 0) {
+          final price = double.tryParse(item['sellingPrice']?.toString() ?? item['price']?.toString() ?? '0') ?? 0.0;
+          final double taxRate = double.tryParse(order['taxRate']?.toString() ?? '18') ?? 18.0;
+          calculatedGst = price * qty * (taxRate / 100);
+        }
+        gstGroups[gstPercent] = (gstGroups[gstPercent] ?? 0.0) + calculatedGst;
+      }
+    }
+
+    // Round each GST group value to double
+    gstGroups.updateAll((key, value) => value.roundToDouble());
+
+    if (gstGroups.isEmpty && rawTax > 0) {
+      final double defaultRate = double.tryParse(order['taxRate']?.toString() ?? '18') ?? 18.0;
+      gstGroups[defaultRate] = rawTax.roundToDouble();
+    }
+
+    // Calculate rounded tax from groups
+    final double tax = gstGroups.values.fold(0.0, (sum, val) => sum + val);
+
+    final double total = subtotal + tax + deliveryFee;
 
     pdf.addPage(
       pw.Page(
@@ -266,7 +297,7 @@ class InvoiceService {
                           final item = items[index];
                           final productData = item['product'];
                           final String productName = item['name'] ?? (productData is Map ? productData['name'] : productData?.toString()) ?? 'Product';
-                          final double price = (double.tryParse(item['price']?.toString() ?? '0') ?? 0.0).ceilToDouble();
+                          final double price = double.tryParse(item['sellingPrice']?.toString() ?? item['price']?.toString() ?? '0') ?? 0.0;
                           final int qty = int.tryParse(item['quantity']?.toString() ?? '1') ?? 1;
                           final double rowTotal = (price * qty).ceilToDouble();
 
@@ -277,7 +308,7 @@ class InvoiceService {
                             children: [
                               _tableDataCell('${index + 1}'),
                               _tableDataCell(productName, align: pw.Alignment.centerLeft),
-                              _tableDataCell('INR ${price.toInt()}'),
+                              _tableDataCell('INR ${price % 1 == 0 ? price.toInt().toString() : price.toStringAsFixed(2)}'),
                               _tableDataCell('$qty'),
                               _tableDataCell('INR ${rowTotal.toInt()}'),
                             ],
@@ -335,7 +366,9 @@ class InvoiceService {
                           child: pw.Column(
                             children: [
                               _totalRow('Base Price:', 'INR ${subtotal.toInt()}'),
-                              _totalRow('Taxes:', 'INR ${tax.toInt()}', isTax: true),
+                              ...gstGroups.entries.map((entry) {
+                                return _totalRow('GST (${entry.key.toInt()}%):', 'INR ${entry.value.round().toInt()}', isTax: true);
+                              }).toList(),
                               _totalRow('Delivery:', deliveryFee == 0 ? 'FREE' : 'INR ${deliveryFee.toInt()}'),
                               pw.Container(
                                 padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 12),

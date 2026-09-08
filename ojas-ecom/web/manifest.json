@@ -1,11 +1,11 @@
 {
-    "name": "ojas_user",
-    "short_name": "ojas_user",
+    "name": "OJAS INDIA",
+    "short_name": "OJAS INDIA",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "OJAS INDIA - Your trusted online shopping platform for quality products and gifts.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

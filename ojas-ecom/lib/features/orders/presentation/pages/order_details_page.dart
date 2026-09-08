@@ -425,7 +425,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           const Divider(height: 32),
           _summaryRow('Order ID', _currentOrder.orderId),
           _summaryRow('Date', DateFormat('MMM dd, yyyy').format(_currentOrder.createdAt)),
-          _summaryRow('Status', _currentOrder.status, isStatus: true),
+          _summaryRow('Status', _currentOrder.displayStatus, isStatus: true),
           _summaryRow('Payment', _currentOrder.paymentStatus, isStatus: true, statusColor: _getPaymentStatusColor()),
           const Divider(height: 32),
           _summaryRow('Subtotal (Selling Value)', '\u20b9${_currentOrder.subtotal.ceil()}'),
@@ -872,6 +872,12 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         return Colors.amber;
       case 'Processing':
         return AppColors.blue500;
+      case 'Shipment Requested':
+      case 'Pickup Requested':
+        return Colors.purple;
+      case 'Shipment Scheduled':
+      case 'Pickup Scheduled':
+        return Colors.teal;
       case 'Shipped':
         return Colors.orange;
       case 'Delivered':

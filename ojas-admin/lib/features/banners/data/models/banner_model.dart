@@ -6,6 +6,7 @@ class BannerModel {
   final String link;
   final String tag;
   final String type;
+  final String bgColor;
   final bool isActive;
 
   BannerModel({
@@ -16,6 +17,7 @@ class BannerModel {
     required this.link,
     required this.tag,
     required this.type,
+    required this.bgColor,
     required this.isActive,
   });
 
@@ -28,6 +30,7 @@ class BannerModel {
       link: json['link'] ?? '/',
       tag: json['tag'] ?? '',
       type: json['type'] ?? 'main',
+      bgColor: json['bgColor'] ?? '#3B82F6',
       isActive: json['isActive'] ?? true,
     );
   }
@@ -40,6 +43,7 @@ class BannerModel {
       'link': link,
       'tag': tag,
       'type': type,
+      'bgColor': bgColor,
       'isActive': isActive,
     };
   }

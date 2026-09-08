@@ -1,11 +1,11 @@
 {
-    "name": "ojas_vendor",
-    "short_name": "ojas_vendor",
+    "name": "OJAS Vendor Panel",
+    "short_name": "OJAS Vendor",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "OJAS INDIA Vendor Panel - Store & Order Management",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

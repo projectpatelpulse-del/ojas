@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
-import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/core/models/app_settings.dart';
+import 'package:ojas_user/core/widgets/formatted_text.dart';
+import 'package:ojas_user/core/controllers/settings_controller.dart';
+import 'package:intl/intl.dart';
 
 class TermsConditionsPage extends StatelessWidget {
   const TermsConditionsPage({super.key});
@@ -19,75 +21,75 @@ class TermsConditionsPage extends StatelessWidget {
     return OjasLayout(
       activeTitle: 'TERMS & CONDITIONS',
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: isMobile ? 32 : 60),
+        padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 60),
         color: const Color(0xFFF8F9FA),
         child: CenteredContent(
           horizontalPadding: isMobile ? 16 : 40,
           child: Column(
             children: [
               // 1. Header
-              _buildHeader(isMobile),
-              SizedBox(height: isMobile ? 32 : 60),
+              _buildHeader(isMobile, settings),
+              SizedBox(height: isMobile ? 16 : 60),
 
               // Dynamic content from admin
               if (customContent.trim().isNotEmpty) ...[
-                _buildSectionCard(
+                 _buildSectionCard(
                   'Policy Update',
                   customContent,
                   isMobile: isMobile,
                   icon: Icons.gavel_outlined,
                 ),
-                const SizedBox(height: 48),
+                SizedBox(height: isMobile ? 24 : 48),
                 const Divider(),
-                const SizedBox(height: 48),
+                SizedBox(height: isMobile ? 24 : 48),
                 Text(
                   'General Terms & Conditions',
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryIndigo,
+                    color: AppColors.primaryIndigo1,
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: isMobile ? 16 : 32),
               ],
 
               // 2. Table of Contents
               _buildTableOfContents(isMobile),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 3. Introduction
               _buildSectionCard('Introduction', 'Welcome to Ojas! These Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with Ojas website (the "Service") operated by Ojas ("us", "we", or "our").\n\nYour access to and use of the Service is conditioned on your acceptance of and compliance with these Terms. These Terms apply to all visitors, users and others who access or use the Service.', isMobile: isMobile, icon: Icons.info_outline),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
 
               // 4. Detailed Sections
               _buildSectionCard('Acceptance of Terms', 'By accessing and using Ojas\'s website and services, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.', isMobile: isMobile, icon: Icons.check_circle_outline),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
               _buildSectionCard('Definitions', 'In these Terms and Conditions, \'Company\' refers to Ojas, \'Service\' refers to our website and related services, \'User\' refers to anyone who accesses or uses our Service, and \'Content\' refers to all information, data, text, software, music, sound, photographs, graphics, video, messages, or other materials.', isMobile: isMobile, icon: Icons.description_outlined),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
               _buildSectionCard('User Accounts', 'To access certain features of our Service, you may be required to create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.', isMobile: isMobile, icon: Icons.person_outline),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
               _buildSectionCard('Acceptable Use Policy', 'You agree to use our Service only for lawful purposes and in accordance with these Terms. You may not use our Service to transmit, distribute, store or destroy material that could constitute or encourage conduct that would be considered a criminal offense, give rise to civil liability, or otherwise violate any law or regulation.', isMobile: isMobile, icon: Icons.security_outlined),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
               _buildSectionCard('Intellectual Property Rights', 'The Service and its original content, features, and functionality are and will remain the exclusive property of Ojas and its licensors. The Service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.', isMobile: isMobile, icon: Icons.gavel_outlined),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
               _buildSectionCard('Privacy Policy', 'Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service, to understand our practices regarding the collection, use, and disclosure of your personal information.', isMobile: isMobile, icon: Icons.lock_outline),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 5. Prohibited Activities
               _buildProhibitedActivities(isMobile),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 6. Rights & Responsibilities
               _buildRightsAndResponsibilities(isMobile),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 7. Additional Terms
               _buildAdditionalTerms(isMobile),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 8. Contact Info
               _buildContactInfo(isMobile, settings),
-              const SizedBox(height: 60),
+              SizedBox(height: isMobile ? 30 : 60),
 
               // 9. Footer Banner
               _buildAgreementAcknowledgment(context, isMobile),
@@ -98,7 +100,10 @@ class TermsConditionsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(bool isMobile) {
+  Widget _buildHeader(bool isMobile, AppSettings settings) {
+    final DateTime lastUpdatedDate = settings.updatedAt ?? DateTime.now();
+    final String formattedDate = DateFormat('MMMM d, yyyy').format(lastUpdatedDate);
+
     return Column(
       children: [
         Container(
@@ -116,7 +121,7 @@ class TermsConditionsPage extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
-            color: AppColors.primaryIndigo,
+            color: AppColors.primaryIndigo1,
           ),
         ),
         const SizedBox(height: 16),
@@ -130,7 +135,7 @@ class TermsConditionsPage extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Last updated: November 6, 2024',
+          'Last updated: $formattedDate',
           style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[400]),
         ),
       ],
@@ -149,7 +154,7 @@ class TermsConditionsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Table of Contents', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
+          Text('Table of Contents', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1)),
           const SizedBox(height: 32),
           Wrap(
             spacing: 20,
@@ -208,11 +213,11 @@ class TermsConditionsPage extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
               ],
-              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
+              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1))),
             ],
           ),
           const SizedBox(height: 24),
-          Text(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
+          FormattedText(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
         ],
       ),
     );
@@ -238,7 +243,7 @@ class TermsConditionsPage extends StatelessWidget {
                 child: const Icon(Icons.cancel_outlined, color: AppColors.primaryPink, size: 24),
               ),
               const SizedBox(width: 20),
-              Expanded(child: Text('Prohibited Activities', style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
+              Expanded(child: Text('Prohibited Activities', style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1))),
             ],
           ),
           const SizedBox(height: 24),
@@ -334,7 +339,7 @@ class TermsConditionsPage extends StatelessWidget {
                 child: Icon(icon, color: color, size: 24),
               ),
               const SizedBox(width: 20),
-              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
+              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1))),
             ],
           ),
           const SizedBox(height: 24),
@@ -367,7 +372,7 @@ class TermsConditionsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Additional Important Terms', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
+          Text('Additional Important Terms', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1)),
           const SizedBox(height: 32),
           if (isMobile)
             Column(
@@ -428,7 +433,7 @@ class TermsConditionsPage extends StatelessWidget {
   Widget _buildContactInfo(bool isMobile, AppSettings settings) {
     return Column(
       children: [
-        Text('Contact Information', style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
+        Text('Contact Information', style: GoogleFonts.outfit(fontSize: isMobile ? 24 : 32, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1)),
         const SizedBox(height: 16),
         Text('If you have questions, please contact us:', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[600])),
         const SizedBox(height: 48),

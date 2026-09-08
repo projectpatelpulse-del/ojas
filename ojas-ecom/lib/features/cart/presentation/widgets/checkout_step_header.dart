@@ -69,12 +69,15 @@ class CheckoutStepHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Text(
-                    title,
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isActive ? AppColors.primaryBlue : AppColors.textPrimary,
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isActive ? AppColors.primaryBlue : AppColors.textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const Spacer(),

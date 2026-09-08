@@ -6,6 +6,7 @@ class BannerModel {
   final String link;
   final String tag;
   final String type;
+  final String bgColor;
 
   BannerModel({
     required this.id,
@@ -15,6 +16,7 @@ class BannerModel {
     required this.link,
     required this.tag,
     required this.type,
+    required this.bgColor,
   });
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class BannerModel {
       link: json['link'] ?? '/',
       tag: json['tag'] ?? '',
       type: json['type'] ?? 'main',
+      bgColor: json['bgColor'] ?? '#3B82F6',
     );
   }
 }

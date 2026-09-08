@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ojas_user/features/auth/application/auth_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/core/controllers/settings_controller.dart';
+import 'package:ojas_user/core/widgets/scrollable_terms_dialog.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onToggle;
@@ -33,12 +35,32 @@ class _RegisterFormState extends State<RegisterForm> {
     super.initState();
     _termsRecognizer = TapGestureRecognizer()
       ..onTap = () {
-        Navigator.pushNamed(context, '/terms');
+        _showTermsAndConditionsPopup();
       };
     _privacyRecognizer = TapGestureRecognizer()
       ..onTap = () {
         Navigator.pushNamed(context, '/privacy');
       };
+  }
+
+  void _showTermsAndConditionsPopup() {
+    final String terms = SettingsController.instance.settings.termsConditions;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ScrollableTermsDialog(
+        title: "Terms & Conditions",
+        termsContent: terms,
+        primaryColor: AppColors.primaryPink,
+        onAccepted: (accepted) {
+          if (accepted) {
+            setState(() {
+              _agreedToTerms = true;
+            });
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -98,12 +120,19 @@ class _RegisterFormState extends State<RegisterForm> {
 
       setState(() => _isLoading = true);
 
+      String mobileText = _mobileController.text.trim();
+      if (!mobileText.startsWith('+91') && !mobileText.startsWith('91')) {
+        mobileText = '+91$mobileText';
+      } else if (mobileText.startsWith('91') && !mobileText.startsWith('+91')) {
+        mobileText = '+$mobileText';
+      }
+
       final response = await _authService.register(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
         gender: "other", // Dummy default value to satisfy API if needed
-        mobile: _mobileController.text.trim(),
+        mobile: mobileText,
         role: "user",
         image: _image,
       );
@@ -305,7 +334,13 @@ class _RegisterFormState extends State<RegisterForm> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   side: const BorderSide(color: Color(0xFF94A3B8)),
                   activeColor: AppColors.accentOrange,
-                  onChanged: (v) => setState(() => _agreedToTerms = v!),
+                  onChanged: (v) {
+                    if (v == true) {
+                      _showTermsAndConditionsPopup();
+                    } else {
+                      setState(() => _agreedToTerms = false);
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: 8),

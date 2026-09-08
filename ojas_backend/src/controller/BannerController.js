@@ -3,7 +3,7 @@ const imagekit = require("../config/imagekit.js");
 
 const createBanner = async (req, res) => {
     try {
-        const { title, subtitle, link, tag, type } = req.body;
+        const { title, subtitle, link, tag, type, bgColor } = req.body;
 
         // Validation for carousel types vs non-carousel types
         const carouselTypes = ["main_slider", "promo"];
@@ -11,8 +11,8 @@ const createBanner = async (req, res) => {
             const existing = await Banner.findOne({ type });
             if (existing) {
                 return res.status(400).json({ 
-                    success: false, 
-                    message: `A banner of type "${type}" already exists. Please delete it first before creating a new one.` 
+                     success: false, 
+                     message: `A banner of type "${type}" already exists. Please delete it first before creating a new one.` 
                 });
             }
         }
@@ -43,6 +43,7 @@ const createBanner = async (req, res) => {
             link,
             tag,
             type,
+            bgColor,
         });
 
         // Emit socket event for real-time update
@@ -85,7 +86,7 @@ const getAllBanners = async (req, res) => {
 const updateBanner = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, subtitle, link, tag, type, isActive } = req.body;
+        const { title, subtitle, link, tag, type, isActive, bgColor } = req.body;
 
         // Validation for carousel types vs non-carousel types
         const carouselTypes = ["main_slider", "promo"];
@@ -99,7 +100,7 @@ const updateBanner = async (req, res) => {
             }
         }
         
-        let updateData = { title, subtitle, link, tag, type, isActive };
+        let updateData = { title, subtitle, link, tag, type, isActive, bgColor };
         
         if (req.file) {
             try {

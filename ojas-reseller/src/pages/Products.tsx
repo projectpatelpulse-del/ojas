@@ -74,9 +74,80 @@ function AddModal({ product, onClose }: { product: any; onClose: () => void }) {
   );
 }
 
+function ProductDetailsModal({ product, isAdded, onAddClick, onClose }: { product: any; isAdded: boolean; onAddClick: () => void; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4 transition-opacity" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white rounded-3xl overflow-hidden w-full max-w-2xl shadow-2xl flex flex-col md:flex-row max-h-[85vh] md:max-h-[70vh]">
+        {/* Left Side: Product Image */}
+        <div className="md:w-1/2 bg-slate-50 flex items-center justify-center p-6 relative">
+          <button onClick={onClose} className="md:hidden absolute top-4 right-4 bg-white/80 backdrop-blur p-1.5 rounded-full text-slate-500 hover:text-slate-700 hover:scale-105 shadow-sm transition-all"><X size={18} /></button>
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} className="max-w-full max-h-[35vh] md:max-h-[55vh] object-contain rounded-xl" />
+          ) : (
+            <Package size={80} className="text-slate-300" />
+          )}
+        </div>
+        
+        {/* Right Side: Product Information */}
+        <div className="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto">
+          <div>
+            <div className="hidden md:flex justify-between items-start mb-4">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-3 py-1">
+                {product.category}
+              </span>
+              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 hover:scale-105 transition-all"><X size={20} /></button>
+            </div>
+            
+            <h3 className="font-extrabold text-slate-800 text-xl leading-tight mb-2">{product.name}</h3>
+            
+            <div className="flex items-center gap-4 mb-4 text-xs font-semibold text-slate-500">
+              {product.vendorName && <span>Seller: <strong className="text-slate-700">{product.vendorName}</strong></span>}
+              <span>Stock: <strong className={product.stock > 0 ? "text-emerald-600" : "text-rose-500"}>{product.stock > 0 ? `${product.stock} units` : "Out of stock"}</strong></span>
+              {(product as any).moq > 1 && <span>MOQ: <strong className="text-amber-600">{(product as any).moq} units</strong></span>}
+            </div>
+
+            <div className="border-t border-slate-100 pt-4 mb-4">
+              <h4 className="font-bold text-slate-700 text-sm mb-2">Description</h4>
+              <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line max-h-[25vh] overflow-y-auto pr-1">
+                {product.description || "No description available for this product."}
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4 flex items-center justify-between gap-4 mt-auto">
+            <div>
+              <p className="text-xs text-slate-400 font-medium">Platform Price</p>
+              <p className="text-slate-800 font-extrabold text-2xl tracking-tight">{formatCurrency(product.platformPrice)}</p>
+            </div>
+            
+            {isAdded ? (
+              <span className="flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-bold px-5 py-3 rounded-xl border border-green-200 shadow-sm">
+                <CheckCircle2 size={16} />
+                Added
+              </span>
+            ) : (
+              <button
+                onClick={() => {
+                  onClose();
+                  onAddClick();
+                }}
+                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-bold px-6 py-3 rounded-xl shadow-md transition-all"
+              >
+                <Plus size={16} />
+                Add
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Products() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<any>(null);
+  const [detailsProduct, setDetailsProduct] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<string[]>(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -149,20 +220,29 @@ export default function Products() {
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data?.products.map(p => (
-              <div key={p.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-md hover:border-amber-200 transition-all group">
-                <div className="aspect-square bg-slate-100 flex items-center justify-center">
-                  {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Package size={36} className="text-slate-300" />
-                  )}
+              <div key={p.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-md hover:border-amber-200 transition-all group flex flex-col justify-between">
+                <div onClick={() => setDetailsProduct(p)} className="cursor-pointer">
+                  <div className="aspect-square bg-slate-100 flex items-center justify-center overflow-hidden">
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <Package size={36} className="text-slate-300" />
+                    )}
+                  </div>
+                  <div className="p-4 pb-0">
+                    <div className="flex gap-2 items-center">
+                      <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded">{p.category}</span>
+                      {(p as any).moq > 1 && (
+                        <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-full">MOQ: {(p as any).moq}</span>
+                      )}
+                    </div>
+                    <h3 className="text-slate-800 font-semibold text-sm mt-1.5 leading-tight line-clamp-2 hover:text-amber-600 transition-colors">{p.name}</h3>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded">{p.category}</span>
-                  <h3 className="text-slate-800 font-semibold text-sm mt-1.5 leading-tight line-clamp-2">{p.name}</h3>
+                <div className="p-4 pt-0">
                   <div className="mt-3 flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-slate-400">Platform Price</p>
+                      <p className="text-xs text-slate-400 font-medium">Platform Price</p>
                       <p className="text-slate-800 font-bold">{formatCurrency(p.platformPrice)}</p>
                     </div>
                     {addedProductIds.has(p.id) ? (
@@ -201,6 +281,14 @@ export default function Products() {
       )}
 
       {selected && <AddModal product={selected} onClose={() => setSelected(null)} />}
+      {detailsProduct && (
+        <ProductDetailsModal
+          product={detailsProduct}
+          isAdded={addedProductIds.has(detailsProduct.id)}
+          onAddClick={() => setSelected(detailsProduct)}
+          onClose={() => setDetailsProduct(null)}
+        />
+      )}
     </div>
   );
 }

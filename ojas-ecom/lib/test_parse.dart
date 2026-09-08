@@ -117,7 +117,7 @@ void main() {
       print("Name: ${product.name}");
       print("Variations: ${product.variations.length}");
       for (var v in product.variations) {
-        print("  - SKU: ${v.sku}, Size: ${v.size}, Color: ${v.color}, Price: ${v.price}, Stock: ${v.stock}");
+        print("  - SKU: ${v.sku}, Size: ${v.modelName}, Color: ${v.color}, Price: ${v.price}, Stock: ${v.stock}");
       }
       print("Weight: ${product.weight}");
       print("Length: ${product.length}, Width: ${product.width}, Height: ${product.height}");

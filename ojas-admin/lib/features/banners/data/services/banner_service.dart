@@ -24,6 +24,7 @@ class BannerService {
     required String link,
     required String tag,
     required String type,
+    String? bgColor,
     Uint8List? imageBytes,
     String? fileName,
   }) async {
@@ -34,6 +35,7 @@ class BannerService {
         'link': link,
         'tag': tag,
         'type': type,
+        if (bgColor != null) 'bgColor': bgColor,
       });
 
       if (imageBytes != null) {
@@ -56,6 +58,7 @@ class BannerService {
     String? link,
     String? tag,
     String? type,
+    String? bgColor,
     bool? isActive,
     Uint8List? imageBytes,
     String? fileName,
@@ -67,6 +70,7 @@ class BannerService {
       if (link != null) data['link'] = link;
       if (tag != null) data['tag'] = tag;
       if (type != null) data['type'] = type;
+      if (bgColor != null) data['bgColor'] = bgColor;
       if (isActive != null) data['isActive'] = isActive.toString();
 
       FormData formData = FormData.fromMap(data);

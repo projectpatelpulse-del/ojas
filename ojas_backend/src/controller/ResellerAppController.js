@@ -100,10 +100,24 @@ exports.getDashboard = async (req, res) => {
         const totalOrders = orders.length;
 
         // Commission Metrics
-        const pendingCommissions = await Order.find({ resellerId: userId, commissionStatus: "pending" });
+        const pendingCommissions = await Order.find({
+            resellerId: userId,
+            commissionStatus: "pending",
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        });
         const pendingCommission = pendingCommissions.reduce((sum, o) => sum + o.commissionAmount, 0);
-
-        const releasedCommissions = await Order.find({ resellerId: userId, commissionStatus: "released" });
+ 
+        const releasedCommissions = await Order.find({
+            resellerId: userId,
+            commissionStatus: "released",
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        });
         const releasedCommission = releasedCommissions.reduce((sum, o) => sum + o.commissionAmount, 0);
 
         // Withdrawn
@@ -218,7 +232,7 @@ exports.requestWithdrawal = async (req, res) => {
 
         // Log wallet transaction
         await ResellerWalletTransaction.create({
-            influencer: userId, // Match schema
+            Reseller: userId, // Match schema
             debit: amount,
             balance: reseller.availableBalance,
             transactionType: "withdrawal",
@@ -249,7 +263,41 @@ exports.getWithdrawalHistory = async (req, res) => {
 exports.adminGetResellers = async (req, res) => {
     try {
         const list = await Reseller.find().populate("user", "name email mobile");
-        res.status(200).json(list);
+        
+        const formatted = await Promise.all(list.map(async (r) => {
+            const resellerUserId = r.user ? r.user._id : null;
+            let ordersCount = 0;
+            let clicksCount = 0;
+
+            if (resellerUserId) {
+                // Calculate orders count
+                const Order = mongoose.model("Order");
+                ordersCount = await Order.countDocuments({
+                    $or: [{ Reseller: resellerUserId }, { resellerId: resellerUserId }],
+                    $or: [
+                        { paymentMethod: { $ne: "ONLINE" } },
+                        { paymentStatus: { $ne: "PENDING" } }
+                    ]
+                });
+
+                // Calculate clicks (referrals count)
+                const ResellerProduct = mongoose.model("ResellerProduct");
+                const ReferralLink = mongoose.model("ReferralLink");
+                
+                const catalogProducts = await ResellerProduct.find({ Reseller: resellerUserId });
+                const referralLinks = await ReferralLink.find({ Reseller: resellerUserId });
+                
+                clicksCount = catalogProducts.reduce((sum, cp) => sum + (cp.clicks || 0), 0) +
+                              referralLinks.reduce((sum, rl) => sum + (rl.clicks || 0), 0);
+            }
+
+            const obj = r.toObject();
+            obj.totalOrders = ordersCount;
+            obj.referralCount = clicksCount;
+            return obj;
+        }));
+
+        res.status(200).json(formatted);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

@@ -14,6 +14,7 @@ class AppSettings {
   final String contactAddress;
   final String returnRefundPolicy;
   final String termsConditions;
+  final String vendorTermsConditions;
   final String privacyPolicy;
   final String facebookLink;
   final String instagramLink;
@@ -26,6 +27,7 @@ class AppSettings {
   final String homeSectionsActive;
   final bool showTrendingProducts;
   final bool showTrendingB2BBanner;
+  final DateTime? updatedAt;
 
   // Trending Section & Service Cards
   final String trendingCategories;
@@ -58,6 +60,7 @@ class AppSettings {
     required this.contactAddress,
     required this.returnRefundPolicy,
     required this.termsConditions,
+    required this.vendorTermsConditions,
     required this.privacyPolicy,
     required this.facebookLink,
     required this.instagramLink,
@@ -83,6 +86,7 @@ class AppSettings {
     required this.serviceCard4Title,
     required this.serviceCard4Subtitle,
     required this.serviceCard4Icon,
+    this.updatedAt,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
@@ -102,6 +106,7 @@ class AppSettings {
       contactAddress: json['contactAddress'] ?? 'Ghaziabad, Uttar Pradesh',
       returnRefundPolicy: json['returnRefundPolicy'] ?? '',
       termsConditions: json['termsConditions'] ?? '',
+      vendorTermsConditions: json['vendorTermsConditions'] ?? '',
       privacyPolicy: json['privacyPolicy'] ?? '',
       facebookLink: json['facebookLink'] ?? '',
       instagramLink: json['instagramLink'] ?? '',
@@ -127,6 +132,7 @@ class AppSettings {
       serviceCard4Title: json['serviceCard4Title'] ?? '24/7 SUPPORT',
       serviceCard4Subtitle: json['serviceCard4Subtitle'] ?? 'Dedicated Support',
       serviceCard4Icon: json['serviceCard4Icon'] ?? 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
+      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
     );
   }
 
@@ -147,6 +153,7 @@ class AppSettings {
       contactAddress: 'Ghaziabad, Uttar Pradesh',
       returnRefundPolicy: '',
       termsConditions: '',
+      vendorTermsConditions: '',
       privacyPolicy: '',
       facebookLink: '',
       instagramLink: '',
@@ -172,6 +179,7 @@ class AppSettings {
       serviceCard4Title: '24/7 SUPPORT',
       serviceCard4Subtitle: 'Dedicated Support',
       serviceCard4Icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
+      updatedAt: null,
     );
   }
 }

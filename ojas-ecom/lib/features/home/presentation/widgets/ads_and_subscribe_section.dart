@@ -131,13 +131,13 @@ class _OfferCard extends StatelessWidget {
             padding: EdgeInsets.all(isMobile ? 24 : 40),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              gradient: offer.imageUrl.isNotEmpty
-                  ? LinearGradient(
-                      colors: [AppColors.black.withOpacity(0.7), AppColors.transparent],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    )
-                  : null,
+              // gradient: offer.imageUrl.isNotEmpty
+              //     ? LinearGradient(
+              //         colors: [AppColors.black.withOpacity(0.7), AppColors.transparent],
+              //         begin: Alignment.centerLeft,
+              //         end: Alignment.centerRight,
+              //       )
+              //     : null,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,8 +194,8 @@ class _OfferCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
-                _buildValidityText(),
+                // const SizedBox(height: 32),
+                // _buildValidityText(),
               ],
             ),
           ),

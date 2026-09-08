@@ -9,6 +9,17 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 class PromoGridSection extends StatelessWidget {
   const PromoGridSection({super.key});
 
+  Color _parseHexColor(String hexString, Color defaultColor) {
+    try {
+      final buffer = StringBuffer();
+      if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+      buffer.write(hexString.replaceFirst('#', ''));
+      return Color(int.parse(buffer.toString(), radix: 16));
+    } catch (e) {
+      return defaultColor;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
@@ -16,76 +27,53 @@ class PromoGridSection extends StatelessWidget {
     return CenteredContent(
       horizontalPadding: isMobile ? 16 : 40,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 40.0),
+        padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 40.0),
         child: ListenableBuilder(
           listenable: HomeController.instance,
           builder: (context, _) {
-            final categories = HomeController.instance.categories;
-            
-            // UI Styles to preserve the original look
-            final List<Map<String, dynamic>> promoStyles = [
-              {
-                'color': AppColors.blue500,
-                'badgeTextMobile': 'BEST SALE',
-                'badgeTextDesktop': 'BEST SALE',
-                'badgeIcon': Icons.bolt,
-                'trailingIcon': Icons.laptop_mac_outlined,
-                'defaultTitleMobile': 'Beauty',
-                'defaultSubtitleMobile': 'Personal Care',
-                'defaultTitleDesktop': 'Beauty & Personal Care',
-                'defaultSubtitleDesktop': 'Beauty & Personal Care',
-              },
-              {
-                'color': Colors.orange,
-                'badgeTextMobile': 'NEW',
-                'badgeTextDesktop': 'NEW ARRIVAL',
-                'badgeIcon': Icons.star_border,
-                'trailingIcon': Icons.extension_outlined,
-                'defaultTitleMobile': 'Toys',
-                'defaultSubtitleMobile': 'Games',
-                'defaultTitleDesktop': 'Toys & Games',
-                'defaultSubtitleDesktop': 'Toys & Games',
-              },
-              {
-                'color': AppColors.successGreen,
-                'badgeTextMobile': '15% OFF',
-                'badgeTextDesktop': 'OFF 15%',
-                'badgeIcon': Icons.local_offer_outlined,
-                'trailingIcon': Icons.watch_outlined,
-                'defaultTitleMobile': 'Gadgets',
-                'defaultSubtitleMobile': 'Latest',
-                'defaultTitleDesktop': 'Gadgets',
-                'defaultSubtitleDesktop': 'Gadgets',
-              },
-              {
-                'color': Colors.deepPurple,
-                'badgeTextMobile': 'FREE SHIP',
-                'badgeTextDesktop': 'FREE SHIPPING',
-                'badgeIcon': Icons.local_shipping_outlined,
-                'trailingIcon': Icons.headphones_outlined,
-                'defaultTitleMobile': 'Books',
-                'defaultSubtitleMobile': 'Stationery',
-                'defaultTitleDesktop': 'Books & Stationery',
-                'defaultSubtitleDesktop': 'Books & Stationery',
-              },
+            final home = HomeController.instance;
+            final promoBanners = [
+              home.promoGrid0,
+              home.promoGrid1,
+              home.promoGrid2,
+              home.promoGrid3,
             ];
 
             // Build 4 dynamic cards
             final cards = List.generate(4, (index) {
-              final style = promoStyles[index];
-              final cat = (index < categories.length) ? categories[index] : null;
+              final banner = promoBanners[index];
+              final Color color = _parseHexColor(banner.bgColor, Colors.blue);
               
-              String title = cat != null ? cat['name'] : (isMobile ? style['defaultTitleMobile'] : style['defaultTitleDesktop']);
-              String subtitle = cat != null ? (cat['description'] ?? (isMobile ? style['defaultSubtitleMobile'] : style['defaultSubtitleDesktop'])) : (isMobile ? style['defaultSubtitleMobile'] : style['defaultSubtitleDesktop']);
+              IconData badgeIcon;
+              IconData trailingIcon;
+              switch (index) {
+                case 1:
+                  badgeIcon = Icons.star_border;
+                  trailingIcon = Icons.extension_outlined;
+                  break;
+                case 2:
+                  badgeIcon = Icons.local_offer_outlined;
+                  trailingIcon = Icons.watch_outlined;
+                  break;
+                case 3:
+                  badgeIcon = Icons.local_shipping_outlined;
+                  trailingIcon = Icons.headphones_outlined;
+                  break;
+                case 0:
+                default:
+                  badgeIcon = Icons.bolt;
+                  trailingIcon = Icons.laptop_mac_outlined;
+                  break;
+              }
 
               return CategoryPromoCard(
-                backgroundColor: style['color'],
-                badgeText: isMobile ? style['badgeTextMobile'] : style['badgeTextDesktop'],
-                badgeColor: style['color'],
-                badgeIcon: style['badgeIcon'],
-                title: title,
-                subtitle: subtitle,
-                trailingIcon: style['trailingIcon'],
+                backgroundColor: color,
+                badgeText: banner.tag,
+                badgeColor: color,
+                badgeIcon: badgeIcon,
+                title: banner.title,
+                subtitle: banner.subtitle,
+                trailingIcon: trailingIcon,
               );
             });
 

@@ -168,7 +168,11 @@ class _CartDrawerState extends State<CartDrawer> {
                               final p = item['product'];
                               if (p == null) continue;
                               final qty = item['quantity'] ?? 1;
-                              final moq = p['moq'] ?? 1;
+                              final varObj = item['variation'];
+                              int moq = p['moq'] ?? 1;
+                              if (varObj != null && varObj['moq'] != null && (varObj['moq'] as num).toInt() > 0) {
+                                moq = (varObj['moq'] as num).toInt();
+                              }
                               if (qty < moq) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +246,13 @@ class _CartDrawerState extends State<CartDrawer> {
         product['image'] ?? 'https://via.placeholder.com/150';
     final int quantity = item['quantity'] ?? 1;
 
-    final int moq = product['moq'] ?? 1;
+    final variation = item['variation'];
+    final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
+
+    int moq = product['moq'] ?? 1;
+    if (variation != null && variation['moq'] != null && (variation['moq'] as num).toInt() > 0) {
+      moq = (variation['moq'] as num).toInt();
+    }
     final double moqDiscount = (product['moqDiscount'] ?? 0).toDouble();
 
     if (quantity >= moq && moqDiscount > 0) {
@@ -262,13 +272,12 @@ class _CartDrawerState extends State<CartDrawer> {
     final double priceFontSize = isMobile ? 15.0 : 18.0;
     final double oldPriceFontSize = isMobile ? 12.0 : 14.0;
 
-    final variation = item['variation'];
-    final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
     String? variationText;
     if (variation != null) {
       final List<String> parts = [];
-      if (variation['size'] != null && variation['size'].toString().trim().isNotEmpty) {
-        parts.add('Size: ${variation['size']}');
+      final modelNameVal = variation['modelName'] ?? variation['size'];
+      if (modelNameVal != null && modelNameVal.toString().trim().isNotEmpty) {
+        parts.add('Model: $modelNameVal');
       }
       if (variation['color'] != null && variation['color'].toString().trim().isNotEmpty) {
         parts.add('Color: ${variation['color']}');
@@ -411,7 +420,6 @@ class _CartDrawerState extends State<CartDrawer> {
                       child: Row(
                         children: [
                           _quantityButton(Icons.remove, () {
-                            final int moq = product['moq'] != null ? (product['moq'] as num).toInt() : 1;
                             if (quantity > moq) {
                               CartController.instance.addToCart(
                                 product['_id'],

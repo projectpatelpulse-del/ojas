@@ -305,8 +305,9 @@ class _CartPageState extends State<CartPage> {
     String? variationText;
     if (variation != null) {
       final List<String> parts = [];
-      if (variation['size'] != null && variation['size'].toString().trim().isNotEmpty) {
-        parts.add('Size: ${variation['size']}');
+      final modelNameVal = variation['modelName'] ?? variation['size'];
+      if (modelNameVal != null && modelNameVal.toString().trim().isNotEmpty) {
+        parts.add('Model: $modelNameVal');
       }
       if (variation['color'] != null && variation['color'].toString().trim().isNotEmpty) {
         parts.add('Color: ${variation['color']}');

@@ -119,6 +119,44 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _saveSettings() async {
     setState(() => _isSaving = true);
     try {
+      if (_activeTab == 'Profile') {
+        if (_firstNameCtrl.text.trim().isEmpty) {
+          throw Exception('First name is required');
+        }
+        if (_lastNameCtrl.text.trim().isEmpty) {
+          throw Exception('Last name is required');
+        }
+      } else if (_activeTab == 'Store Settings') {
+        if (_storeNameCtrl.text.trim().isEmpty) {
+          throw Exception('Business name is required');
+        }
+        if (_storeDescCtrl.text.trim().isEmpty) {
+          throw Exception('Business description is required');
+        }
+        if (_cityCtrl.text.trim().isEmpty) {
+          throw Exception('City is required');
+        }
+        if (_stateCtrl.text.trim().isEmpty) {
+          throw Exception('State is required');
+        }
+        if (_addressCtrl.text.trim().isEmpty) {
+          throw Exception('Store address is required');
+        }
+      } else if (_activeTab == 'Security') {
+        if (_currentPwdCtrl.text.isEmpty) {
+          throw Exception('Current password is required');
+        }
+        if (_newPwdCtrl.text.isEmpty) {
+          throw Exception('New password is required');
+        }
+        if (_confirmPwdCtrl.text.isEmpty) {
+          throw Exception('Confirm password is required');
+        }
+        if (_newPwdCtrl.text != _confirmPwdCtrl.text) {
+          throw Exception('New passwords do not match');
+        }
+      }
+
       Map<String, dynamic> updateData = {};
 
       if (_activeTab == 'Profile' || _activeTab == 'Store Settings') {
@@ -139,12 +177,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
         await sl<VendorSettingsService>().updateSettings(updateData);
       } else if (_activeTab == 'Security') {
-        if (_currentPwdCtrl.text.isEmpty || _newPwdCtrl.text.isEmpty) {
-          throw Exception('Please fill in current and new password');
-        }
-        if (_newPwdCtrl.text != _confirmPwdCtrl.text) {
-          throw Exception('New passwords do not match');
-        }
         await sl<VendorSettingsService>().updatePassword(_currentPwdCtrl.text, _newPwdCtrl.text);
         _currentPwdCtrl.clear();
         _newPwdCtrl.clear();
@@ -597,9 +629,9 @@ class _SettingsPageState extends State<SettingsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInputField('Store Name *', _storeNameCtrl),
+        _buildInputField('Business Name *', _storeNameCtrl),
         const SizedBox(height: 24),
-        _buildInputField('Store Description *', _storeDescCtrl, maxLines: 4),
+        _buildInputField('Business Description *', _storeDescCtrl, maxLines: 4),
         const SizedBox(height: 24),
 
         Row(
@@ -658,7 +690,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildInputField('Store Address *', _addressCtrl, maxLines: 3),
         const SizedBox(height: 48),
 
-        Text('Business Documents', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text('Business document & other', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         const SizedBox(height: 4),
         Text('These fields are read-only and were set during registration', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
         const SizedBox(height: 24),

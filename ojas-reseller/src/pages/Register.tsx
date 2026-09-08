@@ -1,26 +1,26 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useRegisterInfluencer, getGetCurrentUserQueryKey } from "@/api-client";
+import { useRegisterReseller, getGetCurrentUserQueryKey } from "@/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Register() {
-  const [form, setForm] = useState({ 
-    name: "", 
-    email: "", 
-    mobile: "", 
-    password: "", 
-    pan: "", 
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+    password: "",
+    pan: "",
     gst: "",
     bankName: "",
     accountNumber: "",
     ifsc: "",
     accountHolderName: "",
     upiId: "",
-    acceptTerms: false 
+    acceptTerms: false
   });
   const [, navigate] = useLocation();
   const qc = useQueryClient();
-  const register = useRegisterInfluencer();
+  const register = useRegisterReseller();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export default function Register() {
       alert("Please accept the Terms & Conditions.");
       return;
     }
-    register.mutate({ 
+    register.mutate({
       data: {
         ...form,
         bankDetails: {
@@ -44,7 +44,10 @@ export default function Register() {
         gstNumber: form.gst
       } as any
     }, {
-      onSuccess: () => {
+      onSuccess: (data: any) => {
+        if (data?.token) {
+          localStorage.setItem("auth_token", data.token);
+        }
         qc.invalidateQueries({ queryKey: getGetCurrentUserQueryKey() });
         navigate("/dashboard");
       }

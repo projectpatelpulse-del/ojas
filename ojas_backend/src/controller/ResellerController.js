@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 
 // Models
 const User = require("../model/user.js");
-const InfluencerProfile = require("../model/InfluencerProfile.js");
+const ResellerProfile = require("../model/ResellerProfile.js");
 const Reseller = require("../model/Reseller.js");
 const ResellerProduct = require("../model/ResellerProduct.js");
 const ReferralLink = require("../model/ReferralLink.js");
@@ -23,7 +23,7 @@ const { calculateProductPricing } = require("../utils/pricing.js");
 // ----------------------------------------------------
 // Helpers
 // ----------------------------------------------------
-const generateInfluencerCode = (name) => {
+const generateResellerCode = (name) => {
     const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").substring(0, 4).toUpperCase();
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `OJAS_${cleanName}_${random}`;
@@ -53,7 +53,7 @@ exports.healthCheck = async (req, res) => {
 // ----------------------------------------------------
 // Auth Endpoints
 // ----------------------------------------------------
-exports.registerInfluencer = async (req, res) => {
+exports.registerReseller = async (req, res) => {
     try {
         const { name, email, password, mobile, pan, socialMediaUrl, instagramProfile, youtubeChannel, bankDetails, upiDetails, panNumber, gstNumber } = req.body;
 
@@ -73,13 +73,13 @@ exports.registerInfluencer = async (req, res) => {
             email,
             password: hashedPassword,
             mobile,
-            role: "influencer"
+            role: "Reseller"
         });
 
-        const influencerCode = generateInfluencerCode(name);
-        const profile = await InfluencerProfile.create({
+        const ResellerCode = generateResellerCode(name);
+        const profile = await ResellerProfile.create({
             user: user._id,
-            influencerCode,
+            ResellerCode,
             pan: pan || panNumber || null,
             socialMediaUrl: socialMediaUrl || null,
             instagramProfile: instagramProfile || null,
@@ -111,7 +111,7 @@ exports.registerInfluencer = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ id: user._id, role: "influencer" }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const token = jwt.sign({ id: user._id, role: "Reseller" }, process.env.JWT_SECRET, { expiresIn: "1d" });
         res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 24 * 60 * 60 * 1000 });
 
         res.status(201).json({
@@ -125,12 +125,12 @@ exports.registerInfluencer = async (req, res) => {
             message: "Reseller registered successfully"
         });
     } catch (err) {
-      console.error("Register reseller error:", err.message);
-      res.status(500).json({ message: err.message });
+        console.error("Register reseller error:", err.message);
+        res.status(500).json({ message: err.message });
     }
 };
 
-exports.loginInfluencer = async (req, res) => {
+exports.loginReseller = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
@@ -142,8 +142,8 @@ exports.loginInfluencer = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (user.role !== "influencer" && user.role !== "admin" && user.role !== "reseller") {
-            return res.status(403).json({ message: "Not authorized as an influencer/reseller" });
+        if (user.role !== "Reseller" && user.role !== "admin" && user.role !== "reseller") {
+            return res.status(403).json({ message: "Not authorized as an Reseller/reseller" });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -165,12 +165,12 @@ exports.loginInfluencer = async (req, res) => {
             message: "Logged in successfully"
         });
     } catch (err) {
-        console.error("Login influencer error:", err.message);
+        console.error("Login Reseller error:", err.message);
         res.status(500).json({ message: err.message });
     }
 };
 
-exports.logoutInfluencer = async (req, res) => {
+exports.logoutReseller = async (req, res) => {
     res.clearCookie("token");
     res.status(200).json({ message: "Logged out successfully" });
 };
@@ -195,7 +195,7 @@ exports.getCurrentUser = async (req, res) => {
 // ----------------------------------------------------
 // Profile Endpoints
 // ----------------------------------------------------
-exports.getInfluencerProfile = async (req, res) => {
+exports.getResellerProfile = async (req, res) => {
     try {
         const reseller = await Reseller.findOne({ user: req.user.id }).populate("user", "name email mobile");
         if (reseller) {
@@ -205,7 +205,7 @@ exports.getInfluencerProfile = async (req, res) => {
                 name: reseller.user.name,
                 email: reseller.user.email,
                 mobile: reseller.user.mobile,
-                influencerCode: reseller.resellerCode, // Map resellerCode to influencerCode for UI compatibility
+                ResellerCode: reseller.resellerCode, // Map resellerCode to ResellerCode for UI compatibility
                 status: reseller.status,
                 walletBalance: reseller.availableBalance, // Map availableBalance to walletBalance
                 totalEarnings: reseller.availableBalance + reseller.withdrawnBalance, // Map total
@@ -218,7 +218,7 @@ exports.getInfluencerProfile = async (req, res) => {
             });
         }
 
-        let profile = await InfluencerProfile.findOne({ user: req.user.id }).populate("user", "name email mobile");
+        let profile = await ResellerProfile.findOne({ user: req.user.id }).populate("user", "name email mobile");
         if (profile) {
             return res.status(200).json({
                 id: profile._id,
@@ -226,7 +226,7 @@ exports.getInfluencerProfile = async (req, res) => {
                 name: profile.user.name,
                 email: profile.user.email,
                 mobile: profile.user.mobile,
-                influencerCode: profile.influencerCode,
+                ResellerCode: profile.ResellerCode,
                 status: profile.status,
                 walletBalance: profile.walletBalance,
                 totalEarnings: profile.totalEarnings,
@@ -245,11 +245,11 @@ exports.getInfluencerProfile = async (req, res) => {
     }
 };
 
-exports.updateInfluencerProfile = async (req, res) => {
+exports.updateResellerProfile = async (req, res) => {
     try {
         const { name, mobile, pan, socialMediaUrl, instagramProfile, youtubeChannel } = req.body;
 
-        let profile = await InfluencerProfile.findOne({ user: req.user.id });
+        let profile = await ResellerProfile.findOne({ user: req.user.id });
         let isReseller = false;
         let resellerProfile = null;
         if (!profile) {
@@ -276,7 +276,7 @@ exports.updateInfluencerProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 mobile: user.mobile,
-                influencerCode: resellerProfile.resellerCode,
+                ResellerCode: resellerProfile.resellerCode,
                 status: resellerProfile.status,
                 walletBalance: resellerProfile.availableBalance,
                 totalEarnings: resellerProfile.availableBalance + resellerProfile.withdrawnBalance,
@@ -301,7 +301,7 @@ exports.updateInfluencerProfile = async (req, res) => {
             name: user.name,
             email: user.email,
             mobile: user.mobile,
-            influencerCode: profile.influencerCode,
+            ResellerCode: profile.ResellerCode,
             status: profile.status,
             walletBalance: profile.walletBalance,
             totalEarnings: profile.totalEarnings,
@@ -320,9 +320,9 @@ exports.updateInfluencerProfile = async (req, res) => {
 // ----------------------------------------------------
 // Dashboard Endpoints
 // ----------------------------------------------------
-exports.getInfluencerDashboard = async (req, res) => {
+exports.getResellerDashboard = async (req, res) => {
     try {
-        let profile = await InfluencerProfile.findOne({ user: req.user.id });
+        let profile = await ResellerProfile.findOne({ user: req.user.id });
         let isReseller = false;
         let resellerProfile = null;
         if (!profile) {
@@ -337,7 +337,7 @@ exports.getInfluencerDashboard = async (req, res) => {
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
         const todayTrans = await ResellerWalletTransaction.find({
-            influencer: req.user.id,
+            Reseller: req.user.id,
             credit: { $gt: 0 },
             createdAt: { $gte: startOfToday }
         });
@@ -348,27 +348,33 @@ exports.getInfluencerDashboard = async (req, res) => {
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
         const monthlyTrans = await ResellerWalletTransaction.find({
-            influencer: req.user.id,
+            Reseller: req.user.id,
             credit: { $gt: 0 },
             createdAt: { $gte: startOfMonth }
         });
         const monthlyEarnings = monthlyTrans.reduce((sum, t) => sum + (t.credit || 0), 0);
 
         // Orders stats
-        const orders = await Order.find({ $or: [{ influencer: req.user.id }, { resellerId: req.user.id }] });
+        const orders = await Order.find({
+            $or: [{ Reseller: req.user.id }, { resellerId: req.user.id }],
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        });
         const totalOrders = orders.length;
         const deliveredOrders = orders.filter(o => o.status === "DELIVERED").length;
         const cancelledOrders = orders.filter(o => o.status === "CANCELLED").length;
         const returnedOrders = orders.filter(o => o.status === "RETURNED").length;
 
         // Products stats
-        const catalogCount = await ResellerProduct.countDocuments({ influencer: req.user.id });
-        const referralsCount = await ReferralLink.countDocuments({ influencer: req.user.id });
+        const catalogCount = await ResellerProduct.countDocuments({ Reseller: req.user.id });
+        const referralsCount = await ReferralLink.countDocuments({ Reseller: req.user.id });
         const productsShared = catalogCount + referralsCount;
 
         // Clicks
-        const catalogProducts = await ResellerProduct.find({ influencer: req.user.id });
-        const referralLinks = await ReferralLink.find({ influencer: req.user.id });
+        const catalogProducts = await ResellerProduct.find({ Reseller: req.user.id });
+        const referralLinks = await ReferralLink.find({ Reseller: req.user.id });
         const catalogClicks = catalogProducts.reduce((sum, p) => sum + (p.clicks || 0), 0);
         const referralClicks = referralLinks.reduce((sum, r) => sum + (r.clicks || 0), 0);
         const totalClicks = catalogClicks + referralClicks;
@@ -445,6 +451,7 @@ exports.listProducts = async (req, res) => {
                 vendorId: p.user,
                 vendorName: pricing.vendorName,
                 stock: p.stock,
+                moq: p.moq || 1,
                 createdAt: p.createdAt.toISOString()
             });
         }
@@ -490,14 +497,14 @@ exports.getProduct = async (req, res) => {
 // ----------------------------------------------------
 exports.listResellerProducts = async (req, res) => {
     try {
-        const items = await ResellerProduct.find({ influencer: req.user.id }).populate("product");
+        const items = await ResellerProduct.find({ Reseller: req.user.id }).populate("product");
         const formatted = [];
         for (const item of items) {
             if (!item.product) continue;
             const pricing = await getProductSellingDetails(item.product);
             formatted.push({
                 id: item._id,
-                influencerId: item.influencer,
+                ResellerId: item.Reseller,
                 productId: item.product._id,
                 productName: item.product.name,
                 productImageUrl: item.product.image || null,
@@ -509,6 +516,8 @@ exports.listResellerProducts = async (req, res) => {
                 clicks: item.clicks,
                 orders: item.orders,
                 referralCode: item.referralCode,
+                moq: item.product.moq || 1,
+                description: item.product.description || null,
                 createdAt: item.createdAt.toISOString()
             });
         }
@@ -530,14 +539,14 @@ exports.addResellerProduct = async (req, res) => {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        const existing = await ResellerProduct.findOne({ influencer: req.user.id, product: productId });
+        const existing = await ResellerProduct.findOne({ Reseller: req.user.id, product: productId });
         if (existing) {
             return res.status(400).json({ message: "Product already in reseller catalog" });
         }
 
         const referralCode = `REF_${req.user.id.toString().substring(18)}_${productId.toString().substring(18)}`;
         const newItem = await ResellerProduct.create({
-            influencer: req.user.id,
+            Reseller: req.user.id,
             product: productId,
             markupAmount,
             referralCode
@@ -547,7 +556,7 @@ exports.addResellerProduct = async (req, res) => {
 
         res.status(201).json({
             id: newItem._id,
-            influencerId: newItem.influencer,
+            ResellerId: newItem.Reseller,
             productId: product._id,
             productName: product.name,
             productImageUrl: product.image || null,
@@ -573,7 +582,7 @@ exports.updateResellerProduct = async (req, res) => {
             return res.status(400).json({ message: "Markup amount is required" });
         }
 
-        const item = await ResellerProduct.findOne({ _id: req.params.id, influencer: req.user.id }).populate("product");
+        const item = await ResellerProduct.findOne({ _id: req.params.id, Reseller: req.user.id }).populate("product");
         if (!item) {
             return res.status(404).json({ message: "Catalog item not found" });
         }
@@ -585,7 +594,7 @@ exports.updateResellerProduct = async (req, res) => {
 
         res.status(200).json({
             id: item._id,
-            influencerId: item.influencer,
+            ResellerId: item.Reseller,
             productId: item.product._id,
             productName: item.product.name,
             productImageUrl: item.product.image || null,
@@ -606,7 +615,7 @@ exports.updateResellerProduct = async (req, res) => {
 
 exports.removeResellerProduct = async (req, res) => {
     try {
-        const item = await ResellerProduct.findOneAndDelete({ _id: req.params.id, influencer: req.user.id });
+        const item = await ResellerProduct.findOneAndDelete({ _id: req.params.id, Reseller: req.user.id });
         if (!item) {
             return res.status(404).json({ message: "Catalog item not found" });
         }
@@ -632,11 +641,11 @@ exports.generateReferralLink = async (req, res) => {
         }
 
         const uniqueCode = `LNK_${req.user.id.toString().substring(18)}_${productId.toString().substring(18)}_${Math.floor(100 + Math.random() * 900)}`;
-        const referralDomain = process.env.REFERRAL_DOMAIN || process.env.FRONTEND_URL || "https://ojasindia.com";
+        const referralDomain = process.env.REFERRAL_DOMAIN || process.env.FRONTEND_URL || "https://mycollectionsforyou.com";
         const fullUrl = `${referralDomain}/product/${productId}?ref=${uniqueCode}`;
 
         const newLink = await ReferralLink.create({
-            influencer: req.user.id,
+            Reseller: req.user.id,
             product: productId,
             uniqueCode,
             fullUrl
@@ -644,7 +653,7 @@ exports.generateReferralLink = async (req, res) => {
 
         res.status(201).json({
             id: newLink._id,
-            influencerId: newLink.influencer,
+            ResellerId: newLink.Reseller,
             productId: product._id,
             productName: product.name,
             uniqueCode: newLink.uniqueCode,
@@ -660,32 +669,48 @@ exports.generateReferralLink = async (req, res) => {
 
 exports.listReferralLinks = async (req, res) => {
     try {
-        const isReseller = req.user.role === "reseller";
+        const isReseller = req.user.role === "reseller" || req.user.role === "Reseller";
         if (isReseller) {
-            const resellerProducts = await ResellerProduct.find({ influencer: req.user.id }).populate("product");
+            const resellerProducts = await ResellerProduct.find({ Reseller: req.user.id }).populate("product");
+            const orders = await Order.find({
+                $or: [
+                    { Reseller: req.user.id },
+                    { resellerId: req.user.id }
+                ],
+                $or: [
+                    { paymentMethod: { $ne: "ONLINE" } },
+                    { paymentStatus: { $ne: "PENDING" } }
+                ]
+            });
+
             const formatted = resellerProducts.map(rp => {
                 if (!rp.product) return null;
-                const referralDomain = process.env.REFERRAL_DOMAIN || process.env.FRONTEND_URL || "https://ojasindia.com";
+                const referralDomain = process.env.REFERRAL_DOMAIN || process.env.FRONTEND_URL || "https://mycollectionsforyou.com";
                 const fullUrl = `${referralDomain}/product/${rp.product._id}?ref=${rp.referralCode}`;
+                
+                const ordersCount = orders.filter(o => 
+                    o.items.some(item => item.product && item.product.toString() === rp.product._id.toString())
+                ).length;
+
                 return {
                     id: rp._id,
-                    influencerId: rp.influencer,
+                    ResellerId: rp.Reseller,
                     productId: rp.product._id,
                     productName: rp.product.name,
                     uniqueCode: rp.referralCode,
                     fullUrl,
                     clicks: rp.clicks || 0,
-                    orders: rp.orders || 0,
+                    orders: ordersCount,
                     createdAt: rp.createdAt.toISOString()
                 };
             }).filter(Boolean);
             return res.status(200).json(formatted);
         }
 
-        const links = await ReferralLink.find({ influencer: req.user.id }).populate("product");
+        const links = await ReferralLink.find({ Reseller: req.user.id }).populate("product");
         const formatted = links.map(l => ({
             id: l._id,
-            influencerId: l.influencer,
+            ResellerId: l.Reseller,
             productId: l.product ? l.product._id : null,
             productName: l.product ? l.product.name : "Unknown Product",
             uniqueCode: l.uniqueCode,
@@ -703,7 +728,7 @@ exports.listReferralLinks = async (req, res) => {
 exports.trackReferralClick = async (req, res) => {
     try {
         const { code } = req.params;
-        let influencerId = null;
+        let ResellerId = null;
         let productId = null;
         let sellingPrice = 0;
 
@@ -713,7 +738,7 @@ exports.trackReferralClick = async (req, res) => {
             catalogItem.clicks = (catalogItem.clicks || 0) + 1;
             await catalogItem.save();
 
-            influencerId = catalogItem.influencer;
+            ResellerId = catalogItem.Reseller;
             productId = catalogItem.product._id;
             const pricing = await getProductSellingDetails(catalogItem.product);
             sellingPrice = pricing.platformPrice + catalogItem.markupAmount;
@@ -724,21 +749,21 @@ exports.trackReferralClick = async (req, res) => {
                 linkItem.clicks = (linkItem.clicks || 0) + 1;
                 await linkItem.save();
 
-                influencerId = linkItem.influencer;
+                ResellerId = linkItem.Reseller;
                 productId = linkItem.product._id;
                 const pricing = await getProductSellingDetails(linkItem.product);
                 sellingPrice = pricing.platformPrice;
             }
         }
 
-        if (!influencerId) {
+        if (!ResellerId) {
             return res.status(404).json({ message: "Referral code not found" });
         }
 
         res.status(200).json({
             productId,
             sellingPrice,
-            influencerId,
+            ResellerId,
             referralCode: code
         });
     } catch (err) {
@@ -751,7 +776,7 @@ exports.trackReferralClick = async (req, res) => {
 // ----------------------------------------------------
 exports.getWallet = async (req, res) => {
     try {
-        const profile = await InfluencerProfile.findOne({ user: req.user.id });
+        const profile = await ResellerProfile.findOne({ user: req.user.id });
         if (!profile) {
             return res.status(404).json({ message: "Profile not found" });
         }
@@ -771,7 +796,7 @@ exports.listWalletTransactions = async (req, res) => {
         const { page = 1, limit = 10 } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        const list = await ResellerWalletTransaction.find({ influencer: req.user.id })
+        const list = await ResellerWalletTransaction.find({ Reseller: req.user.id })
             .skip(skip)
             .limit(parseInt(limit))
             .sort({ createdAt: -1 });
@@ -803,7 +828,7 @@ exports.listWithdrawals = async (req, res) => {
             const list = await Withdrawal.find({ resellerId: req.user.id }).sort({ createdAt: -1 });
             const formatted = list.map(w => ({
                 id: w._id,
-                influencerId: w.resellerId,
+                ResellerId: w.resellerId,
                 amount: w.amount,
                 bankName: w.bankDetails?.bankName || "",
                 accountNumber: w.bankDetails?.accountNumber || "",
@@ -816,10 +841,10 @@ exports.listWithdrawals = async (req, res) => {
             return res.status(200).json(formatted);
         }
 
-        const list = await ResellerWithdrawal.find({ influencer: req.user.id }).sort({ createdAt: -1 });
+        const list = await ResellerWithdrawal.find({ Reseller: req.user.id }).sort({ createdAt: -1 });
         const formatted = list.map(w => ({
             id: w._id,
-            influencerId: w.influencer,
+            ResellerId: w.Reseller,
             amount: w.amount,
             bankName: w.bankName,
             accountNumber: w.accountNumber,
@@ -848,7 +873,7 @@ exports.requestWithdrawal = async (req, res) => {
             return res.status(400).json({ message: "All withdrawal account details are required" });
         }
 
-        const profile = await InfluencerProfile.findOne({ user: req.user.id });
+        const profile = await ResellerProfile.findOne({ user: req.user.id });
         if (!profile) {
             return res.status(404).json({ message: "Profile not found" });
         }
@@ -863,7 +888,7 @@ exports.requestWithdrawal = async (req, res) => {
         await profile.save();
 
         const withdrawal = await ResellerWithdrawal.create({
-            influencer: req.user.id,
+            Reseller: req.user.id,
             amount,
             bankName,
             accountNumber,
@@ -873,7 +898,7 @@ exports.requestWithdrawal = async (req, res) => {
 
         res.status(201).json({
             id: withdrawal._id,
-            influencerId: withdrawal.influencer,
+            ResellerId: withdrawal.Reseller,
             amount: withdrawal.amount,
             bankName: withdrawal.bankName,
             accountNumber: withdrawal.accountNumber,
@@ -889,12 +914,12 @@ exports.requestWithdrawal = async (req, res) => {
 };
 
 // ----------------------------------------------------
-// Analytics & Orders (Influencer)
+// Analytics & Orders (Reseller)
 // ----------------------------------------------------
-exports.getInfluencerAnalytics = async (req, res) => {
+exports.getResellerAnalytics = async (req, res) => {
     try {
-        const catalogItems = await ResellerProduct.find({ influencer: req.user.id }).populate("product");
-        const referralLinks = await ReferralLink.find({ influencer: req.user.id }).populate("product");
+        const catalogItems = await ResellerProduct.find({ Reseller: req.user.id }).populate("product");
+        const referralLinks = await ReferralLink.find({ Reseller: req.user.id }).populate("product");
 
         const productMap = {};
 
@@ -934,14 +959,46 @@ exports.getInfluencerAnalytics = async (req, res) => {
         });
 
         // Add order revenues and profits
-        const orders = await Order.find({ influencer: req.user.id, status: "DELIVERED" });
+        const activeProductIds = new Set(catalogItems.map(item => item.product._id.toString()));
+
+        const orders = await Order.find({
+            $or: [
+                { Reseller: req.user.id },
+                { resellerId: req.user.id }
+            ],
+            status: { $ne: "CANCELLED" },
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        });
         orders.forEach(o => {
             o.items.forEach(item => {
+                if (!item.product) return;
                 const pId = item.product.toString();
-                if (productMap[pId]) {
-                    productMap[pId].revenue += (item.price * item.quantity);
-                    productMap[pId].profit += (o.influencerMarkup * item.quantity); // Markup profit
+                
+                // Only count stats if product is in the reseller's "My Products"
+                if (!activeProductIds.has(pId)) return;
+                
+                const basePrice = item.originalPrice || item.price;
+                const sellingPrice = item.price;
+                const itemProfit = (sellingPrice - basePrice) * item.quantity;
+                const profitAmount = itemProfit || (o.commissionAmount && o.items.length === 1 ? o.commissionAmount : 0);
+
+                if (!productMap[pId]) {
+                    productMap[pId] = {
+                        productId: item.product,
+                        productName: item.name || "Product",
+                        clicks: 0,
+                        orders: 0,
+                        revenue: 0,
+                        profit: 0
+                    };
                 }
+
+                productMap[pId].orders += item.quantity;
+                productMap[pId].revenue += (sellingPrice * item.quantity);
+                productMap[pId].profit += profitAmount;
             });
         });
 
@@ -965,37 +1022,88 @@ exports.getInfluencerAnalytics = async (req, res) => {
     }
 };
 
-exports.listInfluencerOrders = async (req, res) => {
+exports.listResellerOrders = async (req, res) => {
     try {
         const { status, page = 1 } = req.query;
-        const query = { influencer: req.user.id };
+
+        // Fetch reseller's active products in their catalog ("My Products")
+        const resellerProducts = await ResellerProduct.find({ Reseller: req.user.id });
+        const activeProductIds = new Set(resellerProducts.map(rp => rp.product.toString()));
+
+        const query = {
+            $or: [
+                { Reseller: req.user.id },
+                { resellerId: req.user.id }
+            ]
+        };
 
         if (status) {
             query.status = status;
         }
 
-        const skip = (parseInt(page) - 1) * 10;
-        const orders = await Order.find(query).skip(skip).limit(10).sort({ createdAt: -1 });
+        // Fetch all orders matching the reseller's ID to filter in memory
+        const orders = await Order.find({
+            ...query,
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        }).sort({ createdAt: -1 });
 
         const formatted = [];
         for (const o of orders) {
             o.items.forEach(item => {
+                if (!item.product) return;
+                const pId = item.product.toString();
+
+                // ONLY show order item if the product exists in the reseller's "My Products"
+                if (!activeProductIds.has(pId)) return;
+
+                const basePrice = item.originalPrice || item.price;
+                const sellingPrice = item.price;
+                const itemProfit = (sellingPrice - basePrice) * item.quantity;
+                const profitAmount = itemProfit || (o.commissionAmount && o.items.length === 1 ? o.commissionAmount : 0);
+
                 formatted.push({
                     id: o._id,
                     orderId: o.orderId,
                     productId: item.product,
                     productName: item.name || "Product",
                     customerId: o.user,
-                    basePrice: item.price,
-                    sellingPrice: item.price + (o.influencerMarkup || 0),
-                    profitAmount: (o.influencerMarkup || 0) * item.quantity,
+                    basePrice: basePrice,
+                    sellingPrice: sellingPrice,
+                    profitAmount: profitAmount,
                     status: o.status,
                     createdAt: o.createdAt.toISOString()
                 });
             });
         }
 
-        res.status(200).json(formatted);
+        // Apply pagination
+        const skip = (parseInt(page) - 1) * 10;
+        const paginated = formatted.slice(skip, skip + 10);
+
+        res.status(200).json(paginated);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getResellerOrderDetail = async (req, res) => {
+    try {
+        const order = await Order.findOne({
+            _id: req.params.id,
+            $or: [
+                { Reseller: req.user.id },
+                { resellerId: req.user.id }
+            ]
+        }).populate("user", "name email mobile");
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.status(200).json(order);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -1004,7 +1112,7 @@ exports.listInfluencerOrders = async (req, res) => {
 // ----------------------------------------------------
 // Admin Reseller Endpoints
 // ----------------------------------------------------
-exports.adminListInfluencers = async (req, res) => {
+exports.adminListResellers = async (req, res) => {
     try {
         const { status, search } = req.query;
         const query = {};
@@ -1016,7 +1124,7 @@ exports.adminListInfluencers = async (req, res) => {
         let users = [];
         if (search) {
             const userQuery = {
-                role: "influencer",
+                role: "Reseller",
                 $or: [
                     { name: { $regex: search, $options: "i" } },
                     { email: { $regex: search, $options: "i" } }
@@ -1026,13 +1134,19 @@ exports.adminListInfluencers = async (req, res) => {
             query.user = { $in: matchedUsers.map(u => u._id) };
         }
 
-        const profiles = await InfluencerProfile.find(query).populate("user", "name email mobile");
+        const profiles = await ResellerProfile.find(query).populate("user", "name email mobile");
 
         const formatted = [];
         for (const p of profiles) {
             if (!p.user) continue;
-            const ordersCount = await Order.countDocuments({ influencer: p.user._id });
-            const sharedCount = await ResellerProduct.countDocuments({ influencer: p.user._id });
+            const ordersCount = await Order.countDocuments({
+                Reseller: p.user._id,
+                $or: [
+                    { paymentMethod: { $ne: "ONLINE" } },
+                    { paymentStatus: { $ne: "PENDING" } }
+                ]
+            });
+            const sharedCount = await ResellerProduct.countDocuments({ Reseller: p.user._id });
 
             formatted.push({
                 id: p._id,
@@ -1040,7 +1154,7 @@ exports.adminListInfluencers = async (req, res) => {
                 name: p.user.name,
                 email: p.user.email,
                 mobile: p.user.mobile,
-                influencerCode: p.influencerCode,
+                ResellerCode: p.ResellerCode,
                 status: p.status,
                 walletBalance: p.walletBalance,
                 totalEarnings: p.totalEarnings,
@@ -1057,14 +1171,14 @@ exports.adminListInfluencers = async (req, res) => {
     }
 };
 
-exports.adminGetInfluencer = async (req, res) => {
+exports.adminGetReseller = async (req, res) => {
     try {
-        const profile = await InfluencerProfile.findById(req.params.id).populate("user", "name email mobile");
+        const profile = await ResellerProfile.findById(req.params.id).populate("user", "name email mobile");
         if (!profile) {
-            return res.status(404).json({ message: "Influencer profile not found" });
+            return res.status(404).json({ message: "Reseller profile not found" });
         }
-        const ordersCount = await Order.countDocuments({ influencer: profile.user._id });
-        const sharedCount = await ResellerProduct.countDocuments({ influencer: profile.user._id });
+        const ordersCount = await Order.countDocuments({ Reseller: profile.user._id });
+        const sharedCount = await ResellerProduct.countDocuments({ Reseller: profile.user._id });
 
         res.status(200).json({
             id: profile._id,
@@ -1072,7 +1186,7 @@ exports.adminGetInfluencer = async (req, res) => {
             name: profile.user.name,
             email: profile.user.email,
             mobile: profile.user.mobile,
-            influencerCode: profile.influencerCode,
+            ResellerCode: profile.ResellerCode,
             status: profile.status,
             walletBalance: profile.walletBalance,
             totalEarnings: profile.totalEarnings,
@@ -1086,22 +1200,22 @@ exports.adminGetInfluencer = async (req, res) => {
     }
 };
 
-exports.adminUpdateInfluencerStatus = async (req, res) => {
+exports.adminUpdateResellerStatus = async (req, res) => {
     try {
         const { status } = req.body;
         if (!["active", "inactive"].includes(status)) {
             return res.status(400).json({ message: "Invalid status value" });
         }
 
-        const profile = await InfluencerProfile.findById(req.params.id);
+        const profile = await ResellerProfile.findById(req.params.id);
         if (!profile) {
-            return res.status(404).json({ message: "Influencer profile not found" });
+            return res.status(404).json({ message: "Reseller profile not found" });
         }
 
         profile.status = status;
         await profile.save();
 
-        res.status(200).json({ message: `Influencer status updated to ${status}` });
+        res.status(200).json({ message: `Reseller status updated to ${status}` });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -1109,11 +1223,11 @@ exports.adminUpdateInfluencerStatus = async (req, res) => {
 
 exports.adminGetDashboard = async (req, res) => {
     try {
-        const totalInfluencers = await InfluencerProfile.countDocuments();
-        const activeInfluencers = await InfluencerProfile.countDocuments({ status: "active" });
-        const pendingInfluencers = await InfluencerProfile.countDocuments({ status: "pending" });
+        const totalResellers = await ResellerProfile.countDocuments();
+        const activeResellers = await ResellerProfile.countDocuments({ status: "active" });
+        const pendingResellers = await ResellerProfile.countDocuments({ status: "pending" });
 
-        const profiles = await InfluencerProfile.find();
+        const profiles = await ResellerProfile.find();
         const totalEarningsPaid = profiles.reduce((sum, p) => sum + (p.totalWithdrawn || 0), 0);
         const totalEarningsPending = profiles.reduce((sum, p) => sum + (p.walletBalance || 0), 0);
 
@@ -1121,7 +1235,13 @@ exports.adminGetDashboard = async (req, res) => {
         const totalWithdrawalsPending = pendingWithdrawals.length;
         const totalWithdrawalsAmount = pendingWithdrawals.reduce((sum, w) => sum + w.amount, 0);
 
-        const orders = await Order.find({ influencer: { $ne: null } });
+        const orders = await Order.find({
+            Reseller: { $ne: null },
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        });
         const totalOrders = orders.length;
         const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
 
@@ -1133,9 +1253,9 @@ exports.adminGetDashboard = async (req, res) => {
         const conversionRate = totalClicks > 0 ? (totalOrders / totalClicks) * 100 : 0;
 
         res.status(200).json({
-            totalInfluencers,
-            activeInfluencers,
-            pendingInfluencers,
+            totalResellers,
+            activeResellers,
+            pendingResellers,
             totalEarningsPaid,
             totalEarningsPending,
             totalWithdrawalsPending,
@@ -1158,20 +1278,50 @@ exports.adminListWithdrawals = async (req, res) => {
             query.status = status;
         }
 
-        const withdrawals = await ResellerWithdrawal.find(query).populate("influencer", "name email");
+        const withdrawals = await ResellerWithdrawal.find(query).populate("Reseller", "name email");
 
-        const formatted = withdrawals.map(w => ({
-            id: w._id,
-            influencerId: w.influencer ? w.influencer._id : null,
-            influencerName: w.influencer ? w.influencer.name : "Unknown Reseller",
-            amount: w.amount,
-            bankName: w.bankName,
-            accountNumber: w.accountNumber,
-            ifsc: w.ifsc,
-            upiId: w.upiId,
-            status: w.status,
-            requestedAt: w.createdAt.toISOString(),
-            approvedAt: w.approvedAt ? w.approvedAt.toISOString() : null
+        const formatted = await Promise.all(withdrawals.map(async w => {
+            const resellerUserId = w.Reseller ? w.Reseller._id : null;
+            let ordersCount = 0;
+            let vendorsList = [];
+
+            if (resellerUserId) {
+                const orders = await Order.find({
+                    $or: [{ Reseller: resellerUserId }, { resellerId: resellerUserId }],
+                    $or: [
+                        { paymentMethod: { $ne: "ONLINE" } },
+                        { paymentStatus: { $ne: "PENDING" } }
+                    ]
+                }).populate("vendor", "name");
+
+                ordersCount = orders.length;
+
+                const vendorNamesSet = new Set();
+                orders.forEach(o => {
+                    if (o.vendor && o.vendor.name) {
+                        vendorNamesSet.add(o.vendor.name);
+                    } else {
+                        vendorNamesSet.add("Unknown Vendor");
+                    }
+                });
+                vendorsList = Array.from(vendorNamesSet);
+            }
+
+            return {
+                id: w._id,
+                ResellerId: resellerUserId,
+                ResellerName: w.Reseller ? w.Reseller.name : "Unknown Reseller",
+                amount: w.amount,
+                bankName: w.bankName,
+                accountNumber: w.accountNumber,
+                ifsc: w.ifsc,
+                upiId: w.upiId,
+                status: w.status,
+                requestedAt: w.createdAt.toISOString(),
+                approvedAt: w.approvedAt ? w.approvedAt.toISOString() : null,
+                ordersCount: ordersCount,
+                vendorsList: vendorsList
+            };
         }));
 
         res.status(200).json(formatted);
@@ -1196,36 +1346,59 @@ exports.adminUpdateWithdrawal = async (req, res) => {
             return res.status(400).json({ message: "Withdrawal request has already been processed" });
         }
 
-        const profile = await InfluencerProfile.findOne({ user: withdrawal.influencer });
+        let profile = await Reseller.findOne({ user: withdrawal.Reseller });
+        let isResellerModel = true;
         if (!profile) {
-            return res.status(404).json({ message: "Influencer profile not found" });
+            profile = await ResellerProfile.findOne({ user: withdrawal.Reseller });
+            isResellerModel = false;
+        }
+
+        if (!profile) {
+            return res.status(404).json({ message: "Reseller profile not found" });
         }
 
         withdrawal.status = status;
         if (status === "approved") {
             withdrawal.approvedAt = new Date();
-            profile.pendingBalance -= withdrawal.amount;
-            profile.totalWithdrawn += withdrawal.amount;
+            
+            if (isResellerModel) {
+                profile.withdrawnBalance = (profile.withdrawnBalance || 0) + withdrawal.amount;
+                
+                await ResellerWalletTransaction.create({
+                    Reseller: withdrawal.Reseller,
+                    debit: withdrawal.amount,
+                    balance: profile.availableBalance,
+                    transactionType: "withdrawal",
+                    referenceId: withdrawal._id,
+                    remarks: "Approved payout request"
+                });
+            } else {
+                profile.pendingBalance -= withdrawal.amount;
+                profile.totalWithdrawn += withdrawal.amount;
 
-            // Log debit transaction
-            await ResellerWalletTransaction.create({
-                influencer: withdrawal.influencer,
-                debit: withdrawal.amount,
-                balance: profile.walletBalance,
-                transactionType: "withdrawal",
-                referenceId: withdrawal._id,
-                remarks: "Approved payout request"
-            });
+                await ResellerWalletTransaction.create({
+                    Reseller: withdrawal.Reseller,
+                    debit: withdrawal.amount,
+                    balance: profile.walletBalance,
+                    transactionType: "withdrawal",
+                    referenceId: withdrawal._id,
+                    remarks: "Approved payout request"
+                });
+            }
         } else {
             // Refund balance on reject
-            profile.pendingBalance -= withdrawal.amount;
-            profile.walletBalance += withdrawal.amount;
+            if (isResellerModel) {
+                profile.availableBalance = (profile.availableBalance || 0) + withdrawal.amount;
+            } else {
+                profile.pendingBalance -= withdrawal.amount;
+                profile.walletBalance += withdrawal.amount;
+            }
         }
 
         await profile.save();
         await withdrawal.save();
 
-        res.status(200).json({ message: `Withdrawal request status updated to ${status}` });
+        res.status(200).json({ success: true, message: `Withdrawal request status updated to ${status}` });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -1238,7 +1411,12 @@ exports.adminGetAnalytics = async (req, res) => {
         const totalClicks = catalogProducts.reduce((sum, p) => sum + (p.clicks || 0), 0) +
             referralLinks.reduce((sum, r) => sum + (r.clicks || 0), 0);
 
-        const orders = await Order.find({ influencer: { $ne: null } });
+        const orders = await Order.find({
+            $or: [
+                { Reseller: { $ne: null } },
+                { resellerId: { $ne: null } }
+            ]
+        });
         const totalOrders = orders.length;
         const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
         const totalConversions = totalOrders;
@@ -1259,9 +1437,14 @@ exports.adminGetAnalytics = async (req, res) => {
                         profit: 0
                     };
                 }
+                const basePrice = item.originalPrice || item.price;
+                const sellingPrice = item.price;
+                const itemProfit = (sellingPrice - basePrice) * item.quantity;
+                const profitAmount = itemProfit || (o.commissionAmount && o.items.length === 1 ? o.commissionAmount : 0);
+
                 productMap[pId].orders += item.quantity;
-                productMap[pId].revenue += (item.price * item.quantity);
-                productMap[pId].profit += (o.influencerMarkup * item.quantity);
+                productMap[pId].revenue += (sellingPrice * item.quantity);
+                productMap[pId].profit += profitAmount;
             });
         });
 
@@ -1280,23 +1463,23 @@ exports.adminGetAnalytics = async (req, res) => {
     }
 };
 
-exports.adminGetTopInfluencers = async (req, res) => {
+exports.adminGetTopResellers = async (req, res) => {
     try {
-        const profiles = await InfluencerProfile.find().populate("user", "name");
+        const profiles = await ResellerProfile.find().populate("user", "name");
 
         const formatted = [];
         for (const p of profiles) {
             if (!p.user) continue;
-            const ordersCount = await Order.countDocuments({ influencer: p.user._id });
-            const catalogProducts = await ResellerProduct.find({ influencer: p.user._id });
-            const referralLinks = await ReferralLink.find({ influencer: p.user._id });
+            const ordersCount = await Order.countDocuments({ Reseller: p.user._id });
+            const catalogProducts = await ResellerProduct.find({ Reseller: p.user._id });
+            const referralLinks = await ReferralLink.find({ Reseller: p.user._id });
             const clicks = catalogProducts.reduce((sum, cp) => sum + (cp.clicks || 0), 0) +
                 referralLinks.reduce((sum, rl) => sum + (rl.clicks || 0), 0);
 
             formatted.push({
                 id: p._id,
                 name: p.user.name,
-                influencerCode: p.influencerCode,
+                ResellerCode: p.ResellerCode,
                 totalEarnings: p.totalEarnings,
                 totalOrders: ordersCount,
                 totalClicks: clicks,
@@ -1317,10 +1500,10 @@ exports.adminGetTopInfluencers = async (req, res) => {
 // ----------------------------------------------------
 exports.listVendorOrders = async (req, res) => {
     try {
-        // Find orders associated with vendor user ID that originated from an influencer
-        const orders = await Order.find({ vendor: req.user.id, influencer: { $ne: null } })
+        // Find orders associated with vendor user ID that originated from an Reseller
+        const orders = await Order.find({ vendor: req.user.id, Reseller: { $ne: null } })
             .populate("user", "name")
-            .populate("influencer", "name");
+            .populate("Reseller", "name");
 
         const formatted = [];
         orders.forEach(o => {
@@ -1334,8 +1517,8 @@ exports.listVendorOrders = async (req, res) => {
                     amount: item.price * item.quantity,
                     status: o.status,
                     source: "reseller",
-                    influencerName: o.influencer ? o.influencer.name : "Unknown Reseller",
-                    influencerCode: o.influencerCode || null,
+                    ResellerName: o.Reseller ? o.Reseller.name : "Unknown Reseller",
+                    ResellerCode: o.ResellerCode || null,
                     createdAt: o.createdAt.toISOString()
                 });
             });
@@ -1346,3 +1529,188 @@ exports.listVendorOrders = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// ----------------------------------------------------
+// Reseller Collection Endpoints
+// ----------------------------------------------------
+exports.createCollection = async (req, res) => {
+    try {
+        const ResellerCollection = require("../model/ResellerCollection.js");
+        const { name, description, products } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ message: "Collection name is required" });
+        }
+
+        const collection = new ResellerCollection({
+            reseller: req.user.id,
+            name,
+            description: description || "",
+            products: products || []
+        });
+
+        await collection.save();
+        res.status(201).json({ message: "Collection created successfully", data: collection });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.listCollections = async (req, res) => {
+    try {
+        const ResellerCollection = require("../model/ResellerCollection.js");
+        const collections = await ResellerCollection.find({ reseller: req.user.id })
+            .populate({
+                path: "products",
+                populate: { path: "product" }
+            })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(collections);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getCollection = async (req, res) => {
+    try {
+        const ResellerCollection = require("../model/ResellerCollection.js");
+        const collection = await ResellerCollection.findOne({ _id: req.params.id, reseller: req.user.id })
+            .populate({
+                path: "products",
+                populate: { path: "product" }
+            });
+
+        if (!collection) {
+            return res.status(404).json({ message: "Collection not found" });
+        }
+
+        res.status(200).json(collection);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.updateCollection = async (req, res) => {
+    try {
+        const ResellerCollection = require("../model/ResellerCollection.js");
+        const { name, description, products } = req.body;
+
+        const collection = await ResellerCollection.findOne({ _id: req.params.id, reseller: req.user.id });
+        if (!collection) {
+            return res.status(404).json({ message: "Collection not found" });
+        }
+
+        if (name) collection.name = name;
+        if (description !== undefined) collection.description = description;
+        if (products) collection.products = products;
+
+        await collection.save();
+        res.status(200).json({ message: "Collection updated successfully", data: collection });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.deleteCollection = async (req, res) => {
+    try {
+        const ResellerCollection = require("../model/ResellerCollection.js");
+        const collection = await ResellerCollection.findOneAndDelete({ _id: req.params.id, reseller: req.user.id });
+        if (!collection) {
+            return res.status(404).json({ message: "Collection not found" });
+        }
+        res.status(200).json({ message: "Collection deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getSharedCollection = async (req, res) => {
+    try {
+        const ResellerCollection = require("../model/ResellerCollection.js");
+        const Reseller = require("../model/Reseller.js");
+        const Vendor = require("../model/Vendor.js");
+        const { calculateProductPricing } = require("../utils/pricing.js");
+
+        const collection = await ResellerCollection.findOne({ shareCode: req.params.shareCode })
+            .populate({
+                path: "products",
+                populate: { path: "product" }
+            });
+
+        if (!collection) {
+            return res.status(404).json({ message: "Collection not found" });
+        }
+
+        // Get reseller profile to fetch reseller code
+        const resellerProfile = await Reseller.findOne({ user: collection.reseller });
+        const resellerCode = resellerProfile ? resellerProfile.resellerCode : null;
+
+        // Process products to apply reseller markup to prices
+        const adjustedProducts = [];
+        for (let item of collection.products) {
+            if (!item.product) continue;
+
+            const productObj = item.product.toObject();
+            const vendor = await Vendor.findOne({ user: productObj.user });
+            const commissionRate = vendor ? (vendor.commissionRate || 0) : 0;
+            const gstRate = productObj.gst || 0;
+            const markupAmount = item.markupAmount || 0;
+
+            if (productObj.discountPrice > 0) {
+                const pricingDiscount = calculateProductPricing(productObj.discountPrice, commissionRate, gstRate);
+                const pricingRegular = calculateProductPricing(productObj.price, commissionRate, gstRate);
+
+                productObj.originalPrice = pricingRegular.originalPrice;
+                productObj.commissionPercent = pricingDiscount.commissionPercent;
+                productObj.commissionAmount = pricingDiscount.commissionAmount;
+
+                productObj.sellingPrice = pricingDiscount.sellingPrice + markupAmount;
+                productObj.price = pricingRegular.sellingPrice + markupAmount;
+                productObj.discountPrice = pricingDiscount.sellingPrice + markupAmount;
+            } else {
+                const pricing = calculateProductPricing(productObj.price, commissionRate, gstRate);
+
+                productObj.originalPrice = pricing.originalPrice;
+                productObj.commissionPercent = pricing.commissionPercent;
+                productObj.commissionAmount = pricing.commissionAmount;
+
+                productObj.sellingPrice = pricing.sellingPrice + markupAmount;
+                productObj.price = pricing.sellingPrice + markupAmount;
+            }
+
+            // Adjust variation prices to include reseller markup
+            if (productObj.variations && productObj.variations.length > 0) {
+                productObj.variations = productObj.variations.map(v => {
+                    const varPricing = calculateProductPricing(v.price, commissionRate, gstRate);
+                    let updatedVar = { ...v, price: varPricing.sellingPrice + markupAmount };
+                    if (v.oldPrice > 0) {
+                        const varOldPricing = calculateProductPricing(v.oldPrice, commissionRate, gstRate);
+                        updatedVar.oldPrice = varOldPricing.sellingPrice + markupAmount;
+                    }
+                    return updatedVar;
+                });
+            }
+
+            // Attach reseller details for deep-linking
+            productObj.resellerId = item.Reseller;
+            productObj.resellerCode = item.referralCode;
+            productObj.resellerMarkup = markupAmount;
+
+            const itemObj = item.toObject();
+            itemObj.product = productObj;
+            adjustedProducts.push(itemObj);
+        }
+
+        const collectionObj = collection.toObject();
+        collectionObj.products = adjustedProducts;
+
+        res.status(200).json({
+            collection: collectionObj,
+            resellerCode
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+

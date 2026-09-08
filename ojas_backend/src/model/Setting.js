@@ -63,6 +63,10 @@ const settingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  vendorTermsConditions: {
+    type: String,
+    default: ''
+  },
   privacyPolicy: {
     type: String,
     default: ''
@@ -121,6 +125,14 @@ const settingSchema = new mongoose.Schema({
     default: ''
   },
   whatsappNumber: {
+    type: String,
+    default: ''
+  },
+  whatsappApiUrl: {
+    type: String,
+    default: 'https://mankiwave.in/api/send'
+  },
+  whatsappInstanceId: {
     type: String,
     default: ''
   },

@@ -19,6 +19,36 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String? _bannerUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBanner();
+  }
+
+  Future<void> _loadBanner() async {
+    try {
+      final dio = sl<ApiService>().dio;
+      final response = await dio.get('/home/banners');
+      if (response.statusCode == 200 && response.data != null) {
+        final List banners = response.data['data'] ?? [];
+        final vendorAuthBanner = banners.firstWhere(
+          (b) => b['type'] == 'vendor_auth' && b['isActive'] == true,
+          orElse: () => null,
+        );
+        if (vendorAuthBanner != null && vendorAuthBanner['imageUrl'] != null) {
+          if (mounted) {
+            setState(() {
+              _bannerUrl = vendorAuthBanner['imageUrl'];
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading vendor auth banner: $e');
+    }
+  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) {
@@ -258,17 +288,22 @@ class _LoginPageState extends State<LoginPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/auth.png'),
+            image: _bannerUrl != null
+                ? NetworkImage(_bannerUrl!) as ImageProvider
+                : const AssetImage('assets/auth.png'),
             fit: BoxFit.fill,
+            onError: (exception, stackTrace) {
+              debugPrint('Error loading network banner image: $exception');
+            },
           ),
         ),
         child: Row(
           children: [
-            const Spacer(flex: 58),
+            const Spacer(flex: 65),
             Expanded(
-              flex: 38,
+              flex: 35,
               child: Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

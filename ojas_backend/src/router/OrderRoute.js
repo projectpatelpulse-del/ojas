@@ -12,9 +12,12 @@ const {
     submitPickupDetails,
     updatePickupStatus,
     submitPickedUpPhoto,
-    submitDispatchPhoto
+    submitDispatchPhoto,
+    uploadVendorInvoice,
+    uploadDelhiveryChallan
 } = require("../controller/OrderController");
-const { assignDelhivery, trackShipment } = require("../controller/LogisticsController");
+
+const { assignDelhivery, trackShipment, getDelhiveryLabel } = require("../controller/LogisticsController");
 const auth = require("../middlewere/Auth");
 const adminAuth = require("../middlewere/AdminAuth");
 
@@ -38,9 +41,11 @@ router.put("/pickup-details", flexibleAuth, submitPickupDetails);
 router.put("/pickup-status", flexibleAuth, updatePickupStatus);
 router.put("/picked-up-photo", flexibleAuth, submitPickedUpPhoto);
 router.put("/dispatch-photo", flexibleAuth, submitDispatchPhoto);
+router.put("/vendor-invoice", flexibleAuth, uploadVendorInvoice);
+router.put("/delhivery-challan", flexibleAuth, uploadDelhiveryChallan);
 
-// Logistics/Delhivery
 router.post("/assign-delivery/:orderId", flexibleAuth, assignDelhivery);
 router.get("/track/:awb", flexibleAuth, trackShipment);
+router.get("/delhivery-label/:orderId", flexibleAuth, getDelhiveryLabel);
 
 module.exports = router;

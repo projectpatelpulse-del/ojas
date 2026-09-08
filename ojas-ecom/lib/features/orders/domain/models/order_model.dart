@@ -18,6 +18,7 @@ class OrderModel {
   final String? panNumber;
   final bool isBusinessPurchase;
   final String invoiceType;
+  final String pickupStatus;
 
   OrderModel({
     required this.id,
@@ -39,7 +40,23 @@ class OrderModel {
     this.panNumber,
     this.isBusinessPurchase = false,
     this.invoiceType = 'RETAIL',
+    this.pickupStatus = 'Pending',
   });
+
+  String get displayStatus {
+    final s = status.toUpperCase();
+    if (['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'ESCALATED'].contains(s)) {
+      return status;
+    }
+    if (pickupStatus == 'Pickup Requested') {
+      return 'Shipment Requested';
+    } else if (pickupStatus == 'Pickup Scheduled') {
+      return 'Shipment Scheduled';
+    } else if (pickupStatus == 'Picked Up') {
+      return 'Picked Up';
+    }
+    return status;
+  }
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
@@ -62,6 +79,7 @@ class OrderModel {
       panNumber: json['panNumber'],
       isBusinessPurchase: json['isBusinessPurchase'] ?? false,
       invoiceType: json['invoiceType'] ?? 'RETAIL',
+      pickupStatus: json['pickupStatus'] ?? 'Pending',
     );
   }
 
@@ -86,6 +104,7 @@ class OrderModel {
       'panNumber': panNumber,
       'isBusinessPurchase': isBusinessPurchase,
       'invoiceType': invoiceType,
+      'pickupStatus': pickupStatus,
     };
   }
 }
@@ -98,6 +117,7 @@ class OrderItem {
   final String image;
   final double gstAmount;
   final double finalPrice;
+  final double gstPercent;
 
   OrderItem({
     required this.productId,
@@ -107,6 +127,7 @@ class OrderItem {
     required this.image,
     this.gstAmount = 0.0,
     this.finalPrice = 0.0,
+    this.gstPercent = 18.0,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -118,6 +139,7 @@ class OrderItem {
       image: json['image'] ?? '',
       gstAmount: (json['gstAmount'] ?? 0).toDouble(),
       finalPrice: (json['finalPrice'] ?? 0).toDouble(),
+      gstPercent: (json['gstPercent'] ?? 18).toDouble(),
     );
   }
 
@@ -130,6 +152,7 @@ class OrderItem {
       'image': image,
       'gstAmount': gstAmount,
       'finalPrice': finalPrice,
+      'gstPercent': gstPercent,
     };
   }
 }

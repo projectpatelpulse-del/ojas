@@ -86,6 +86,12 @@ class CartService {
       }
       return {'success': false, 'message': 'Failed to create order'};
     } catch (e) {
+      if (e is DioException) {
+        final responseData = e.response?.data;
+        if (responseData is Map && responseData.containsKey('message')) {
+          return {'success': false, 'message': responseData['message']};
+        }
+      }
       return {'success': false, 'message': e.toString()};
     }
   }

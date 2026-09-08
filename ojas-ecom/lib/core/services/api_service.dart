@@ -34,7 +34,7 @@ class ApiService {
 
   static String get baseUrl => _baseUrl;
 
-  static String get serverUrl => _baseUrl;
+  static String get serverUrl => _baseUrl.replaceAll('/api', '');
 
   static String get userBaseUrl => '$baseUrl/user';
 

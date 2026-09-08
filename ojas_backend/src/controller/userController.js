@@ -332,7 +332,19 @@ const addToCart = async (req, res) => {
             item.product.toString() === productId && 
             (item.variationId || "") === (variationId || "")
         );
-        const q = parseInt(quantity) || 1;
+        let minQty = 1;
+        const product = await Product.findById(productId);
+        if (product) {
+            minQty = product.moq || 1;
+            if (variationId && product.variations && product.variations.length > 0) {
+                const selectedVar = product.variations.find(v => (v._id?.toString() === variationId || v.id?.toString() === variationId));
+                if (selectedVar && selectedVar.moq > 0) {
+                    minQty = selectedVar.moq;
+                }
+            }
+        }
+
+        let q = parseInt(quantity) || minQty;
 
         if (cartItemIndex > -1) {
             user.cart[cartItemIndex].quantity += q;
@@ -342,8 +354,11 @@ const addToCart = async (req, res) => {
             // If quantity becomes 0 or less, remove the item
             if (user.cart[cartItemIndex].quantity <= 0) {
                 user.cart.splice(cartItemIndex, 1);
+            } else if (user.cart[cartItemIndex].quantity < minQty) {
+                user.cart[cartItemIndex].quantity = minQty;
             }
         } else if (q > 0) {
+            if (q < minQty) q = minQty;
             user.cart.push({ product: productId, variationId, quantity: q, referralCode });
         }
 

@@ -78,6 +78,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   void _initProductDetails(ProductModel p) {
+    debugPrint('Product Detail - Main Image URL: ${p.imageUrl}');
     _selectedImageUrl = p.imageUrl;
     _currentPrice = p.price;
     _currentStock = p.available ?? 0;
@@ -90,7 +91,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         (v) => (v.price - p.price).abs() < 0.01,
         orElse: () => p.variations.reduce((a, b) => (a.price > 0 && a.price < b.price) ? a : b),
       );
-      _selectedSize = targetVar.size;
+      _selectedSize = targetVar.modelName;
       _selectedColor = targetVar.color;
       _selectedMaterial = targetVar.material;
       _selectedWeight = targetVar.weightStr;
@@ -99,6 +100,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       _currentStock = targetVar.stock;
       _currentWeight = targetVar.weight ?? p.weight;
       _selectedVariationTitle = targetVar.title;
+
+      // Extract and initialize variation images
+      final List<String> varImages = [];
+      if (targetVar.images.isNotEmpty) {
+        varImages.addAll(targetVar.images.where((img) => img.isNotEmpty));
+      }
+      if (targetVar.image != null && targetVar.image!.isNotEmpty && !varImages.contains(targetVar.image)) {
+        varImages.insert(0, targetVar.image!);
+      }
+      _currentVariationImages = varImages;
+    } else {
+      _currentVariationImages = [];
     }
   }
 
@@ -157,18 +170,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     final match = validVars.firstWhere(
       (v) =>
-          (_selectedSize == null || v.size == _selectedSize) &&
+          (_selectedSize == null || v.modelName == _selectedSize) &&
           (_selectedColor == null || v.color == _selectedColor) &&
           (_selectedMaterial == null || v.material == _selectedMaterial) &&
           (_selectedWeight == null || v.weightStr == _selectedWeight),
       orElse: () => validVars.firstWhere(
-        (v) => (_selectedSize == null || v.size == _selectedSize),
+        (v) => (_selectedSize == null || v.modelName == _selectedSize),
         orElse: () => validVars[0],
       ),
     );
 
     setState(() {
-      _selectedSize = match.size ?? _selectedSize;
+      _selectedSize = match.modelName ?? _selectedSize;
       _selectedColor = match.color ?? _selectedColor;
       _selectedMaterial = match.material ?? _selectedMaterial;
       _selectedWeight = match.weightStr ?? _selectedWeight;
@@ -203,7 +216,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (product.variations.isEmpty) return const SizedBox.shrink();
 
     final uniqueSizes = product.variations
-        .map((v) => v.size)
+        .map((v) => v.modelName)
         .whereType<String>()
         .where((s) => s.isNotEmpty)
         .toSet()
@@ -243,12 +256,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (uniqueSizes.isNotEmpty) ...[
-          Text(
-            'Select Size',
-            style: GoogleFonts.outfit(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF0F172A),
+          RichText(
+            text: TextSpan(
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0F172A),
+              ),
+              children: [
+                const TextSpan(text: 'Model: '),
+                TextSpan(
+                  text: _selectedSize ?? '',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -258,52 +282,94 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             children: uniqueSizes.map((size) {
               final isSelected = _selectedSize == size;
 
-              // Check if size has any variation with price > 0
               final hasValidPrice = product.variations.any(
-                (v) => v.size == size && v.price > 0,
+                (v) => v.modelName == size && v.price > 0,
               );
 
-              return ChoiceChip(
-                label: Text(
-                  size,
-                  style: GoogleFonts.inter(
-                    color: isSelected
-                        ? AppColors.white
-                        : (hasValidPrice ? AppColors.black87 : AppColors.grey),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    decoration: hasValidPrice ? null : TextDecoration.lineThrough,
-                  ),
-                ),
-                selected: isSelected,
-                disabledColor: Colors.grey.shade200,
-                onSelected: hasValidPrice
-                    ? (selected) {
-                        if (selected) {
-                          setState(() {
-                            _selectedSize = size;
-                            final validForSize = product.variations
-                                .where((v) => v.size == size && v.price > 0)
-                                .toList();
-                            if (validForSize.isNotEmpty) {
-                              final matchedVar = validForSize.firstWhere(
-                                (v) => v.weightStr == _selectedWeight && v.price > 0,
-                                orElse: () => validForSize.first,
-                              );
-                              _selectedWeight = matchedVar.weightStr;
-                              _selectedColor = matchedVar.color;
-                              _selectedMaterial = matchedVar.material;
-                            }
-                            _updateSelectedVariation();
-                          });
-                        }
+              final variation = product.variations.firstWhere(
+                (v) => v.modelName == size && v.image != null && v.image!.isNotEmpty,
+                orElse: () => product.variations.firstWhere((v) => v.modelName == size, orElse: () => product.variations.first),
+              );
+
+              final String? imageUrl = (variation.modelName == size) ? variation.image : null;
+
+              return GestureDetector(
+                onTap: hasValidPrice
+                    ? () {
+                        setState(() {
+                          _selectedSize = size;
+                          final validForSize = product.variations
+                              .where((v) => v.modelName == size && v.price > 0)
+                              .toList();
+                          if (validForSize.isNotEmpty) {
+                            final matchedVar = validForSize.firstWhere(
+                              (v) => v.weightStr == _selectedWeight && v.price > 0,
+                              orElse: () => validForSize.first,
+                            );
+                            _selectedWeight = matchedVar.weightStr;
+                            _selectedColor = matchedVar.color;
+                            _selectedMaterial = matchedVar.material;
+                          }
+                          _updateSelectedVariation();
+                        });
                       }
                     : null,
-                selectedColor: AppColors.primaryPink,
-                backgroundColor: hasValidPrice ? AppColors.grey100 : Colors.grey.shade200,
-                side: BorderSide(
-                  color: isSelected
-                      ? AppColors.transparent
-                      : (hasValidPrice ? AppColors.grey300 : Colors.grey.shade300),
+                child: MouseRegion(
+                  cursor: hasValidPrice ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.transparent : (hasValidPrice ? Colors.white : Colors.grey.shade100),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.blue.shade700
+                            : (hasValidPrice ? Colors.grey.shade300 : Colors.grey.shade200),
+                        width: isSelected ? 2.5 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [BoxShadow(color: Colors.blue.withOpacity(0.15), blurRadius: 4, spreadRadius: 1)]
+                          : null,
+                    ),
+                    padding: const EdgeInsets.all(2),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: imageUrl != null && imageUrl.isNotEmpty
+                          ? Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Center(
+                                child: Text(
+                                  size,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: hasValidPrice ? Colors.black87 : Colors.grey,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                          : Container(
+                              color: Colors.grey.shade100,
+                              alignment: Alignment.center,
+                              child: Text(
+                                size,
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: hasValidPrice ? Colors.black87 : Colors.grey,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                    ),
+                  ),
                 ),
               );
             }).toList(),
@@ -335,7 +401,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               // Check if weight is valid for currently selected size and has price > 0
               final hasValidPriceForCurrentSelection = product.variations.any(
                 (v) =>
-                    (_selectedSize == null || v.size == _selectedSize) &&
+                    (_selectedSize == null || v.modelName == _selectedSize) &&
                     v.weightStr == w &&
                     v.price > 0,
               );
@@ -370,11 +436,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 .toList();
                             if (validForWeight.isNotEmpty) {
                               final matchedVar = validForWeight.firstWhere(
-                                (v) => v.size == _selectedSize && v.price > 0,
+                                (v) => v.modelName == _selectedSize && v.price > 0,
                                 orElse: () => validForWeight.first,
                               );
-                              if (matchedVar.size != null && matchedVar.size!.isNotEmpty) {
-                                _selectedSize = matchedVar.size;
+                              if (matchedVar.modelName != null && matchedVar.modelName!.isNotEmpty) {
+                                _selectedSize = matchedVar.modelName;
                               }
                             }
                             _updateSelectedVariation();
@@ -412,7 +478,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               final isSelected = _selectedColor == color;
               final isValid = product.variations.any(
                 (v) =>
-                    (_selectedSize == null || v.size == _selectedSize) &&
+                    (_selectedSize == null || v.modelName == _selectedSize) &&
                     v.color == color &&
                     v.price > 0,
               );
@@ -470,7 +536,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               final isSelected = _selectedMaterial == mat;
               final isValid = product.variations.any(
                 (v) =>
-                    (_selectedSize == null || v.size == _selectedSize) &&
+                    (_selectedSize == null || v.modelName == _selectedSize) &&
                     v.material == mat &&
                     v.price > 0,
               );
@@ -718,16 +784,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   List<String> get _activeGalleryImages {
-    if (_currentVariationImages.isNotEmpty) {
-      return _currentVariationImages;
-    }
-    if (product.images.isNotEmpty) {
-      return product.images;
-    }
+    final List<String> gallery = [];
+    
     if (product.imageUrl.isNotEmpty) {
-      return [product.imageUrl];
+      gallery.add(product.imageUrl);
     }
-    return [_selectedImageUrl];
+    
+    if (_currentVariationImages.isNotEmpty) {
+      for (final img in _currentVariationImages) {
+        if (img.isNotEmpty && !gallery.contains(img)) {
+          gallery.add(img);
+        }
+      }
+    }
+    
+    if (product.images.isNotEmpty) {
+      for (final img in product.images) {
+        if (img.isNotEmpty && !gallery.contains(img)) {
+          gallery.add(img);
+        }
+      }
+    }
+    
+    if (gallery.isEmpty && _selectedImageUrl.isNotEmpty) {
+      gallery.add(_selectedImageUrl);
+    }
+    
+    return gallery;
   }
 
   Widget _buildDesktopLayout(BuildContext context) {
@@ -1028,7 +1111,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ),
             ),
-            if (product.moq > 1 || product.moqTiers.isNotEmpty)
+            if (() {
+              final ProductVariation? currentSelectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && product.variations.isNotEmpty
+                  ? product.variations.firstWhere(
+                      (v) =>
+                          (_selectedColor == null || v.color == _selectedColor) &&
+                          (_selectedSize == null || v.modelName == _selectedSize) &&
+                          (_selectedMaterial == null || v.material == _selectedMaterial) &&
+                          (_selectedWeight == null || v.weightStr == _selectedWeight),
+                      orElse: () => product.variations.first,
+                    )
+                  : null;
+              final int effMoq = product.getEffectiveMoq(currentSelectedVar);
+              return effMoq > 1 || product.moqTiers.isNotEmpty;
+            }())
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -1039,24 +1135,39 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.shopping_basket_outlined,
-                          size: 18,
-                          color: AppColors.blue700,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Minimum Order Qty (MOQ): ${product.moq} units',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.blue700,
-                          ),
-                        ),
-                      ],
+                    Builder(
+                      builder: (context) {
+                        final ProductVariation? currentSelectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && product.variations.isNotEmpty
+                            ? product.variations.firstWhere(
+                                (v) =>
+                                    (_selectedColor == null || v.color == _selectedColor) &&
+                                    (_selectedSize == null || v.modelName == _selectedSize) &&
+                                    (_selectedMaterial == null || v.material == _selectedMaterial) &&
+                                    (_selectedWeight == null || v.weightStr == _selectedWeight),
+                                orElse: () => product.variations.first,
+                              )
+                            : null;
+                        final int effMoq = product.getEffectiveMoq(currentSelectedVar);
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.shopping_basket_outlined,
+                              size: 18,
+                              color: AppColors.blue700,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Minimum Order Qty (MOQ): $effMoq units',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.blue700,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     if (product.moqTiers.isNotEmpty) ...[
                       const SizedBox(height: 8),
@@ -1164,6 +1275,45 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: product.specifications!.map((spec) {
+              String displayValue = spec.value;
+              final ProductVariation? activeVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && product.variations.isNotEmpty
+                  ? product.variations.firstWhere(
+                      (v) =>
+                          (_selectedColor == null || v.color == _selectedColor) &&
+                          (_selectedSize == null || (v.size ?? v.modelName) == _selectedSize) &&
+                          (_selectedMaterial == null || v.material == _selectedMaterial) &&
+                          (_selectedWeight == null || v.weightStr == _selectedWeight),
+                      orElse: () => product.variations.first,
+                    )
+                  : null;
+
+              final keyLower = spec.key.toLowerCase();
+              if (keyLower.contains('weight')) {
+                if (_selectedWeight != null && _selectedWeight!.isNotEmpty) {
+                  displayValue = _selectedWeight!;
+                } else if (_currentWeight != null && _currentWeight! > 0) {
+                  displayValue = _formatWeight(_currentWeight!);
+                }
+              } else if (keyLower.contains('size')) {
+                if (activeVar?.size != null && activeVar!.size!.trim().isNotEmpty) {
+                  displayValue = activeVar.size!;
+                }
+              } else if (keyLower.contains('model')) {
+                if (activeVar?.modelName != null && activeVar!.modelName!.trim().isNotEmpty) {
+                  displayValue = activeVar.modelName!;
+                } else if (_selectedSize != null && _selectedSize!.isNotEmpty) {
+                  displayValue = _selectedSize!;
+                }
+              } else if (keyLower.contains('color')) {
+                if (_selectedColor != null && _selectedColor!.isNotEmpty) {
+                  displayValue = _selectedColor!;
+                }
+              } else if (keyLower.contains('material')) {
+                if (_selectedMaterial != null && _selectedMaterial!.isNotEmpty) {
+                  displayValue = _selectedMaterial!;
+                }
+              }
+
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
@@ -1193,7 +1343,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            TextSpan(text: spec.value),
+                            TextSpan(text: displayValue),
                           ],
                         ),
                       ),
@@ -1207,92 +1357,93 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ],
 
         // Dimensions & Weight
-        if (hasWeight || hasDimensions) ...[
-          Text(
-            'Dimensions & Weight',
-            style: GoogleFonts.outfit(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.black,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Table(
-            border: TableBorder.all(color: AppColors.grey200),
-            columnWidths: const {0: FlexColumnWidth(1), 1: FlexColumnWidth(2)},
-            children: [
-              if (hasWeight)
-                TableRow(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        'Weight',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Builder(
-                        builder: (context) {
-                          if (product.weight != null && product.weight! > 0) {
-                            return Text(
-                              _formatWeight(product.weight!),
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: AppColors.black,
-                              ),
-                            );
-                          }
-                          if (specWeight != null && specWeight.isNotEmpty) {
-                            return Text(
-                              specWeight,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: AppColors.black,
-                              ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              if (hasDimensions)
-                TableRow(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        'Dimensions',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        '${product.length} x ${product.width} x ${product.height} cm',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppColors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          const SizedBox(height: 32),
-        ],
+        // if (hasWeight || hasDimensions) ...[
+        //   Text(
+        //     'Dimensions & Weight',
+        //     style: GoogleFonts.outfit(
+        //       fontSize: 18,
+        //       fontWeight: FontWeight.bold,
+        //       color: AppColors.black,
+        //     ),
+        //   ),
+        //   const SizedBox(height: 12),
+        //   Table(
+        //     border: TableBorder.all(color: AppColors.grey200),
+        //     columnWidths: const {0: FlexColumnWidth(1), 1: FlexColumnWidth(2)},
+        //     children: [
+        //       if (hasWeight)
+        //         TableRow(
+        //           children: [
+        //             Padding(
+        //               padding: const EdgeInsets.all(12.0),
+        //               child: Text(
+        //                 'Weight',
+        //                 style: GoogleFonts.inter(
+        //                   fontSize: 14,
+        //                   fontWeight: FontWeight.w600,
+        //                   color: AppColors.black,
+        //                 ),
+        //               ),
+        //             ),
+        //             Padding(
+        //               padding: const EdgeInsets.all(12.0),
+        //               child: Builder(
+        //                 builder: (context) {
+        //                   if (product.weight != null && product.weight! > 0) {
+        //                     return Text(
+        //                       _formatWeight(product.weight!),
+        //                       style: GoogleFonts.inter(
+        //                         fontSize: 14,
+        //                         color: AppColors.black,
+        //                       ),
+        //                     );
+        //                   }
+        //                   if (specWeight != null && specWeight.isNotEmpty) {
+        //                     return Text(
+        //                       specWeight,
+        //                       style: GoogleFonts.inter(
+        //                         fontSize: 14,
+        //                         color: AppColors.black,
+        //                       ),
+        //                     );
+        //                   }
+        //                   return const SizedBox.shrink();
+        //                 },
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //       if (hasDimensions)
+        //         TableRow(
+        //           children: [
+        //             Padding(
+        //               padding: const EdgeInsets.all(12.0),
+        //               child: Text(
+        //                 'Dimensions',
+        //                 style: GoogleFonts.inter(
+        //                   fontSize: 14,
+        //                   fontWeight: FontWeight.w600,
+        //                   color: AppColors.black,
+        //                 ),
+        //               ),
+        //             ),
+        //             Padding(
+        //               padding: const EdgeInsets.all(12.0),
+        //               child: Text(
+        //                 '${product.length} x ${product.width} x ${product.height} cm',
+        //                 style: GoogleFonts.inter(
+        //                   fontSize: 14,
+        //                   color: AppColors.black,
+        //                 ),
+        //               ),
+        //             ),
+        //           ],
+        //         ),
+        //     ],
+        //   ),
+        //   const SizedBox(height: 32),
+        // ],
+
 
         // Tags
         // if (product.tags != null && product.tags!.isNotEmpty) ...[
@@ -1451,7 +1602,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (product.variations.isEmpty) return const SizedBox.shrink();
 
     final uniqueSizes = product.variations
-        .map((v) => v.size)
+        .map((v) => v.modelName)
         .whereType<String>()
         .where((s) => s.isNotEmpty)
         .toSet()
@@ -1503,7 +1654,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   if (selected) {
                     setState(() {
                       _selectedSize = size;
-                      final validForSize = product.variations.where((v) => v.size == size && (v.price > 0 || v.stock > 0)).toList();
+                      final validForSize = product.variations.where((v) => v.modelName == size && (v.price > 0 || v.stock > 0)).toList();
                       if (validForSize.isNotEmpty) {
                          bool hasCurrentWeight = validForSize.any((v) => v.weightStr == _selectedWeight);
                          if (!hasCurrentWeight && validForSize.first.weightStr != null) {
@@ -1558,7 +1709,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       runSpacing: 8,
                       children: parsedWeights.map((item) {
                         final String weightLabel = item['weight'] ?? '';
-                        final String sizeForWeight = item['size'] ?? '';
+                        final String sizeForWeight = item['modelName'] ?? item['size'] ?? '';
                         final isSelected = _selectedSize == sizeForWeight;
 
                         return ChoiceChip(
@@ -1623,9 +1774,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 _selectedWeight = w;
                                 final validForWeight = product.variations.where((v) => v.weightStr == w && (v.price > 0 || v.stock > 0)).toList();
                                 if (validForWeight.isNotEmpty) {
-                                   bool hasCurrentSize = validForWeight.any((v) => v.size == _selectedSize);
-                                   if (!hasCurrentSize && validForWeight.first.size != null) {
-                                      _selectedSize = validForWeight.first.size;
+                                   bool hasCurrentSize = validForWeight.any((v) => v.modelName == _selectedSize);
+                                   if (!hasCurrentSize && validForWeight.first.modelName != null) {
+                                      _selectedSize = validForWeight.first.modelName;
                                    }
                                 }
                                 _updateSelectedVariation();
@@ -1724,21 +1875,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 */
 
   Future<void> _addToCart(BuildContext context, ProductModel p) async {
-      final String? variationId = _selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null
-        ? product.variations.firstWhere(
+      final ProductVariation? selectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && p.variations.isNotEmpty
+        ? p.variations.firstWhere(
             (v) =>
                 (_selectedColor == null || v.color == _selectedColor) &&
-                (_selectedSize == null || v.size == _selectedSize) &&
+                (_selectedSize == null || v.modelName == _selectedSize) &&
                 (_selectedMaterial == null || v.material == _selectedMaterial) &&
                 (_selectedWeight == null || v.weightStr == _selectedWeight),
-            orElse: () => product.variations.isNotEmpty ? product.variations.first : ProductVariation(id: '', price: 0, stock: 0),
-          ).id
+            orElse: () => p.variations.first,
+          )
         : null;
+      final String? variationId = selectedVar?.id;
+      final int effMoq = p.getEffectiveMoq(selectedVar);
 
     final success = await CartController.instance.addToCart(
       p.id,
-      quantity: 1,
-      moq: p.moq,
+      quantity: effMoq,
+      moq: effMoq,
       variationId: variationId != null && variationId.isNotEmpty ? variationId : null,
     );
 
@@ -1921,6 +2074,34 @@ class _ZoomableProductImageState extends State<ZoomableProductImage>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
+    final mainImage = GestureDetector(
+      onDoubleTap: _handleDoubleTap,
+      onTap: () => _openFullScreenViewer(context),
+      child: InteractiveViewer(
+        transformationController: _transformationController,
+        minScale: 1.0,
+        maxScale: 4.0,
+        clipBehavior: Clip.hardEdge,
+        child: Image.network(
+          widget.imageUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => const Center(
+            child: Icon(
+              Icons.image_not_supported,
+              size: 100,
+              color: AppColors.grey,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (isMobile) {
+      return mainImage;
+    }
+
     return MouseRegion(
       cursor: SystemMouseCursors.zoomIn,
       onHover: (event) {
@@ -1944,27 +2125,7 @@ class _ZoomableProductImageState extends State<ZoomableProductImage>
         );
         _animationController.forward(from: 0.0);
       },
-      child: GestureDetector(
-        onDoubleTap: _handleDoubleTap,
-        onTap: () => _openFullScreenViewer(context),
-        child: InteractiveViewer(
-          transformationController: _transformationController,
-          minScale: 1.0,
-          maxScale: 4.0,
-          clipBehavior: Clip.hardEdge,
-          child: Image.network(
-            widget.imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => const Center(
-              child: Icon(
-                Icons.image_not_supported,
-                size: 100,
-                color: AppColors.grey,
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: mainImage,
     );
   }
 }

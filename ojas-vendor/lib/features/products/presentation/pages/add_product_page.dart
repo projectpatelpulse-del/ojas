@@ -12,22 +12,17 @@ import 'package:ojas_vendor/core/widgets/vendor_topbar.dart';
 import 'package:ojas_vendor/core/services/service_locator.dart';
 import 'package:ojas_vendor/features/products/data/services/product_service.dart';
 import 'package:ojas_vendor/features/categories/data/services/category_service.dart';
-
 import '../../../../core/services/api_service.dart';
-
 part 'add_product_helpers.dart';
 part 'add_product_basic_info.dart';
 part 'add_product_pricing_media.dart';
 part 'add_product_variants_specs.dart';
-
 class AddProductPage extends StatefulWidget {
   final dynamic product;
   const AddProductPage({super.key, this.product});
-
   @override
   State<AddProductPage> createState() => _AddProductPageState();
 }
-
 class _AddProductPageState extends State<AddProductPage> {
   // Basic Info
   final _productNameCtrl = TextEditingController();
@@ -39,7 +34,6 @@ class _AddProductPageState extends State<AddProductPage> {
   String? _selectedSubCategory;
   List<dynamic> _categories = [];
   List<dynamic> _subCategories = [];
-
   final _regularPriceCtrl = TextEditingController();
   final _discountedPriceCtrl = TextEditingController();
   final _gstCtrl = TextEditingController();
@@ -47,45 +41,42 @@ class _AddProductPageState extends State<AddProductPage> {
   final _moqCtrl = TextEditingController();
   final _moqDiscountCtrl = TextEditingController();
   final _moqTiersCtrl = TextEditingController();
-
   // Media
   final _youtubeCtrl = TextEditingController();
   XFile? _mainImage;
   String? _mainImageUrl;
   final List<XFile> _galleryImages = [];
   final List<String> _galleryUrls = [];
-
   // Status & Visibility
   String _productStatus = 'Draft';
   String _visibility = 'Public';
-
   final _skuCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
   final _lowStockCtrl = TextEditingController();
   bool _trackQuantity = true;
-
   // Shipping
   final _weightCtrl = TextEditingController();
   final _lengthCtrl = TextEditingController();
   final _widthCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
   bool _requiresShipping = true;
-
+  String _productWeightUnit = 'kg';
+  String _productDimensionsUnit = 'cm';
   // SEO
   final _seoTitleCtrl = TextEditingController();
   final _seoDescCtrl = TextEditingController();
   final _slugCtrl = TextEditingController();
-
   // Specs
   final List<TextEditingController> _specKeyCtrls = [];
+  String _specWeightUnit = 'g';
+  String _specSizeUnit = 'cm';
   final List<TextEditingController> _specValCtrls = [];
-
   // Variations
-  bool _sizeAttr = false;
+  bool _modelNameAttr = false;
   bool _colorAttr = false;
   bool _materialAttr = false;
   bool _weightAttr = false;
-  final _sizeOptionsCtrl = TextEditingController();
+  final _modelNameOptionsCtrl = TextEditingController();
   final _colorOptionsCtrl = TextEditingController();
   final _materialOptionsCtrl = TextEditingController();
   final _weightOptionsCtrl = TextEditingController();
@@ -95,13 +86,13 @@ class _AddProductPageState extends State<AddProductPage> {
   final List<TextEditingController> _variationPriceCtrls = [];
   final List<TextEditingController> _variationOldPriceCtrls = [];
   final List<TextEditingController> _variationStockCtrls = [];
+  final List<TextEditingController> _variationMoqCtrls = [];
   final List<TextEditingController> _variationTitleCtrls = [];
   final List<TextEditingController> _variationSkuCtrls = [];
-  final List<TextEditingController> _variationSizeCtrls = [];
+  final List<TextEditingController> _variationModelNameCtrls = [];
   final List<TextEditingController> _variationColorCtrls = [];
   final List<TextEditingController> _variationMaterialCtrls = [];
   final List<TextEditingController> _variationWeightCtrls = [];
-
   // Tags
   final _tagCtrl = TextEditingController();
   final List<String> _tags = [];
@@ -109,11 +100,9 @@ class _AddProductPageState extends State<AddProductPage> {
   List<String> _selectedRelatedProductIds = [];
   List<dynamic> _allProducts = [];
   final ScrollController _variationScrollController = ScrollController();
-
   bool _isLoading = false;
   String? _validationError;
   final _picker = ImagePicker();
-
   @override
   void initState() {
     super.initState();
@@ -146,7 +135,6 @@ class _AddProductPageState extends State<AddProductPage> {
       // Ensure the loaded values are present in the dropdown items to prevent crashes
       final List<String> statusOptions = ['Draft', 'Active', 'Archived'];
       if (!statusOptions.contains(_productStatus)) _productStatus = 'Draft';
-
       final List<String> visibilityOptions = ['Public', 'Private', 'Password Protected'];
       if (!visibilityOptions.contains(_visibility)) _visibility = 'Public';
       _skuCtrl.text = p['sku'] ?? '';
@@ -170,7 +158,7 @@ class _AddProductPageState extends State<AddProductPage> {
         }
       }
       if (p['attributes'] != null) {
-        _sizeAttr = p['attributes']['size'] ?? false;
+        _modelNameAttr = (p['attributes']['modelName'] ?? p['attributes']['size']) ?? false;
         _colorAttr = p['attributes']['color'] ?? false;
         _materialAttr = p['attributes']['material'] ?? false;
       }
@@ -218,7 +206,6 @@ class _AddProductPageState extends State<AddProductPage> {
     _prevFullDescText = _fullDescCtrl.text;
     _fullDescCtrl.addListener(_handleFullDescChange);
   }
-
   Future<void> _fetchAllProducts() async {
     try {
       final products = await sl<ProductService>().getProducts();
@@ -229,7 +216,6 @@ class _AddProductPageState extends State<AddProductPage> {
       debugPrint('Error fetching all products: $e');
     }
   }
-
   Future<void> _fetchCategories() async {
     try {
       final categories = await sl<CategoryService>().getCategories(tree: true);
@@ -249,8 +235,7 @@ class _AddProductPageState extends State<AddProductPage> {
       debugPrint('Error fetching categories: $e');
     }
   }
-
-  String _generateSmartSKU(String name, String size, String color, String material, [String weight = '']) {
+  String _generateSmartSKU(String name, String modelName, String color, String material, [String weight = '']) {
     String catPrefix = _selectedCategory != null && _selectedCategory!.length >= 3 
         ? _selectedCategory!.substring(0, 3).toLowerCase() 
         : 'gen';
@@ -260,35 +245,15 @@ class _AddProductPageState extends State<AddProductPage> {
     
     List<String> parts = [catPrefix, namePrefix];
     if (color.isNotEmpty) parts.add(color.toLowerCase().replaceAll(' ', ''));
-    if (size.isNotEmpty) parts.add(size.toLowerCase().replaceAll(' ', ''));
+    if (modelName.isNotEmpty) parts.add(modelName.toLowerCase().replaceAll(' ', ''));
     if (material.isNotEmpty) parts.add(material.toLowerCase().replaceAll(' ', ''));
     if (weight.isNotEmpty) parts.add(weight.toLowerCase().replaceAll(' ', ''));
     
     String randomSuffix = (100 + (DateTime.now().millisecondsSinceEpoch % 900)).toString();
     parts.add(randomSuffix);
-
     return parts.join('-');
   }
   void _generateVariations() {
-    if (_sizeAttr) {
-      final sizeOptions = _sizeOptionsCtrl.text.split(',');
-      for (var opt in sizeOptions) {
-        final val = opt.trim();
-        if (val.isNotEmpty) {
-          final cm = _parseSizeToCm(val);
-          if (cm != null && cm > 100.0) {
-            setState(() {
-              _validationError = 'Variation size option "$val" exceeds 100 cm limit';
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(_validationError!), backgroundColor: Colors.red),
-            );
-            return;
-          }
-        }
-      }
-    }
-
     if (_weightAttr) {
       final weightOptions = _weightOptionsCtrl.text.split(',');
       for (var opt in weightOptions) {
@@ -307,14 +272,12 @@ class _AddProductPageState extends State<AddProductPage> {
         }
       }
     }
-
-    List<String> sizes = _sizeAttr ? _sizeOptionsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() : [''];
+    List<String> modelNames = _modelNameAttr ? _modelNameOptionsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() : [''];
     List<String> colors = _colorAttr ? _colorOptionsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() : [''];
     List<String> materials = _materialAttr ? _materialOptionsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() : [''];
     List<String> weights = _weightAttr ? _weightOptionsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() : [''];
-
     List<Map<String, dynamic>> newVariations = [];
-    for (var s in sizes) {
+    for (var s in modelNames) {
       for (var c in colors) {
         for (var m in materials) {
           for (var w in weights) {
@@ -322,12 +285,14 @@ class _AddProductPageState extends State<AddProductPage> {
             String varTitle = [s, c, m, w].where((e) => e.isNotEmpty).join(' / ');
             newVariations.add({
               'title': varTitle,
+              'modelName': s,
               'size': s,
               'color': c,
               'material': m,
               'weight': w,
               'price': double.tryParse(_regularPriceCtrl.text) ?? 0.0,
               'stock': int.tryParse(_quantityCtrl.text) ?? 0,
+              'moq': int.tryParse(_moqCtrl.text) ?? 1,
               'sku': _generateSmartSKU(_productNameCtrl.text, s, c, m, w),
               'image': '',
               'images': <String>['', '', ''],
@@ -342,12 +307,10 @@ class _AddProductPageState extends State<AddProductPage> {
       _syncVariationControllers();
     });
   }
-
   Future<void> _pickAndUploadVariationImage(int varIdx, int imgIdx) async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image == null) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Row(
@@ -364,16 +327,12 @@ class _AddProductPageState extends State<AddProductPage> {
           duration: Duration(days: 1),
         ),
       );
-
       final bytes = await image.readAsBytes();
       final formData = FormData.fromMap({
         'image': MultipartFile.fromBytes(bytes, filename: 'variation_${varIdx}_$imgIdx.png'),
       });
-
       final response = await sl<ApiService>().dio.post('/upload/image', data: formData);
-
       ScaffoldMessenger.of(context).clearSnackBars();
-
       if (response.statusCode == 200 && response.data['success'] == true) {
         final imageUrl = response.data['url'];
         setState(() {
@@ -425,8 +384,6 @@ class _AddProductPageState extends State<AddProductPage> {
       );
     }
   }
-
-
   Future<void> _pickMainImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -436,7 +393,6 @@ class _AddProductPageState extends State<AddProductPage> {
       });
     }
   }
-
   Future<void> _pickGalleryImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -445,26 +401,21 @@ class _AddProductPageState extends State<AddProductPage> {
       });
     }
   }
-
   Future<void> _generateWithAI() async {
     final name = _productNameCtrl.text.trim();
     final shortDesc = _shortDescCtrl.text.trim();
-
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a product name first'), backgroundColor: Colors.orange),
       );
       return;
     }
-
     setState(() => _isLoading = true);
-
     try {
       final response = await sl<ApiService>().dio.post('/vendor/generate-ai', data: {
         'productName': name,
         'shortDescription': shortDesc,
       });
-
       if (response.statusCode == 200) {
         final data = response.data['data'];
         
@@ -500,7 +451,6 @@ class _AddProductPageState extends State<AddProductPage> {
       setState(() => _isLoading = false);
     }
   }
-
   Future<void> _saveProduct() async {
     List<String> missing = [];
     if (_productNameCtrl.text.trim().isEmpty) missing.add('Display Title');
@@ -513,14 +463,12 @@ class _AddProductPageState extends State<AddProductPage> {
     if (_skuCtrl.text.trim().isEmpty) missing.add('SKU');
     if (_quantityCtrl.text.trim().isEmpty) missing.add('Quantity');
     if (_moqCtrl.text.trim().isEmpty) missing.add('Minimum Order Quantity (MOQ)');
-
     if (missing.isNotEmpty) {
       setState(() {
         _validationError = 'Required fields missing: ${missing.join(', ')}';
       });
       return;
     }
-
     // Value format/range validation according to field type
     final double? regularPrice = double.tryParse(_regularPriceCtrl.text.trim());
     if (regularPrice == null || regularPrice <= 0) {
@@ -529,7 +477,6 @@ class _AddProductPageState extends State<AddProductPage> {
       });
       return;
     }
-
     final double? gst = double.tryParse(_gstCtrl.text.trim());
     if (gst == null || gst < 0) {
       setState(() {
@@ -537,7 +484,6 @@ class _AddProductPageState extends State<AddProductPage> {
       });
       return;
     }
-
     final hsnCode = _hsnCodeCtrl.text.trim();
     if (hsnCode.length != 6) {
       setState(() {
@@ -545,7 +491,6 @@ class _AddProductPageState extends State<AddProductPage> {
       });
       return;
     }
-
     final int? quantity = int.tryParse(_quantityCtrl.text.trim());
     if (quantity == null || quantity < 0) {
       setState(() {
@@ -553,7 +498,6 @@ class _AddProductPageState extends State<AddProductPage> {
       });
       return;
     }
-
     final int? moq = int.tryParse(_moqCtrl.text.trim());
     if (moq == null || moq < 1) {
       setState(() {
@@ -561,7 +505,6 @@ class _AddProductPageState extends State<AddProductPage> {
       });
       return;
     }
-
     // Validate specifications
     for (var requiredKey in ['Size', 'Weight', 'Colour', 'Care Instructions', 'Basic Metal']) {
       bool foundAndFilled = false;
@@ -577,7 +520,6 @@ class _AddProductPageState extends State<AddProductPage> {
         } else {
           isMatch = keyText == reqKeyLower;
         }
-
         if (isMatch && _specValCtrls[i].text.trim().isNotEmpty) {
           foundAndFilled = true;
           break;
@@ -590,44 +532,17 @@ class _AddProductPageState extends State<AddProductPage> {
         return;
       }
     }
-
     double weightInKg = 0.0;
     final String weightText = _weightCtrl.text.trim();
     if (weightText.isNotEmpty) {
-      final cleaned = weightText.toLowerCase();
-      final double? numPart = double.tryParse(cleaned.replaceAll(RegExp(r'[^0-9.]'), ''));
-      if (numPart == null) {
+      final double? numPart = double.tryParse(weightText);
+      if (numPart == null || numPart <= 0) {
         setState(() {
-          _validationError = 'Weight must be a valid number';
+          _validationError = 'Weight must be a valid positive number';
         });
         return;
       }
-
-      if (cleaned.endsWith('kg') || cleaned.endsWith('kilogram') || cleaned.endsWith('kilograms')) {
-        weightInKg = numPart;
-      } else if (cleaned.endsWith('g') || cleaned.endsWith('gm') || cleaned.endsWith('gram') || cleaned.endsWith('grams')) {
-        weightInKg = numPart / 1000.0;
-      } else {
-        // Plain number
-        if (numPart > 5000.0) {
-          setState(() {
-            _validationError = 'Weight cannot exceed 5000g (5 kg)';
-          });
-          return;
-        } else if (numPart > 5.0 && numPart <= 20.0) {
-          setState(() {
-            _validationError = 'Weight cannot exceed 5 kg (5000g)';
-          });
-          return;
-        } else if (numPart > 20.0) {
-          // Treated as grams
-          weightInKg = numPart / 1000.0;
-        } else {
-          // <= 5.0, treated as kg
-          weightInKg = numPart;
-        }
-      }
-
+      weightInKg = _productWeightUnit == 'g' ? numPart / 1000.0 : numPart;
       if (weightInKg > 5.0) {
         setState(() {
           _validationError = 'Weight cannot exceed 5 kg (5000g)';
@@ -635,35 +550,22 @@ class _AddProductPageState extends State<AddProductPage> {
         return;
       }
     }
-
     // Validate main product dimensions
-    final mainLength = double.tryParse(_lengthCtrl.text.trim()) ?? 0.0;
-    final mainWidth = double.tryParse(_widthCtrl.text.trim()) ?? 0.0;
-    final mainHeight = double.tryParse(_heightCtrl.text.trim()) ?? 0.0;
+    final rawLength = double.tryParse(_lengthCtrl.text.trim()) ?? 0.0;
+    final rawWidth = double.tryParse(_widthCtrl.text.trim()) ?? 0.0;
+    final rawHeight = double.tryParse(_heightCtrl.text.trim()) ?? 0.0;
+
+    final mainLength = _productDimensionsUnit == 'in' ? rawLength * 2.54 : rawLength;
+    final mainWidth = _productDimensionsUnit == 'in' ? rawWidth * 2.54 : rawWidth;
+    final mainHeight = _productDimensionsUnit == 'in' ? rawHeight * 2.54 : rawHeight;
+
     if (mainLength > 100.0 || mainWidth > 100.0 || mainHeight > 100.0) {
       setState(() {
         _validationError = 'Dimensions (Length, Width, Height) cannot exceed 100 cm';
       });
       return;
     }
-
-    // Validate variation attributes size and weight options
-    if (_sizeAttr) {
-      final sizeOptions = _sizeOptionsCtrl.text.split(',');
-      for (var opt in sizeOptions) {
-        final val = opt.trim();
-        if (val.isNotEmpty) {
-          final cm = _parseSizeToCm(val);
-          if (cm != null && cm > 100.0) {
-            setState(() {
-              _validationError = 'Variation size option "$val" exceeds 100 cm limit';
-            });
-            return;
-          }
-        }
-      }
-    }
-
+    // Model name validation is not required as it's a string identifier
     if (_weightAttr) {
       final weightOptions = _weightOptionsCtrl.text.split(',');
       for (var opt in weightOptions) {
@@ -679,29 +581,53 @@ class _AddProductPageState extends State<AddProductPage> {
         }
       }
     }
+    // Validate that at least one product image is provided
+    final bool hasMainImage = _mainImage != null || (_mainImageUrl != null && _mainImageUrl!.trim().isNotEmpty);
+    final bool hasGalleryImage = _galleryImages.isNotEmpty || _galleryUrls.isNotEmpty;
+    final bool hasVariationImage = _variations.any((v) {
+      final img = v['image']?.toString();
+      final imgs = v['images'];
+      return (img != null && img.isNotEmpty) || (imgs != null && imgs is List && imgs.any((i) => i.toString().isNotEmpty));
+    });
+
+    if (!hasMainImage && !hasGalleryImage && !hasVariationImage) {
+      setState(() {
+        _validationError = 'At least one product image is required';
+      });
+      return;
+    }
 
     setState(() {
       _validationError = null;
       _isLoading = true;
     });
-
     try {
       final List<Map<String, String>> specs = [];
       for (int i = 0; i < _specKeyCtrls.length; i++) {
-        if (_specKeyCtrls[i].text.isNotEmpty) {
+        final keyText = _specKeyCtrls[i].text.trim();
+        if (keyText.isNotEmpty) {
+          String valText = _specValCtrls[i].text.trim();
+          final keyLower = keyText.toLowerCase();
+          if (keyLower == 'weight') {
+            if (double.tryParse(valText) != null) {
+              valText = '$valText $_specWeightUnit';
+            }
+          } else if (keyLower == 'size') {
+            if (!valText.contains('cm') && !valText.contains('in') && !valText.contains('inch') && !valText.contains('inches')) {
+              valText = '$valText $_specSizeUnit';
+            }
+          }
           specs.add({
-            'key': _specKeyCtrls[i].text,
-            'value': _specValCtrls[i].text,
+            'key': keyText,
+            'value': valText,
           });
         }
       }
-
       final double regPrice = double.tryParse(_regularPriceCtrl.text) ?? 0.0;
       final double discPercent = double.tryParse(_discountedPriceCtrl.text) ?? 0.0;
       final double calcDiscountPrice = (discPercent > 0 && discPercent <= 100) 
           ? regPrice - (regPrice * discPercent / 100) 
           : 0.0;
-
       final productData = {
         'name': _productNameCtrl.text,
         'title': _productNameCtrl.text,
@@ -717,9 +643,11 @@ class _AddProductPageState extends State<AddProductPage> {
         'lowStockThreshold': int.tryParse(_lowStockCtrl.text) ?? 5,
         'trackQuantity': _trackQuantity,
         'weight': weightInKg,
-        'length': double.tryParse(_lengthCtrl.text) ?? 0.0,
-        'width': double.tryParse(_widthCtrl.text) ?? 0.0,
-        'height': double.tryParse(_heightCtrl.text) ?? 0.0,
+        'length': mainLength,
+        'width': mainWidth,
+        'height': mainHeight,
+        'weightUnit': _productWeightUnit,
+        'dimensionsUnit': _productDimensionsUnit,
         'requiresShipping': _requiresShipping,
         'seoTitle': _seoTitleCtrl.text,
         'seoDescription': _seoDescCtrl.text,
@@ -730,7 +658,8 @@ class _AddProductPageState extends State<AddProductPage> {
         'image': _mainImageUrl ?? '',
         'gallery': jsonEncode(_galleryUrls),
         'attributes': jsonEncode({
-          'size': _sizeAttr,
+          'modelName': _modelNameAttr,
+          'size': _modelNameAttr,
           'color': _colorAttr,
           'material': _materialAttr,
           'weight': _weightAttr,
@@ -746,13 +675,11 @@ class _AddProductPageState extends State<AddProductPage> {
         'moqDiscount': double.tryParse(_moqDiscountCtrl.text) ?? 0.0,
         'moqTiers': _moqTiersCtrl.text.trim(),
       };
-
       if (widget.product != null) {
         await sl<ProductService>().updateProduct(widget.product!['_id'], productData, mainImage: _mainImage, gallery: _galleryImages);
       } else {
         await sl<ProductService>().createProduct(productData, mainImage: _mainImage, gallery: _galleryImages);
       }
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -781,7 +708,6 @@ class _AddProductPageState extends State<AddProductPage> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
   @override
   void dispose() {
     _fullDescCtrl.removeListener(_handleFullDescChange);
@@ -808,7 +734,7 @@ class _AddProductPageState extends State<AddProductPage> {
     _seoDescCtrl.dispose();
     _slugCtrl.dispose();
     _tagCtrl.dispose();
-    _sizeOptionsCtrl.dispose();
+    _modelNameOptionsCtrl.dispose();
     _colorOptionsCtrl.dispose();
     _materialOptionsCtrl.dispose();
     _weightOptionsCtrl.dispose();
@@ -821,16 +747,16 @@ class _AddProductPageState extends State<AddProductPage> {
     for (var ctrl in _variationPriceCtrls) ctrl.dispose();
     for (var ctrl in _variationOldPriceCtrls) ctrl.dispose();
     for (var ctrl in _variationStockCtrls) ctrl.dispose();
+    for (var ctrl in _variationMoqCtrls) ctrl.dispose();
     for (var ctrl in _variationTitleCtrls) ctrl.dispose();
     for (var ctrl in _variationSkuCtrls) ctrl.dispose();
-    for (var ctrl in _variationSizeCtrls) ctrl.dispose();
+    for (var ctrl in _variationModelNameCtrls) ctrl.dispose();
     for (var ctrl in _variationColorCtrls) ctrl.dispose();
     for (var ctrl in _variationMaterialCtrls) ctrl.dispose();
     for (var ctrl in _variationWeightCtrls) ctrl.dispose();
     _variationScrollController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -915,9 +841,7 @@ class _AddProductPageState extends State<AddProductPage> {
                 ),
               ],
             ),
-
             const SizedBox(height: 28),
-
             if (_validationError != null)
               Container(
                 width: double.infinity,
@@ -933,7 +857,6 @@ class _AddProductPageState extends State<AddProductPage> {
                   style: GoogleFonts.inter(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w500),
                 ),
               ),
-
             // ── Two-column layout ────────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -955,9 +878,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 24),
-
                 // ── RIGHT COLUMN ─────────────────────────────────
                 SizedBox(
                   width: 320,
@@ -987,17 +908,14 @@ class _AddProductPageState extends State<AddProductPage> {
     )
     );
   }
-
   void updateState(VoidCallback fn) {
     if (mounted) {
       setState(fn);
     }
   }
-
   void _handleFullDescChange() {
     final text = _fullDescCtrl.text;
     final selection = _fullDescCtrl.selection;
-
     if (text.isEmpty) {
       _fullDescCtrl.value = const TextEditingValue(
         text: '• ',
@@ -1006,7 +924,6 @@ class _AddProductPageState extends State<AddProductPage> {
       _prevFullDescText = '• ';
       return;
     }
-
     if (!text.startsWith('• ')) {
       final newText = '• ' + text;
       _fullDescCtrl.value = TextEditingValue(
@@ -1017,7 +934,6 @@ class _AddProductPageState extends State<AddProductPage> {
       _prevFullDescText = newText;
       return;
     }
-
     if (_autoBulletMode &&
         text.length == _prevFullDescText.length + 1 &&
         selection.isCollapsed &&
@@ -1036,7 +952,6 @@ class _AddProductPageState extends State<AddProductPage> {
     }
     _prevFullDescText = text;
   }
-
   double? _parseWeightToGm(String input) {
     final cleaned = input.toLowerCase().trim();
     final numPart = double.tryParse(cleaned.replaceAll(RegExp(r'[^0-9.]'), ''));
@@ -1046,7 +961,6 @@ class _AddProductPageState extends State<AddProductPage> {
     }
     return numPart;
   }
-
   double? _parseSizeToCm(String input) {
     final cleaned = input.toLowerCase().trim();
     final numPart = double.tryParse(cleaned.replaceAll(RegExp(r'[^0-9.]'), ''));
@@ -1059,40 +973,40 @@ class _AddProductPageState extends State<AddProductPage> {
     }
     return numPart;
   }
-
   void _syncVariationControllers() {
     for (var ctrl in _variationPriceCtrls) ctrl.dispose();
     for (var ctrl in _variationOldPriceCtrls) ctrl.dispose();
     for (var ctrl in _variationStockCtrls) ctrl.dispose();
+    for (var ctrl in _variationMoqCtrls) ctrl.dispose();
     for (var ctrl in _variationTitleCtrls) ctrl.dispose();
     for (var ctrl in _variationSkuCtrls) ctrl.dispose();
-    for (var ctrl in _variationSizeCtrls) ctrl.dispose();
+    for (var ctrl in _variationModelNameCtrls) ctrl.dispose();
     for (var ctrl in _variationColorCtrls) ctrl.dispose();
     for (var ctrl in _variationMaterialCtrls) ctrl.dispose();
     for (var ctrl in _variationWeightCtrls) ctrl.dispose();
     _variationPriceCtrls.clear();
     _variationOldPriceCtrls.clear();
     _variationStockCtrls.clear();
+    _variationMoqCtrls.clear();
     _variationTitleCtrls.clear();
     _variationSkuCtrls.clear();
-    _variationSizeCtrls.clear();
+    _variationModelNameCtrls.clear();
     _variationColorCtrls.clear();
     _variationMaterialCtrls.clear();
     _variationWeightCtrls.clear();
-
     for (var v in _variations) {
       _variationPriceCtrls.add(TextEditingController(text: (v['price'] ?? 0.0).toString()));
       _variationOldPriceCtrls.add(TextEditingController(text: (v['oldPrice'] ?? v['price'] ?? 0.0).toString()));
       _variationStockCtrls.add(TextEditingController(text: (v['stock'] ?? 0).toString()));
+      _variationMoqCtrls.add(TextEditingController(text: (v['moq'] ?? 1).toString()));
       _variationTitleCtrls.add(TextEditingController(text: v['title']?.toString() ?? ''));
       _variationSkuCtrls.add(TextEditingController(text: v['sku']?.toString() ?? ''));
-      _variationSizeCtrls.add(TextEditingController(text: v['size']?.toString() ?? ''));
+      _variationModelNameCtrls.add(TextEditingController(text: (v['modelName'] ?? v['size'])?.toString() ?? ''));
       _variationColorCtrls.add(TextEditingController(text: v['color']?.toString() ?? ''));
       _variationMaterialCtrls.add(TextEditingController(text: v['material']?.toString() ?? ''));
       _variationWeightCtrls.add(TextEditingController(text: v['weight']?.toString() ?? ''));
     }
   }
-
   void _recalculateVariationPrices() {
     final discountPercent = double.tryParse(_discountedPriceCtrl.text) ?? 0.0;
     for (int i = 0; i < _variations.length; i++) {
@@ -1108,3 +1022,4 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 }
+

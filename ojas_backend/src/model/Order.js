@@ -48,7 +48,7 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["CREATED", "PAYMENT_PENDING", "PAID", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "ESCALATED"],
+            enum: ["CREATED", "PAYMENT_PENDING", "PAID", "PROCESSING", "READY_TO_DISPATCH", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "ESCALATED"],
             default: "CREATED",
         },
         paymentMethod: {
@@ -75,7 +75,10 @@ const orderSchema = new mongoose.Schema(
             type: Date
         },
         shippingAddress: {
+            buildingName: String,
             street: String,
+            area: String,
+            landmark: String,
             city: String,
             state: String,
             zipCode: String,
@@ -117,11 +120,18 @@ const orderSchema = new mongoose.Schema(
         },
         pickupDetails: {
             weight: Number,
+            weightUnit: String,
             dimensions: {
                 length: Number,
                 width: Number,
                 height: Number
             },
+            dimensionsUnit: String,
+            dimensionsList: [{
+                length: Number,
+                width: Number,
+                height: Number
+            }],
             numberOfParcels: Number,
             submittedAt: Date
         },
@@ -143,6 +153,12 @@ const orderSchema = new mongoose.Schema(
             type: String
         },
         dispatchPhoto: {
+            type: String
+        },
+        vendorInvoiceUrl: {
+            type: String
+        },
+        delhiveryChallanUrl: {
             type: String
         },
         awb: {
@@ -182,16 +198,16 @@ const orderSchema = new mongoose.Schema(
             enum: ["RETAIL", "TAX_INVOICE"],
             default: "RETAIL"
         },
-        influencer: {
+        Reseller: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: null
         },
-        influencerCode: {
+        ResellerCode: {
             type: String,
             default: null
         },
-        influencerMarkup: {
+        ResellerMarkup: {
             type: Number,
             default: 0
         },

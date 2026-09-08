@@ -85,6 +85,7 @@ class SidebarLayout extends StatelessWidget {
 
                       _buildNavItem(context, Icons.settings_outlined, 'Settings', route: '/settings'),
                       _buildNavItem(context, Icons.help_outline, 'Get Help', route: '/help'),
+                      _buildNavItem(context, Icons.quiz_outlined, 'FAQ', route: '/faq'),
                     ],
                   ),
                 ),

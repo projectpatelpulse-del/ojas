@@ -1,9 +1,9 @@
-import { useGetInfluencerAnalytics } from "@/api-client";
+import { useGetResellerAnalytics } from "@/api-client";
 import { formatCurrency } from "@/lib/utils";
 import { BarChart2, MousePointerClick, ShoppingCart, Percent, TrendingUp, IndianRupee } from "lucide-react";
 
 export default function Analytics() {
-  const { data, isLoading } = useGetInfluencerAnalytics();
+  const { data, isLoading } = useGetResellerAnalytics();
 
   return (
     <div className="p-8">

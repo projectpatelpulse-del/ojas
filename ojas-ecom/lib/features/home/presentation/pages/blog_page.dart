@@ -78,6 +78,11 @@ class _BlogPageState extends State<BlogPage> {
   List<dynamic> get featuredArticles => _blogs.where((b) => b['isFeatured'] == true).toList();
   List<dynamic> get latestArticles => _blogs.where((b) => b['isFeatured'] != true).toList();
   
+  List<dynamic> get filteredFeaturedArticles {
+    if (_selectedCategory == 'All') return featuredArticles;
+    return featuredArticles.where((b) => b['category'] == _selectedCategory).toList();
+  }
+
   List<dynamic> get filteredLatestArticles {
     if (_selectedCategory == 'All') return latestArticles;
     return latestArticles.where((b) => b['category'] == _selectedCategory).toList();
@@ -120,39 +125,40 @@ class _BlogPageState extends State<BlogPage> {
               SizedBox(height: isMobile ? 32 : 48),
 
               // Search and Categories Layout
-              if (isMobile)
-                Column(
-                  children: [
-                    _buildSearchField(double.infinity),
-                    const SizedBox(height: 16),
-                    _buildCategories(context),
-                  ],
-                )
-              else
-                Row(
-                  children: [
-                    _buildSearchField(300),
-                    const SizedBox(width: 24),
-                    Expanded(child: _buildCategories(context)),
-                  ],
-                ),
+              // if (isMobile)
+              //   Column(
+              //     children: [
+              //       _buildSearchField(double.infinity),
+              //       const SizedBox(height: 16),
+              //       _buildCategories(context),
+              //     ],
+              //   )
+              // else
+              //   Row(
+              //     children: [
+              //       _buildSearchField(300),
+              //       const SizedBox(width: 24),
+              //       Expanded(child: _buildCategories(context)),
+              //     ],
+              //   ),
+              _buildCategories(context),
               SizedBox(height: isMobile ? 40 : 64),
 
               // Featured Articles
-              if (featuredArticles.isNotEmpty) ...[
+              if (filteredFeaturedArticles.isNotEmpty) ...[
                 Text('Featured Articles', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
                 const SizedBox(height: 24),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: featuredArticles.length,
+                  itemCount: filteredFeaturedArticles.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: isMobile ? 1 : 2,
                     crossAxisSpacing: 24,
                     mainAxisSpacing: 24,
                     mainAxisExtent: isMobile ? 480 : 470,
                   ),
-                  itemBuilder: (context, index) => _BlogCard(article: featuredArticles[index], isFeatured: true, isMobile: isMobile),
+                  itemBuilder: (context, index) => _BlogCard(article: filteredFeaturedArticles[index], isFeatured: true, isMobile: isMobile),
                 ),
                 SizedBox(height: isMobile ? 48 : 64),
               ],
@@ -193,34 +199,34 @@ class _BlogPageState extends State<BlogPage> {
     );
   }
 
-  Widget _buildSearchField(double width) {
-    return Container(
-      width: width,
-      height: 48,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search articles...',
-                hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 14),
-                border: InputBorder.none,
-                isDense: true,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSearchField(double width) {
+  //   return Container(
+  //     width: width,
+  //     height: 48,
+  //     decoration: BoxDecoration(
+  //       color: AppColors.white,
+  //       borderRadius: BorderRadius.circular(8),
+  //       border: Border.all(color: const Color(0xFFE2E8F0)),
+  //     ),
+  //     padding: const EdgeInsets.symmetric(horizontal: 14),
+  //     child: Row(
+  //       children: [
+  //         const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
+  //         const SizedBox(width: 8),
+  //         Expanded(
+  //           child: TextField(
+  //             decoration: InputDecoration(
+  //               hintText: 'Search articles...',
+  //               hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 14),
+  //               border: InputBorder.none,
+  //               isDense: true,
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildCategories(BuildContext context) {
     return SingleChildScrollView(
@@ -288,15 +294,16 @@ class _BlogPageState extends State<BlogPage> {
                   child: Container(
                     height: 50,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD4105B),
+                      color: AppColors.white.withValues(alpha: 0.15),
                       borderRadius: isMobile ? BorderRadius.circular(8) : const BorderRadius.horizontal(left: Radius.circular(8)),
+                      border: Border.all(color: AppColors.white.withValues(alpha: 0.3)),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
                       style: const TextStyle(color: AppColors.white),
                       decoration: InputDecoration(
                         hintText: 'Enter your email',
-                        hintStyle: GoogleFonts.inter(color: AppColors.white.withOpacity(0.6), fontSize: 14),
+                        hintStyle: GoogleFonts.inter(color: AppColors.white.withValues(alpha: 0.6), fontSize: 14),
                         border: InputBorder.none,
                       ),
                     ),

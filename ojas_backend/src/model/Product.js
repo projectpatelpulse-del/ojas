@@ -60,10 +60,18 @@ const ProductSchema = new mongoose.Schema({
     weight: {
         type: Number
     },
+    weightUnit: {
+        type: String,
+        default: 'kg'
+    },
     dimensions: {
         length: Number,
         width: Number,
         height: Number
+    },
+    dimensionsUnit: {
+        type: String,
+        default: 'cm'
     },
     gst: {
         type: Number,
@@ -127,6 +135,7 @@ const ProductSchema = new mongoose.Schema({
         price: Number,
         oldPrice: Number,
         stock: Number,
+        moq: Number,
         sku: String,
         image: String,
         images: [String]

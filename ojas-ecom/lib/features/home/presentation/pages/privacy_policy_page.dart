@@ -7,6 +7,8 @@ import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:ojas_user/core/models/app_settings.dart';
+import 'package:ojas_user/core/widgets/formatted_text.dart';
+import 'package:intl/intl.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
@@ -20,15 +22,15 @@ class PrivacyPolicyPage extends StatelessWidget {
     return OjasLayout(
       activeTitle: 'PRIVACY POLICY',
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: isMobile ? 32 : 60),
+        padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 60),
         color: const Color(0xFFF8F9FA),
         child: CenteredContent(
           horizontalPadding: isMobile ? 16 : 40,
           child: Column(
             children: [
               // 1. Header
-              _buildHeader(isMobile),
-              SizedBox(height: isMobile ? 32 : 60),
+              _buildHeader(isMobile, settings),
+              SizedBox(height: isMobile ? 16 : 60),
 
               // If dynamic content exists, show it at the top
               if (customContent.trim().isNotEmpty) ...[
@@ -37,23 +39,23 @@ class PrivacyPolicyPage extends StatelessWidget {
                   customContent,
                   isMobile,
                 ),
-                const SizedBox(height: 48),
+                SizedBox(height: isMobile ? 24 : 48),
                 const Divider(),
-                const SizedBox(height: 48),
+                SizedBox(height: isMobile ? 24 : 48),
                 Text(
                   'General Privacy Clauses',
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryIndigo,
+                    color: AppColors.primaryIndigo1,
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: isMobile ? 16 : 32),
               ],
 
               // 2. Table of Contents
               _buildTableOfContents(isMobile),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 3. Introduction
               _buildSectionCard(
@@ -61,7 +63,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 'At Ojas, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our services.',
                 isMobile,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
 
               // 4. Information We Collect
               _buildDetailedSectionCard(
@@ -74,7 +76,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   _Subsection('Cookies and Tracking', 'We use cookies and similar technologies to collect information about your browsing activities to improve our services.'),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
 
               // 5. How We Use Your Information
               _buildDetailedSectionCard(
@@ -86,7 +88,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   _Subsection('Communication', 'We may use your information to send you promotional materials and other communications.'),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
 
               // 6. Information Sharing
               _buildDetailedSectionCard(
@@ -98,7 +100,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   _Subsection('Legal Requirements', 'We may disclose your information if required by law or to protect our rights.'),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: isMobile ? 12 : 24),
 
               // 7. Your Rights
               _buildDetailedSectionCard(
@@ -110,11 +112,11 @@ class PrivacyPolicyPage extends StatelessWidget {
                   _Subsection('Marketing Opt-out', 'You can opt out of promotional emails by following unsubscribe instructions.'),
                 ],
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 8. Contact Us
               _buildPrivacyContact(isMobile, settings),
-              const SizedBox(height: 48),
+              SizedBox(height: isMobile ? 24 : 48),
 
               // 9. Related Info
               _buildRelatedInformation(context, isMobile),
@@ -125,7 +127,10 @@ class PrivacyPolicyPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(bool isMobile) {
+  Widget _buildHeader(bool isMobile, AppSettings settings) {
+    final DateTime lastUpdatedDate = settings.updatedAt ?? DateTime.now();
+    final String formattedDate = DateFormat('MMMM d, yyyy').format(lastUpdatedDate);
+
     return Column(
       children: [
         Container(
@@ -143,7 +148,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
-            color: AppColors.primaryIndigo,
+            color: AppColors.primaryIndigo1,
           ),
         ),
         const SizedBox(height: 16),
@@ -157,7 +162,7 @@ class PrivacyPolicyPage extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'Last updated: November 6, 2024',
+          'Last updated: $formattedDate',
           style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey[400]),
         ),
       ],
@@ -176,7 +181,7 @@ class PrivacyPolicyPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Table of Contents', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
+          Text('Table of Contents', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1)),
           const SizedBox(height: 32),
           Wrap(
             spacing: 20,
@@ -220,9 +225,9 @@ class PrivacyPolicyPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
+          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1)),
           const SizedBox(height: 24),
-          Text(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
+          FormattedText(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
         ],
       ),
     );
@@ -248,7 +253,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                 child: Icon(icon, color: AppColors.primaryPink, size: 24),
               ),
               const SizedBox(width: 20),
-              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
+              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1))),
             ],
           ),
           const SizedBox(height: 32),
@@ -282,7 +287,7 @@ class PrivacyPolicyPage extends StatelessWidget {
         children: [
           Text(
             'Contact Us About Privacy',
-            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo),
+            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1),
           ),
           const SizedBox(height: 16),
           Text(

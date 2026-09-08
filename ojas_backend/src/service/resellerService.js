@@ -129,7 +129,7 @@ async function releaseCommissions() {
 
             // Create transaction log
             await ResellerWalletTransaction.create({
-                influencer: order.resellerId, // Matches schema field name
+                Reseller: order.resellerId, // Matches schema field name
                 credit: order.commissionAmount,
                 balance: reseller.availableBalance,
                 transactionType: "commission_release",

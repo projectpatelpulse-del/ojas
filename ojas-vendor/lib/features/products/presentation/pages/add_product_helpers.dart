@@ -1,5 +1,7 @@
 part of 'add_product_page.dart';
 
+
+
 extension AddProductHelpers on _AddProductPageState {
   // ── Helpers ────────────────────────────────────────────────────
 
@@ -138,6 +140,8 @@ extension AddProductHelpers on _AddProductPageState {
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
+    final uniqueItems = items.toSet().toList();
+    final safeValue = (value != null && uniqueItems.contains(value)) ? value : null;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -148,7 +152,7 @@ extension AddProductHelpers on _AddProductPageState {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: value,
+          value: safeValue,
           dropdownColor: Colors.white,
           hint: Text(hint,
               style: GoogleFonts.inter(
@@ -157,7 +161,7 @@ extension AddProductHelpers on _AddProductPageState {
           icon: const Icon(Icons.keyboard_arrow_down, size: 18),
           style:
               GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
-          items: items
+          items: uniqueItems
               .map((s) => DropdownMenuItem(value: s, child: Text(s)))
               .toList(),
           onChanged: onChanged,

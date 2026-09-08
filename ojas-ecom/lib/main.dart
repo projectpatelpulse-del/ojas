@@ -28,6 +28,7 @@ import 'package:ojas_user/features/home/presentation/pages/privacy_policy_page.d
 import 'package:ojas_user/features/home/presentation/pages/contact_page.dart';
 import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/cart/presentation/pages/cart_page.dart';
+import 'package:ojas_user/features/home/presentation/pages/shared_collection_page.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sizer/sizer.dart';
@@ -151,6 +152,8 @@ class _MyAppState extends State<MyApp> {
         final pathSegments = uri.pathSegments;
         final isProductPath =
             pathSegments.length == 2 && pathSegments[0] == 'product';
+        final isCollectionPath =
+            pathSegments.length == 2 && pathSegments[0] == 'collection';
 
         final ref = uri.queryParameters['ref'];
         if (ref != null) {
@@ -235,6 +238,19 @@ class _MyAppState extends State<MyApp> {
               product: product,
               productId: id,
               refCode: refCodeVal,
+            ),
+          );
+        }
+
+        if (path == '/collection' || isCollectionPath) {
+          final shareCode = path == '/collection'
+              ? uri.queryParameters['shareCode']
+              : pathSegments[1];
+
+          return MaterialPageRoute(
+            settings: routeSettings,
+            builder: (context) => SharedCollectionPage(
+              shareCode: shareCode ?? "",
             ),
           );
         }

@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const { getCategories } = require("../controller/Homecontroller.js");
 const { getProducts, getProduct } = require("../controller/Product.js");
-const { getPublicSettings } = require("../controller/SettingController.js");
+const { getPublicSettings, getSettingsFaviconRedirect } = require("../controller/SettingController.js");
 const { getBanners } = require("../controller/BannerController.js");
 const { getAllBlogs, getBlogById, incrementView } = require("../controller/BlogController.js");
 
@@ -12,6 +12,7 @@ router.get("/categories", getCategories);
 router.get("/products", getProducts);
 router.get("/products/:id", getProduct);
 router.get("/settings", getPublicSettings);
+router.get("/settings/favicon.png", getSettingsFaviconRedirect);
 router.get("/banners", getBanners);
 router.get("/blogs", getAllBlogs);
 router.get("/blogs/:id", getBlogById);

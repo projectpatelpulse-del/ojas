@@ -66,7 +66,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
           horizontalPadding: isMobile ? 16 : 40,
           child: Column(
             children: [
-              SizedBox(height: isMobile ? 32 : 60),
+              SizedBox(height: isMobile ? 16 : 60),
               // 1. Header
               if (isMobile)
                 Column(
@@ -134,9 +134,8 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                     ),
                   ],
                 ),
-              SizedBox(height: isMobile ? 24 : 40),
+              SizedBox(height: isMobile ? 12 : 40),
               
-              // 2. Styled Gifting Partner Section (from image layout / Admin dynamic banner)
               if (settings.showTrendingB2BBanner) ...[
                 Builder(
                   builder: (context) {
@@ -157,7 +156,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                           child: Container(
                             width: double.infinity,
                             constraints: BoxConstraints(
-                              maxHeight: isMobile ? 180 : (isTablet ? 280 : 360),
+                              maxHeight: isMobile ? 150 : (isTablet ? 280 : 360),
                             ),
                             decoration:  BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
@@ -351,7 +350,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                 ),
               ],
               
-              SizedBox(height: isMobile ? 32 : 48),
+              SizedBox(height: isMobile ? 16 : 48),
               
               // 3. Trending Product Grid
               if (settings.showTrendingProducts) ...[

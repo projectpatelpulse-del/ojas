@@ -368,40 +368,72 @@ class _DashboardPageState extends State<DashboardPage> {
     }
     if (maxRevenue == 0) maxRevenue = 1000;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: data.map((item) {
-        final revenue = (item['revenue'] ?? 0).toDouble();
-        final date = item['_id']?.toString().split('-').last ?? '';
-        final barHeight = (revenue / maxRevenue * 150).clamp(5.0, 150.0);
-        
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text('₹${(revenue >= 1000 ? (revenue/1000).toStringAsFixed(1) + 'k' : revenue.toStringAsFixed(0))}', 
-                style: GoogleFonts.inter(fontSize: 9, color: Colors.grey.shade500)),
-            const SizedBox(height: 8),
-            Container(
-              width: 32,
-              height: barHeight,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.indigo.shade400, Colors.indigo.shade600],
-                ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-                boxShadow: [
-                  BoxShadow(color: Colors.indigo.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
+    return Stack(
+      children: [
+        // Background Gridlines
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(4, (index) => Container(
+            height: 1,
+            color: Colors.grey.shade100,
+          )),
+        ),
+        // Chart Bars
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: data.map((item) {
+              final revenue = (item['revenue'] ?? 0).toDouble();
+              final date = item['_id']?.toString().split('-').last ?? '';
+              final barHeight = (revenue / maxRevenue * 160).clamp(8.0, 160.0);
+              
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.indigo.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '₹${(revenue >= 1000 ? (revenue/1000).toStringAsFixed(1) + 'k' : revenue.toStringAsFixed(0))}', 
+                      style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.indigo.shade700),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 36,
+                    height: barHeight,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
+                      ),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withOpacity(0.2), 
+                          blurRadius: 6, 
+                          offset: const Offset(0, 3)
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    date, 
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
+                  ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(date, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey.shade600)),
-          ],
-        );
-      }).toList(),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -410,57 +442,173 @@ class _DashboardPageState extends State<DashboardPage> {
       return Center(child: Text('No historical data', style: GoogleFonts.inter(color: Colors.grey.shade400)));
     }
 
-    double maxRevenue = 0;
-    for (var item in data) {
-      double rev = (item['revenue'] ?? 0).toDouble();
-      if (rev > maxRevenue) maxRevenue = rev;
-    }
-    if (maxRevenue == 0) maxRevenue = 1000;
+    final doubleMaxList = data.map((item) => (item['revenue'] ?? 0).toDouble()).toList().cast<double>();
+    final labelsList = data.map((item) => item['_id']?.toString().split('-').last ?? '').toList();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: data.map((item) {
-        final revenue = (item['revenue'] ?? 0).toDouble();
-        final month = item['_id']?.toString().split('-').last ?? '';
-        final pointHeight = (revenue / maxRevenue * 150).clamp(5.0, 150.0);
-
+    return LayoutBuilder(
+      builder: (context, constraints) {
         return Column(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text('₹${(revenue >= 1000 ? (revenue/1000).toStringAsFixed(1) + 'k' : revenue.toStringAsFixed(0))}', 
-                style: GoogleFonts.inter(fontSize: 9, color: Colors.grey.shade500)),
-            const SizedBox(height: 8),
-            Container(
-              height: 150,
-              width: 2,
-              color: Colors.grey.shade100,
-              child: Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  Positioned(
-                    bottom: pointHeight,
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade500,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                        boxShadow: [
-                          BoxShadow(color: Colors.green.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+            Expanded(
+              child: CustomPaint(
+                size: Size(constraints.maxWidth, constraints.maxHeight - 30),
+                painter: SmoothLineChartPainter(doubleMaxList, labelsList),
               ),
             ),
             const SizedBox(height: 8),
-            Text(month, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey.shade600)),
+            // Month Labels below painter
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: labelsList.map((m) => Expanded(
+                child: Text(
+                  m, 
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
+                ),
+              )).toList(),
+            ),
           ],
         );
-      }).toList(),
+      }
     );
   }
+}
+
+// Premium Bezier line chart painter with gradients & gridlines
+class SmoothLineChartPainter extends CustomPainter {
+  final List<double> dataPoints;
+  final List<String> labels;
+
+  SmoothLineChartPainter(this.dataPoints, this.labels);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (dataPoints.isEmpty) return;
+
+    // Draw grid lines
+    final gridPaint = Paint()
+      ..color = Colors.grey.shade100
+      ..strokeWidth = 1;
+    
+    final gridLines = 4;
+    for (int i = 0; i < gridLines; i++) {
+      final y = size.height * (i / (gridLines - 1));
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    final maxVal = dataPoints.reduce((a, b) => a > b ? a : b);
+    final range = maxVal > 0 ? maxVal : 1.0;
+
+    final path = Path();
+    final fillPath = Path();
+
+    // Horizontal step size
+    final double stepX = dataPoints.length > 1 
+        ? size.width / (dataPoints.length - 1) 
+        : size.width;
+
+    // Build the curve coordinates
+    final List<Offset> points = [];
+    for (int i = 0; i < dataPoints.length; i++) {
+      final x = i * stepX;
+      // Leave 15px padding at top and 10px at bottom of paint height
+      final y = 15 + (size.height - 25) - (dataPoints[i] / range * (size.height - 25));
+      points.add(Offset(x, y));
+    }
+
+    // Draw smooth Bezier curve
+    if (points.length == 1) {
+      path.moveTo(0, points[0].dy);
+      path.lineTo(size.width, points[0].dy);
+      fillPath.moveTo(0, size.height);
+      fillPath.lineTo(0, points[0].dy);
+      fillPath.lineTo(size.width, points[0].dy);
+      fillPath.lineTo(size.width, size.height);
+    } else {
+      path.moveTo(points[0].dx, points[0].dy);
+      fillPath.moveTo(points[0].dx, size.height);
+      fillPath.lineTo(points[0].dx, points[0].dy);
+
+      for (int i = 0; i < points.length - 1; i++) {
+        final p0 = points[i];
+        final p1 = points[i + 1];
+        
+        final controlX1 = p0.dx + (p1.dx - p0.dx) / 2;
+        final controlY1 = p0.dy;
+        final controlX2 = p0.dx + (p1.dx - p0.dx) / 2;
+        final controlY2 = p1.dy;
+
+        path.cubicTo(controlX1, controlY1, controlX2, controlY2, p1.dx, p1.dy);
+        fillPath.cubicTo(controlX1, controlY1, controlX2, controlY2, p1.dx, p1.dy);
+      }
+      fillPath.lineTo(points.last.dx, size.height);
+    }
+    fillPath.close();
+
+    // Draw Gradient Fill
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFF10B981).withOpacity(0.25),
+          const Color(0xFF10B981).withOpacity(0.00),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(fillPath, fillPaint);
+
+    // Draw Main Line
+    final linePaint = Paint()
+      ..color = const Color(0xFF10B981)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(path, linePaint);
+
+    // Draw point circles and values
+    final pointPaint = Paint()
+      ..color = const Color(0xFF10B981)
+      ..style = PaintingStyle.fill;
+    final whitePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final shadowPaint = Paint()
+      ..color = const Color(0xFF10B981).withOpacity(0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    for (int i = 0; i < points.length; i++) {
+      final p = points[i];
+      final val = dataPoints[i];
+
+      // Draw shadow circle
+      canvas.drawCircle(p, 7, shadowPaint);
+      // Draw white outline circle
+      canvas.drawCircle(p, 6.5, whitePaint);
+      // Draw center active green circle
+      canvas.drawCircle(p, 4.5, pointPaint);
+
+      // Draw text label on top of point
+      final textSpan = TextSpan(
+        text: '₹${val >= 1000 ? (val/1000).toStringAsFixed(1) + 'k' : val.toStringAsFixed(0)}',
+        style: GoogleFonts.inter(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: const Color(0xFF047857),
+        ),
+      );
+      final textPainter = TextPainter(
+        text: textSpan,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas, 
+        Offset(p.dx - textPainter.width / 2, p.dy - 24),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

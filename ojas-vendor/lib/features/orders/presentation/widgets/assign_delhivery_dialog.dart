@@ -56,7 +56,15 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
 
     // Default Shipping from Order
     shippingNameController = TextEditingController(text: user['name'] ?? '');
-    shippingAddressController = TextEditingController(text: shipping['street'] ?? '');
+    final shippingParts = [
+      shipping['buildingName'],
+      shipping['street'],
+      shipping['area'],
+      shipping['landmark'],
+    ].where((e) => e != null && e.toString().trim().isNotEmpty).toList();
+    shippingAddressController = TextEditingController(
+      text: shippingParts.isNotEmpty ? shippingParts.join(', ') : ''
+    );
     shippingCityController = TextEditingController(text: shipping['city'] ?? '');
     shippingPinController = TextEditingController(text: shipping['zipCode']?.toString() ?? '');
     

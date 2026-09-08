@@ -9,33 +9,50 @@ exports.getWallet = async (req, res) => {
         const vendor = await Vendor.findOne({ user: req.user.id });
         if (!vendor) return res.status(404).json({ message: "Vendor not found" });
 
-        // Calculate dynamic total earnings from delivered orders
+        // Calculate dynamic total earnings from delivered orders (MongoDB status is uppercase "DELIVERED")
         const Order = require('../model/Order');
         const orders = await Order.find({ 
             vendor: vendor.user, 
-            status: "Delivered" 
+            status: "DELIVERED" 
         });
-        const totalEarnings = orders.reduce((sum, order) => sum + (order.vendorEarning || 0), 0);
+        
+        // 1. total earning = total amount of order delivered
+        const totalEarnings = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
 
-        // Calculate total requested/paid payouts
+        // 2. available balance me commision cut hone ke baad jitna bch rha hai (minus payouts)
+        const commissionPercent = vendor.commissionRate ?? 10;
+        const totalEarningsAfterCommission = orders.reduce((sum, order) => {
+            const platformCommission = Number(((order.totalAmount * commissionPercent) / 100).toFixed(2));
+            return sum + (order.totalAmount - platformCommission);
+        }, 0);
+
+        // Calculate total requested/paid payouts (anything not rejected)
         const payouts = await Payout.find({ 
             vendor: vendor._id, 
             status: { $ne: "rejected" } 
         });
         const totalRequested = payouts.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-        const currentBalance = totalEarnings - totalRequested;
+        const currentBalance = totalEarningsAfterCommission - totalRequested;
 
-        // Sync vendor document (optional but good for consistency)
+        // 3. pending clearance me vo aamount aayega jitne ammount ki request kr rkha hoga vendor
+        const pendingPayouts = await Payout.find({
+            vendor: vendor._id,
+            status: "pending"
+        });
+        const pendingClearance = pendingPayouts.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+        // Sync vendor document
         vendor.walletBalance = currentBalance;
         vendor.totalEarnings = totalEarnings;
+        vendor.pendingBalance = pendingClearance;
         await vendor.save();
 
         res.status(200).json({
             success: true,
             data: {
                 walletBalance: currentBalance,
-                pendingBalance: vendor.pendingBalance || 0,
+                pendingBalance: pendingClearance,
                 totalEarnings: totalEarnings
             }
         });

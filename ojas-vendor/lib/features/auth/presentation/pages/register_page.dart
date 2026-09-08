@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:ojas_vendor/core/services/api_service.dart';
 import 'package:ojas_vendor/core/services/service_locator.dart';
 import 'package:ojas_vendor/features/categories/data/services/category_service.dart';
+import 'package:ojas_vendor/core/widgets/scrollable_terms_dialog.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -65,12 +66,37 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _showFileError = false;
   bool _showCategoryError = false;
+  String? _bannerUrl;
 
   @override
   void initState() {
     super.initState();
     _zipCodeController.addListener(_onZipCodeChanged);
     _fetchCategories();
+    _loadBanner();
+  }
+
+  Future<void> _loadBanner() async {
+    try {
+      final dio = sl<ApiService>().dio;
+      final response = await dio.get('/home/banners');
+      if (response.statusCode == 200 && response.data != null) {
+        final List banners = response.data['data'] ?? [];
+        final vendorAuthBanner = banners.firstWhere(
+          (b) => b['type'] == 'vendor_auth' && b['isActive'] == true,
+          orElse: () => null,
+        );
+        if (vendorAuthBanner != null && vendorAuthBanner['imageUrl'] != null) {
+          if (mounted) {
+            setState(() {
+              _bannerUrl = vendorAuthBanner['imageUrl'];
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading vendor auth banner: $e');
+    }
   }
 
   Future<void> _fetchCategories() async {
@@ -162,6 +188,48 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  void _showTermsAndConditionsPopup() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF5C0B1B)),
+      ),
+    );
+
+    String termsContent = "";
+    try {
+      final apiService = sl<ApiService>();
+      final response = await apiService.dio.get('/home/settings');
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        termsContent = data['termsConditions'] ?? "";
+      }
+    } catch (e) {
+      debugPrint('Error fetching terms: $e');
+    }
+
+    if (mounted) {
+      Navigator.pop(context); // Close loading spinner
+      
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => ScrollableTermsDialog(
+          title: "Terms & Conditions",
+          termsContent: termsContent,
+          onAccepted: (accepted) {
+            if (accepted) {
+              setState(() {
+                _agreedToTerms = true;
+              });
+            }
+          },
+        ),
+      );
+    }
+  }
+
   Future<void> _submitApplication() async {
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -229,7 +297,7 @@ class _RegisterPageState extends State<RegisterPage> {
             otp = data['whatsappOtp']?.toString();
           }
         }
-        _showOTPDialog(_phoneController.text, otp);
+        _showOTPDialog(_emailController.text, _phoneController.text, otp);
       }
     } catch (e) {
       Navigator.pop(context);
@@ -257,17 +325,17 @@ class _RegisterPageState extends State<RegisterPage> {
     return e.toString();
   }
 
-  void _showOTPDialog(String phone, String? otp) {
+  void _showOTPDialog(String email, String phone, String? otp) {
     final TextEditingController otpController = TextEditingController();
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text('Verify WhatsApp OTP', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text('Verify Email OTP', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Enter the 6-digit OTP sent to your WhatsApp number +91 $phone'),
+            Text('Enter the 6-digit OTP sent to your email address $email'),
             if (otp != null) ...[
               const SizedBox(height: 16),
               Container(
@@ -328,7 +396,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     builder: (context) => AlertDialog(
                       title: const Text('Success'),
                       content: const Text(
-                        'WhatsApp number verified successfully! Please wait for admin approval.',
+                        'Email address verified successfully! Please wait for admin approval.',
                       ),
                       actions: [
                         TextButton(
@@ -555,17 +623,22 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/auth.png'),
+            image: _bannerUrl != null
+                ? NetworkImage(_bannerUrl!) as ImageProvider
+                : const AssetImage('assets/auth.png'),
             fit: BoxFit.fill,
+            onError: (exception, stackTrace) {
+              debugPrint('Error loading network banner image: $exception');
+            },
           ),
         ),
         child: Row(
           children: [
-            const Spacer(flex: 58),
+            const Spacer(flex: 65),
             Expanded(
-              flex: 38,
+              flex: 35,
               child: Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -718,10 +791,11 @@ class _RegisterPageState extends State<RegisterPage> {
               label: 'Business Type *',
               items: const [
                 'Select type',
-                'Individual',
-                'Partnership',
-                'LLC',
-                'Corporation',
+              'Manufacturer',
+              'Wholesaler',
+              'Retailer',
+              'Trader',
+              'Independent',
               ],
               value: _businessType,
               onChanged: (v) => setState(() => _businessType = v!),
@@ -970,7 +1044,13 @@ class _RegisterPageState extends State<RegisterPage> {
         _CheckboxItem(
           label: 'I agree to the Terms & Conditions and Privacy Policy',
           value: _agreedToTerms,
-          onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+          onChanged: (v) {
+            if (v == true) {
+              _showTermsAndConditionsPopup();
+            } else {
+              setState(() => _agreedToTerms = false);
+            }
+          },
         ),
         _CheckboxItem(
           label: 'I consent to receive marketing communications',

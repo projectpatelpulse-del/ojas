@@ -41,10 +41,10 @@ export default function VendorOrders() {
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(o.status)}`}>{o.status}</span>
                   </td>
                   <td className="px-5 py-4">
-                    {o.source === "Influencer Order" ? (
+                    {o.source === "Reseller Order" ? (
                       <div>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">{o.source}</span>
-                        {o.influencerName && <p className="text-xs text-slate-400 mt-0.5">{o.influencerName} ({o.influencerCode})</p>}
+                        {o.ResellerName && <p className="text-xs text-slate-400 mt-0.5">{o.ResellerName} ({o.ResellerCode})</p>}
                       </div>
                     ) : (
                       <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">{o.source}</span>

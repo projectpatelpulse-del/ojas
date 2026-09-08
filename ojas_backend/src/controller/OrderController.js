@@ -66,13 +66,13 @@ exports.createOrder = async (req, res) => {
 
             const product = item.product;
             const vendorId = product.user ? product.user.toString() : null;
-            
+
             if (!vendorId) continue;
 
             if (!vendorGroups[vendorId]) {
                 vendorGroups[vendorId] = [];
             }
-            
+
             let markupAmount = 0;
             let resellerId = null;
             let resellerCode = null;
@@ -82,7 +82,7 @@ exports.createOrder = async (req, res) => {
                 const rp = await ResellerProduct.findOne({ referralCode: item.referralCode, product: product._id });
                 if (rp) {
                     markupAmount = rp.markupAmount || 0;
-                    resellerId = rp.influencer;
+                    resellerId = rp.Reseller;
                     resellerCode = rp.referralCode;
                 }
             }
@@ -149,7 +149,7 @@ exports.createOrder = async (req, res) => {
                 const updatedProduct = await Product.findOneAndUpdate(
                     { _id: product._id, stock: { $gte: quantity } },
                     { $inc: { stock: -quantity } },
-                    { new: true }
+                    { returnDocument: 'after' }
                 );
 
                 if (!updatedProduct) {
@@ -169,18 +169,22 @@ exports.createOrder = async (req, res) => {
         // 3. Generate orders
         const createdOrders = [];
         const txnid = paymentMethod === "ONLINE" ? "TXN" + Date.now() + Math.floor(Math.random() * 1000) : null;
+        const addrObj = shippingAddress || {};
         const finalShipping = {
-            street: shippingAddress?.street || "No street",
-            city: shippingAddress?.city || "No city",
-            state: shippingAddress?.state || "No state",
-            zipCode: shippingAddress?.zipCode || "0000"
+            buildingName: addrObj.buildingName || "",
+            street: addrObj.street || "",
+            area: addrObj.area || "",
+            landmark: addrObj.landmark || "",
+            city: addrObj.city || "No city",
+            state: addrObj.state || "No state",
+            zipCode: addrObj.zipCode || "0000"
         };
 
         for (const vId of vendorIds) {
             const items = vendorGroups[vId];
-            const subtotal = Math.ceil(items.reduce((sum, i) => sum + (i.sellingPrice * i.quantity), 0));
-            const totalGst = Math.ceil(items.reduce((sum, i) => sum + (i.gstAmount * i.quantity), 0));
-            const amount = Math.ceil(items.reduce((sum, i) => sum + (i.finalPrice * i.quantity), 0));
+            const subtotal = Number((items.reduce((sum, i) => sum + (i.sellingPrice * i.quantity), 0)).toFixed(2));
+            const totalGst = Number((items.reduce((sum, i) => sum + (i.gstAmount * i.quantity), 0)).toFixed(2));
+            const amount = Number((items.reduce((sum, i) => sum + (i.finalPrice * i.quantity), 0)).toFixed(2));
 
             let orderResellerId = null;
             let orderResellerCode = null;
@@ -203,7 +207,7 @@ exports.createOrder = async (req, res) => {
                 totalGst: totalGst,
                 totalAmount: amount,
                 shippingAddress: finalShipping,
-                status: paymentMethod === "COD" ? "PROCESSING" : "CREATED",
+                status: "CREATED",
                 paymentMethod: paymentMethod,
                 paymentStatus: paymentMethod === "COD" ? "COD_PENDING" : "PENDING",
                 transactionId: txnid,
@@ -229,7 +233,7 @@ exports.createOrder = async (req, res) => {
                         amount: amount
                     });
                 }
-                
+
                 // Send Emails (Admin, Vendor, User)
                 const emailService = require("../service/emailService");
                 emailService.sendOrderEmails(newOrder._id).catch(err => console.error("Email trigger failed:", err));
@@ -243,10 +247,10 @@ exports.createOrder = async (req, res) => {
                 if (product) {
                     checkLowStockAndNotify(product);
                     if (io) {
-                        io.emit("admin_data_updated", { 
-                            type: "product", 
-                            action: "update", 
-                            data: product 
+                        io.emit("admin_data_updated", {
+                            type: "product",
+                            action: "update",
+                            data: product
                         });
                     }
                 }
@@ -254,48 +258,101 @@ exports.createOrder = async (req, res) => {
                 console.error(`[LowStockAlert] Error in check:`, err.message);
             }
         }
-
         // 4. Clear cart if COD (If ONLINE, clear after successful payment verification)
         if (paymentMethod === "COD") {
             await User.findByIdAndUpdate(userId, { $set: { cart: [] } });
             await Admin.findByIdAndUpdate(userId, { $set: { cart: [] } });
         }
 
-        // 5. Handle PayU Payload Generation for ONLINE
+        // 5. Handle Cashfree Payload Generation for ONLINE
         let paymentPayload = null;
         if (paymentMethod === "ONLINE") {
-            const crypto = require("crypto");
-            const Payment = require("../model/Payment"); // Import Payment model
-            
-            const Setting = require("../model/Setting");
-            const settings = await Setting.findOne();
-            const key = settings?.paymentGatewayKey || process.env.PAYMENTGATEWAY_KEY;
-            const salt = settings?.paymentGatewaySalt || process.env.SALT;
-            const productInfo = productNames.join(", ").substring(0, 100);
-            
-            const hashString = `${key}|${txnid}|${totalCartAmount}|${productInfo}|${buyer.name}|${buyer.email}|||||||||||${salt}`;
-            const hash = crypto.createHash("sha512").update(hashString).digest("hex");
+            const Payment = require("../model/Payment");
+            const axios = require("axios");
 
-            // Create Payment record for tracking (Important for Web Checkout)
+            const isProd = process.env.CASHFREE_ENV === "production";
+            const cfUrl = isProd ? "https://api.cashfree.com/pg/orders" : "https://sandbox.cashfree.com/pg/orders";
+
+            const headers = {
+                "x-api-version": "2023-08-01",
+                "x-client-id": process.env.CASHFREE_APP_ID,
+                "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            };
+
+            let cleanPhone = (buyer.mobile || "9999999999").replace(/\D/g, '');
+            if (cleanPhone.length > 10) {
+                cleanPhone = cleanPhone.substring(cleanPhone.length - 10);
+            }
+            if (cleanPhone.length < 10) {
+                cleanPhone = "9999999999";
+            }
+
+            let cleanEmail = buyer.email || "customer@example.com";
+            if (!cleanEmail.includes("@")) {
+                cleanEmail = "customer@example.com";
+            }
+
+            let cleanName = buyer.name || "Customer";
+
+            const productInfo = productNames.join(", ").substring(0, 100);
+            let origin = req.headers.referer || req.headers.origin || "https://mycollectionsforyou.com";
+
+            const roundedTotalAmount = Number(totalCartAmount.toFixed(2));
+
+            const data = {
+                order_id: txnid,
+                order_amount: roundedTotalAmount,
+                order_currency: "INR",
+                customer_details: {
+                    customer_id: buyer._id ? buyer._id.toString() : "CUST_" + Date.now(),
+                    customer_name: cleanName,
+                    customer_email: cleanEmail,
+                    customer_phone: cleanPhone
+                },
+                order_meta: {
+                    return_url: `${process.env.BACKEND_URL}/api/payment/cashfree-verify-redirect?order_id={order_id}&origin=${encodeURIComponent(origin)}`
+                }
+            };
+
+            let cfOrder;
+            try {
+                const cfResponse = await axios.post(cfUrl, data, { headers });
+                cfOrder = cfResponse.data;
+                console.log("[Cashfree] Environment:", isProd ? "production" : "sandbox");
+                console.log("[Cashfree] Creating order:", txnid);
+                console.log("[Cashfree] Order status:", cfOrder.order_status);
+                console.log(
+                    "[Cashfree] Session received:",
+                    !!cfOrder.payment_session_id,
+                    "length:",
+                    cfOrder.payment_session_id?.length
+                );
+            } catch (err) {
+                console.error("Cashfree Order Initialization Error:", err.response ? err.response.data : err.message);
+                throw new Error("Failed to initialize payment with Cashfree: " + (err.response ? JSON.stringify(err.response.data) : err.message));
+            }
+
+            // Create Payment record for tracking
             const paymentRecord = new Payment({
                 orderId: createdOrders.map(o => o._id).join(","),
                 transactionId: txnid,
-                amount: totalCartAmount,
-                status: "PENDING"
+                amount: roundedTotalAmount,
+                status: "PENDING",
+                gateway: "Cashfree",
+                paymentSessionId: cfOrder.payment_session_id
             });
             await paymentRecord.save();
 
             paymentPayload = {
-                key: key,
+                gateway: "Cashfree",
                 txnid: txnid,
-                amount: totalCartAmount.toString(),
-                productinfo: productInfo,
-                firstname: buyer.name,
+                amount: roundedTotalAmount.toString(),
+                payment_session_id: cfOrder.payment_session_id,
+                environment: isProd ? "production" : "sandbox",
                 email: buyer.email,
-                phone: buyer.mobile || "",
-                hash: hash,
-                surl: `${process.env.BACKEND_URL}/api/payment/verify`,
-                furl: `${process.env.BACKEND_URL}/api/payment/verify`,
+                phone: buyer.mobile || ""
             };
         }
 
@@ -308,8 +365,8 @@ exports.createOrder = async (req, res) => {
 
     } catch (error) {
         console.error("[OrderController] Checkout FATAL ERROR:", error);
-        return res.status(500).json({ 
-            success: false, 
+        return res.status(500).json({
+            success: false,
             message: "Internal server error during checkout.",
             error: error.message
         });
@@ -320,7 +377,13 @@ exports.createOrder = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
     try {
         const userId = req.user.id;
-        const orders = await Order.find({ user: userId }).sort({ createdAt: -1 });
+        const orders = await Order.find({
+            user: userId,
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        }).sort({ createdAt: -1 });
         res.status(200).json({ success: true, orders });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -331,7 +394,13 @@ exports.getUserOrders = async (req, res) => {
 exports.getVendorOrders = async (req, res) => {
     try {
         const vendorId = req.user.id;
-        const orders = await Order.find({ vendor: vendorId })
+        const orders = await Order.find({
+            vendor: vendorId,
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        })
             .populate({
                 path: "user",
                 select: "name email mobile"
@@ -371,9 +440,9 @@ exports.updateOrderStatus = async (req, res) => {
 
         // Prevent updating status if it's already 'DELIVERED'
         if (order.status === "DELIVERED") {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Cannot change status of an order that is already delivered." 
+            return res.status(400).json({
+                success: false,
+                message: "Cannot change status of an order that is already delivered."
             });
         }
 
@@ -394,19 +463,19 @@ exports.updateOrderStatus = async (req, res) => {
             const vendor = await Vendor.findOne({ user: order.vendor });
             if (vendor) {
                 let commissionRate = vendor.commissionRate;
-                
+
                 // Fetch global default if vendor commission is not set or we want to use global
                 const Setting = require("../model/Setting");
                 const settings = await Setting.findOne();
                 const defaultCommission = settings ? settings.defaultCommission : 10;
-                
+
                 if (commissionRate === undefined || commissionRate === null) {
                     commissionRate = defaultCommission;
                 }
 
-                // Vendor Earning is the sum of original prices (base prices)
-                const vendorEarning = Math.ceil(order.items.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0));
-                const platformCommission = Math.ceil(order.items.reduce((sum, item) => sum + (item.commissionAmount * item.quantity), 0));
+                // Vendor Earning is total amount minus platform commission (calculated on total amount)
+                const platformCommission = Number(((order.totalAmount * commissionRate) / 100).toFixed(2));
+                const vendorEarning = Number((order.totalAmount - platformCommission).toFixed(2));
 
                 order.commission = platformCommission;
                 order.vendorEarning = vendorEarning;
@@ -415,7 +484,7 @@ exports.updateOrderStatus = async (req, res) => {
                 order.returnWindowExpiry = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days return window
 
                 vendor.walletBalance += vendorEarning;
-                vendor.totalEarnings += vendorEarning;
+                vendor.totalEarnings += order.totalAmount;
                 await vendor.save();
             }
         }
@@ -433,7 +502,12 @@ exports.updateOrderStatus = async (req, res) => {
 // Get All Orders (for Admin)
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find()
+        const orders = await Order.find({
+            $or: [
+                { paymentMethod: { $ne: "ONLINE" } },
+                { paymentStatus: { $ne: "PENDING" } }
+            ]
+        })
             .populate({
                 path: "user",
                 select: "name email mobile"
@@ -442,6 +516,7 @@ exports.getAllOrders = async (req, res) => {
                 path: "vendor",
                 populate: { path: "vendorProfile" }
             })
+            .populate("items.product")
             .sort({ createdAt: -1 });
         res.status(200).json({ success: true, orders });
     } catch (error) {
@@ -472,10 +547,10 @@ exports.updateOrderTracking = async (req, res) => {
 
         await order.save();
 
-        res.status(200).json({ 
-            success: true, 
+        res.status(200).json({
+            success: true,
             message: "Tracking information updated successfully",
-            order 
+            order
         });
     } catch (error) {
         console.error("Update tracking error:", error.message);
@@ -487,7 +562,7 @@ exports.updateOrderTracking = async (req, res) => {
 exports.verifyDeliveryOtp = async (req, res) => {
     try {
         const { orderId, otp } = req.body;
-        
+
         if (!orderId || !otp) {
             return res.status(400).json({ success: false, message: "Order ID and OTP are required." });
         }
@@ -524,13 +599,13 @@ exports.verifyDeliveryOtp = async (req, res) => {
             const Setting = require("../model/Setting");
             const settings = await Setting.findOne();
             const defaultCommission = settings ? settings.defaultCommission : 10;
-            
+
             if (commissionRate === undefined || commissionRate === null) {
                 commissionRate = defaultCommission;
             }
 
-            const vendorEarning = order.items.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
-            const platformCommission = order.items.reduce((sum, item) => sum + (item.commissionAmount * item.quantity), 0);
+            const platformCommission = Number(((order.totalAmount * commissionRate) / 100).toFixed(2));
+            const vendorEarning = Number((order.totalAmount - platformCommission).toFixed(2));
 
             order.commission = platformCommission;
             order.vendorEarning = vendorEarning;
@@ -539,7 +614,7 @@ exports.verifyDeliveryOtp = async (req, res) => {
             order.returnWindowExpiry = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days return window
 
             vendor.walletBalance += vendorEarning;
-            vendor.totalEarnings += vendorEarning;
+            vendor.totalEarnings += order.totalAmount;
             await vendor.save();
         }
 
@@ -632,7 +707,7 @@ exports.confirmDelivery = async (req, res) => {
 exports.submitPickupDetails = async (req, res) => {
     try {
         const vendorId = req.user.id;
-        const { orderId, weight, length, width, height, numberOfParcels, shippingPhoto } = req.body;
+        const { orderId, weight, weightUnit, length, width, height, dimensionsUnit, numberOfParcels, shippingPhoto, dimensionsList } = req.body;
 
         const order = await Order.findById(orderId);
         if (!order) {
@@ -643,34 +718,79 @@ exports.submitPickupDetails = async (req, res) => {
             return res.status(403).json({ success: false, message: "Not authorized to submit pickup details for this order" });
         }
 
-        // Validations
+        if (order.status !== "PROCESSING") {
+            return res.status(400).json({ success: false, message: "Order must be accepted (status: PROCESSING) before submitting pickup details." });
+        }
+
+        if (!shippingPhoto || typeof shippingPhoto !== "string" || !shippingPhoto.startsWith("http")) {
+            return res.status(400).json({ success: false, message: "Shipping/package photo upload is mandatory before submitting pickup request." });
+        }
+
         const numWeight = parseFloat(weight);
-        const numLength = parseFloat(length);
-        const numWidth = parseFloat(width);
-        const numHeight = parseFloat(height);
         const numParcels = parseInt(numberOfParcels);
 
-        if (isNaN(numWeight) || numWeight <= 0) {
-            return res.status(400).json({ success: false, message: "Parcel weight must be numeric and greater than 0" });
+        if (isNaN(numWeight) || numWeight <= 0 || numWeight > 25) {
+            return res.status(400).json({ success: false, message: "Parcel weight must be greater than 0 and cannot exceed 25 kg" });
         }
         if (isNaN(numParcels) || numParcels < 1) {
             return res.status(400).json({ success: false, message: "Parcel count must be a number minimum 1" });
         }
-        if (isNaN(numLength) || numLength <= 0 || isNaN(numWidth) || numWidth <= 0 || isNaN(numHeight) || numHeight <= 0) {
-            return res.status(400).json({ success: false, message: "Dimensions must be valid numeric values greater than 0" });
-        }
-        if (!shippingPhoto || typeof shippingPhoto !== "string" || !shippingPhoto.startsWith("http")) {
-            return res.status(400).json({ success: false, message: "Shipping/package photo upload is mandatory before submitting pickup request." });
+
+        let parsedDimensionsList = [];
+        let defaultLength = 0;
+        let defaultWidth = 0;
+        let defaultHeight = 0;
+
+        if (dimensionsList && Array.isArray(dimensionsList) && dimensionsList.length > 0) {
+            for (let i = 0; i < dimensionsList.length; i++) {
+                const d = dimensionsList[i];
+                const l = parseFloat(d.length);
+                const wd = parseFloat(d.width);
+                const h = parseFloat(d.height);
+
+                if (isNaN(l) || l <= 0 || isNaN(wd) || wd <= 0 || isNaN(h) || h <= 0) {
+                    return res.status(400).json({ success: false, message: `Dimension #${i + 1} must be valid numeric values greater than 0` });
+                }
+
+                parsedDimensionsList.push({
+                    length: l,
+                    width: wd,
+                    height: h
+                });
+            }
+            defaultLength = parsedDimensionsList[0].length;
+            defaultWidth = parsedDimensionsList[0].width;
+            defaultHeight = parsedDimensionsList[0].height;
+        } else {
+            const numLength = parseFloat(length);
+            const numWidth = parseFloat(width);
+            const numHeight = parseFloat(height);
+
+            if (isNaN(numLength) || numLength <= 0 || isNaN(numWidth) || numWidth <= 0 || isNaN(numHeight) || numHeight <= 0) {
+                return res.status(400).json({ success: false, message: "Dimensions must be valid numeric values greater than 0" });
+            }
+
+            parsedDimensionsList.push({
+                length: numLength,
+                width: numWidth,
+                height: numHeight
+            });
+            defaultLength = numLength;
+            defaultWidth = numWidth;
+            defaultHeight = numHeight;
         }
 
         // Save
         order.pickupDetails = {
             weight: numWeight,
+            weightUnit: weightUnit || 'kg',
             dimensions: {
-                length: numLength,
-                width: numWidth,
-                height: numHeight
+                length: defaultLength,
+                width: defaultWidth,
+                height: defaultHeight
             },
+            dimensionsUnit: dimensionsUnit || 'cm',
+            dimensionsList: parsedDimensionsList,
             numberOfParcels: numParcels,
             submittedAt: new Date()
         };
@@ -735,7 +855,7 @@ exports.updatePickupStatus = async (req, res) => {
 
         const io = req.app.get("io");
         if (io) {
-            io.emit(`orderUpdate_${order._id}`, { 
+            io.emit(`orderUpdate_${order._id}`, {
                 pickupStatus,
                 pickupScheduledAt: order.pickupScheduledAt,
                 pickedUpAt: order.pickedUpAt
@@ -809,17 +929,58 @@ exports.submitDispatchPhoto = async (req, res) => {
         }
 
         order.dispatchPhoto = dispatchPhoto;
+        order.status = "SHIPPED";
         await order.save();
 
         const io = req.app.get("io");
         if (io) {
-            io.emit(`orderUpdate_${order._id}`, { dispatchPhoto });
-            io.emit("admin_data_updated", { type: "order", action: "dispatch_photo_submitted", data: order });
+            io.emit(`orderUpdate_${order._id}`, order);
+            io.emit("admin_data_updated", { type: "order", action: "shipped", data: order });
         }
 
         return res.status(200).json({ success: true, message: "Dispatch photo submitted successfully by vendor!", order });
     } catch (error) {
         console.error("Submit dispatch photo error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error: " + error.message });
+    }
+};
+
+// Vendor uploads invoice file/photo
+exports.uploadVendorInvoice = async (req, res) => {
+    try {
+        const { orderId, invoiceUrl } = req.body;
+        if (!invoiceUrl) {
+            return res.status(400).json({ success: false, message: "Invoice URL is required" });
+        }
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+        order.vendorInvoiceUrl = invoiceUrl;
+        await order.save();
+        return res.status(200).json({ success: true, message: "Vendor invoice uploaded successfully!", order });
+    } catch (error) {
+        console.error("Upload vendor invoice error:", error);
+        return res.status(500).json({ success: false, message: "Internal server error: " + error.message });
+    }
+};
+
+// Admin uploads Delhivery challan PDF URL
+exports.uploadDelhiveryChallan = async (req, res) => {
+    try {
+        const { orderId, challanUrl } = req.body;
+        if (!challanUrl) {
+            return res.status(400).json({ success: false, message: "Challan URL is required" });
+        }
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+        order.delhiveryChallanUrl = challanUrl;
+        await order.save();
+        return res.status(200).json({ success: true, message: "Delhivery challan uploaded successfully!", order });
+    } catch (error) {
+        console.error("Upload Delhivery challan error:", error);
         return res.status(500).json({ success: false, message: "Internal server error: " + error.message });
     }
 };
@@ -837,7 +998,9 @@ module.exports = {
     submitPickupDetails: exports.submitPickupDetails,
     updatePickupStatus: exports.updatePickupStatus,
     submitPickedUpPhoto: exports.submitPickedUpPhoto,
-    submitDispatchPhoto: exports.submitDispatchPhoto
+    submitDispatchPhoto: exports.submitDispatchPhoto,
+    uploadVendorInvoice: exports.uploadVendorInvoice,
+    uploadDelhiveryChallan: exports.uploadDelhiveryChallan
 };
 
 const checkLowStockAndNotify = async (product) => {

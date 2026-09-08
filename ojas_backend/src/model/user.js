@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
 
         password: {
             type: String,
-            required: function() { return !this.uid; },
+            required: function () { return !this.uid; },
             minlength: 6,
         },
 
@@ -33,10 +33,10 @@ const userSchema = new mongoose.Schema(
             enum: ["male", "female", "other"],
             default: "other",
         },
-        
+
         mobile: {
             type: String,
-            required: function() { return !this.uid; },
+            required: function () { return !this.uid; },
             unique: true,
             sparse: true,
         },
@@ -51,10 +51,10 @@ const userSchema = new mongoose.Schema(
             type: String, // store URL (Cloudinary / local path)
             default: "",
         },
-        
+
         role: {
             type: String,
-            enum: ["user", "admin", "vendor", "influencer", "reseller"],
+            enum: ["user", "admin", "vendor", "Reseller", "reseller"],
             default: "user",
         },
 
@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema(
             enum: ["local", "google"],
             default: "local"
         },
-        
+
         status: {
             type: String,
             enum: ["active", "inactive", "banned"],

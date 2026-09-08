@@ -9,13 +9,18 @@ class ProductDetailsDialog extends StatefulWidget {
   final ProductModel product;
   final VoidCallback? onRefresh;
 
-  const ProductDetailsDialog({super.key, required this.product, this.onRefresh});
+  const ProductDetailsDialog({
+    super.key,
+    required this.product,
+    this.onRefresh,
+  });
 
   @override
   State<ProductDetailsDialog> createState() => _ProductDetailsDialogState();
 }
 
-class _ProductDetailsDialogState extends State<ProductDetailsDialog> with SingleTickerProviderStateMixin {
+class _ProductDetailsDialogState extends State<ProductDetailsDialog>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _selectedImageIndex = 0;
   late List<String> _selectedPages;
@@ -48,15 +53,20 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
   Future<void> _savePageVisibility() async {
     setState(() => _isSavingPages = true);
     try {
-      await sl<ProductService>().updateProductShowOnPages(widget.product.id, _selectedPages);
-      
+      await sl<ProductService>().updateProductShowOnPages(
+        widget.product.id,
+        _selectedPages,
+      );
+
       // Update local object to reflect the saved state immediately
       widget.product.showOnPages.clear();
       widget.product.showOnPages.addAll(_selectedPages);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product page visibility updated successfully!')),
+          const SnackBar(
+            content: Text('Product page visibility updated successfully!'),
+          ),
         );
       }
       if (widget.onRefresh != null) {
@@ -65,7 +75,10 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating visibility: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error updating visibility: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -114,8 +127,14 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                 indicatorColor: const Color(0xFF6B21A8),
                 labelColor: const Color(0xFF6B21A8),
                 unselectedLabelColor: Colors.grey.shade500,
-                labelStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
-                unselectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13),
+                labelStyle: GoogleFonts.inter(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+                unselectedLabelStyle: GoogleFonts.inter(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
                 tabs: const [
                   Tab(text: 'OVERVIEW'),
                   Tab(text: 'VARIATIONS & SPECS'),
@@ -170,7 +189,10 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                       const SizedBox(height: 4),
                       Text(
                         'ID: ${p.id}',
-                        style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 12),
+                        style: GoogleFonts.inter(
+                          color: Colors.grey.shade500,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -221,14 +243,23 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                         ? Image.network(
                             images[_selectedImageIndex],
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey.shade50,
-                              child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey.shade300),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: Colors.grey.shade50,
+                                  child: Icon(
+                                    Icons.image_not_supported,
+                                    size: 48,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
                           )
                         : Container(
                             color: Colors.grey.shade50,
-                            child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey.shade300),
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 48,
+                              color: Colors.grey.shade300,
+                            ),
                           ),
                   ),
                 ),
@@ -241,11 +272,13 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: images.length,
-                      separatorBuilder: (context, index) => const SizedBox(width: 10),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 10),
                       itemBuilder: (context, index) {
                         final isSelected = index == _selectedImageIndex;
                         return InkWell(
-                          onTap: () => setState(() => _selectedImageIndex = index),
+                          onTap: () =>
+                              setState(() => _selectedImageIndex = index),
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             width: 60,
@@ -254,7 +287,9 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isSelected ? const Color(0xFF6B21A8) : Colors.grey.shade200,
+                                color: isSelected
+                                    ? const Color(0xFF6B21A8)
+                                    : Colors.grey.shade200,
                                 width: isSelected ? 2 : 1,
                               ),
                             ),
@@ -263,7 +298,8 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                               child: Image.network(
                                 images[index],
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey.shade50),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(color: Colors.grey.shade50),
                               ),
                             ),
                           ),
@@ -279,28 +315,46 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (p.shortDescription != null && p.shortDescription!.isNotEmpty) ...[
+                      if (p.shortDescription != null &&
+                          p.shortDescription!.isNotEmpty) ...[
                         Text(
                           'Short Description',
-                          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey.shade700),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.grey.shade700,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           p.shortDescription!,
-                          style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600, height: 1.5),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                            height: 1.5,
+                          ),
                         ),
                         const SizedBox(height: 16),
                       ],
                       Text(
                         'Full Description',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey.shade700),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        p.fullDescription != null && p.fullDescription!.isNotEmpty
+                        p.fullDescription != null &&
+                                p.fullDescription!.isNotEmpty
                             ? p.fullDescription!
                             : 'No full description provided.',
-                        style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600, height: 1.5),
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),
@@ -327,7 +381,9 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                     children: [
                       _buildInfoRow(
                         'Weight',
-                        p.weight != null && p.weight! > 0 ? '${p.weight} kg' : 'Not specified',
+                        p.weight != null && p.weight! > 0
+                            ? '${p.weight} kg'
+                            : 'Not specified',
                         icon: Icons.scale,
                       ),
                       const Divider(height: 16),
@@ -356,9 +412,17 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   title: 'Categorization',
                   child: Column(
                     children: [
-                      _buildInfoRow('Category', p.category, icon: Icons.category),
+                      _buildInfoRow(
+                        'Category',
+                        p.category,
+                        icon: Icons.category,
+                      ),
                       const Divider(height: 16),
-                      _buildInfoRow('Sub-Category', p.subCategory ?? '-', icon: Icons.subdirectory_arrow_right),
+                      _buildInfoRow(
+                        'Sub-Category',
+                        p.subCategory ?? '-',
+                        icon: Icons.subdirectory_arrow_right,
+                      ),
                       const Divider(height: 16),
                       _buildInfoRow('Brand', p.brand, icon: Icons.copyright),
                     ],
@@ -402,21 +466,33 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                       padding: const EdgeInsets.all(20),
                       child: Text(
                         'This product has no variations.',
-                        style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 13),
+                        style: GoogleFonts.inter(
+                          color: Colors.grey.shade400,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   )
                 : Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         color: const Color(0xFFF8FAFC),
                         child: Row(
                           children: [
                             Expanded(flex: 3, child: _tableHeader('VARIANT')),
                             Expanded(flex: 2, child: _tableHeader('SKU')),
                             Expanded(flex: 2, child: _tableHeader('PRICE')),
-                            Expanded(flex: 1, child: _tableHeader('STOCK', align: TextAlign.end)),
+                            Expanded(
+                              flex: 1,
+                              child: _tableHeader(
+                                'STOCK',
+                                align: TextAlign.end,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -424,35 +500,73 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: p.variations.length,
-                        separatorBuilder: (context, index) => Divider(color: Colors.grey.shade100, height: 1),
+                        separatorBuilder: (context, index) =>
+                            Divider(color: Colors.grey.shade100, height: 1),
                         itemBuilder: (context, index) {
                           final v = p.variations[index];
                           // Build labels description
                           List<String> labelParts = [];
-                          if (v.size != null && v.size!.isNotEmpty) labelParts.add('Size: ${v.size}');
-                          if (v.color != null && v.color!.isNotEmpty) labelParts.add('Color: ${v.color}');
-                          if (v.material != null && v.material!.isNotEmpty) labelParts.add('Material: ${v.material}');
-                          final variantLabel = labelParts.isEmpty ? 'Default Variant' : labelParts.join(' | ');
+                          if (v.size != null && v.size!.isNotEmpty)
+                            labelParts.add('Size: ${v.size}');
+                          if (v.color != null && v.color!.isNotEmpty)
+                            labelParts.add('Color: ${v.color}');
+                          if (v.material != null && v.material!.isNotEmpty)
+                            labelParts.add('Material: ${v.material}');
+                          final variantLabel = labelParts.isEmpty
+                              ? 'Default Variant'
+                              : labelParts.join(' | ');
 
                           return Padding(
-                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: Text(variantLabel, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                                  child: Text(
+                                    variantLabel,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 2,
-                                  child: Text(v.sku ?? '-', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600)),
+                                  child: Text(
+                                    v.sku ?? '-',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 2,
-                                  child: Text('₹${v.price.toStringAsFixed(0)}', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF6B21A8))),
+                                  child: Text(
+                                    '₹${v.price.toStringAsFixed(0)}',
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: const Color(0xFF6B21A8),
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 1,
-                                  child: Text('${v.stock}', textAlign: TextAlign.end, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: v.stock <= 5 ? Colors.red : Colors.green)),
+                                  child: Text(
+                                    '${v.stock}',
+                                    textAlign: TextAlign.end,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: v.stock <= 5
+                                          ? Colors.red
+                                          : Colors.green,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -473,7 +587,10 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                       padding: const EdgeInsets.all(20),
                       child: Text(
                         'No technical specifications available.',
-                        style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 13),
+                        style: GoogleFonts.inter(
+                          color: Colors.grey.shade400,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   )
@@ -482,17 +599,34 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                       0: FlexColumnWidth(3),
                       1: FlexColumnWidth(7),
                     },
-                    border: TableBorder.all(color: Colors.grey.shade100, width: 1, style: BorderStyle.solid),
+                    border: TableBorder.all(
+                      color: Colors.grey.shade100,
+                      width: 1,
+                      style: BorderStyle.solid,
+                    ),
                     children: p.specifications!.map((spec) {
                       return TableRow(
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(12.0),
-                            child: Text(spec.key, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey.shade700)),
+                            child: Text(
+                              spec.key,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(12.0),
-                            child: Text(spec.value, style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600)),
+                            child: Text(
+                              spec.value,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
                           ),
                         ],
                       );
@@ -519,17 +653,58 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   title: 'Pricing & Margins',
                   child: Column(
                     children: [
-                      _buildFinancialRow('MRP', p.oldPrice != null ? '₹${p.oldPrice!.toStringAsFixed(2)}' : '₹${p.price.toStringAsFixed(2)}'),
+                      _buildFinancialRow(
+                        'MRP',
+                        p.oldPrice != null
+                            ? '₹${p.oldPrice!.toStringAsFixed(2)}'
+                            : '₹${p.price.toStringAsFixed(2)}',
+                      ),
                       const Divider(height: 16),
-                      _buildFinancialRow('Vendor Cost Price', p.originalPrice != null ? '₹${p.originalPrice!.toStringAsFixed(2)}' : 'Not specified', isCost: true),
+                      _buildFinancialRow(
+                        'Vendor Cost Price',
+                        p.originalPrice != null
+                            ? '₹${p.originalPrice!.toStringAsFixed(2)}'
+                            : 'Not specified',
+                        isCost: true,
+                      ),
                       const Divider(height: 16),
-                      _buildFinancialRow('Commission Percent', p.commissionPercent != null ? '${p.commissionPercent}%' : '0.00%', isCommission: true),
+                      _buildFinancialRow(
+                        'Commission Percent',
+                        p.commissionPercent != null
+                            ? '${p.commissionPercent}%'
+                            : '0.00%',
+                        isCommission: true,
+                      ),
                       const Divider(height: 16),
-                      _buildFinancialRow('Commission Amount', p.commissionAmount != null ? '₹${p.commissionAmount!.toStringAsFixed(2)}' : '₹0.00', isCommission: true),
+                      _buildFinancialRow(
+                        'Commission Amount',
+                        p.commissionAmount != null
+                            ? '₹${p.commissionAmount!.toStringAsFixed(2)}'
+                            : '₹0.00',
+                        isCommission: true,
+                      ),
                       const Divider(height: 16),
-                      _buildFinancialRow('Admin Net Selling Price', p.sellingPrice != null ? '₹${p.sellingPrice!.toStringAsFixed(2)}' : '₹${p.price.toStringAsFixed(2)}', isPrimary: true),
+                      _buildFinancialRow(
+                        'Admin Net Selling Price',
+                        p.sellingPrice != null
+                            ? '₹${p.sellingPrice!.toStringAsFixed(2)}'
+                            : '₹${p.price.toStringAsFixed(2)}',
+                        isPrimary: true,
+                      ),
                       const Divider(height: 16),
-                      _buildFinancialRow('Customer Display Price', '₹${p.price.toStringAsFixed(2)}', isPrimary: true),
+                      _buildFinancialRow(
+                        'Customer Display Price',
+                        '₹${p.price.toStringAsFixed(2)}',
+                        isPrimary: true,
+                      ),
+                      if (p.discount > 0) ...[
+                        const Divider(height: 16),
+                        _buildFinancialRow(
+                          'Discount Offered by Vendor',
+                          '${p.discount}% OFF (Save ₹${((p.oldPrice ?? p.price) - p.price).toStringAsFixed(2)})',
+                          isPrimary: false,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -538,9 +713,17 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   title: 'GST Details',
                   child: Column(
                     children: [
-                      _buildInfoRow('GST Rate', p.gst != null ? '${p.gst}%' : '0%', icon: Icons.percent),
+                      _buildInfoRow(
+                        'GST Rate',
+                        p.gst != null ? '${p.gst}%' : '0%',
+                        icon: Icons.percent,
+                      ),
                       const Divider(height: 16),
-                      _buildInfoRow('HSN Code', p.hsnCode ?? 'Not specified', icon: Icons.description_outlined),
+                      _buildInfoRow(
+                        'HSN Code',
+                        p.hsnCode ?? 'Not specified',
+                        icon: Icons.description_outlined,
+                      ),
                     ],
                   ),
                 ),
@@ -558,11 +741,23 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   title: 'Inventory Status',
                   child: Column(
                     children: [
-                      _buildInfoRow('Total Stock Available', '${p.stock}', icon: Icons.inventory_2),
+                      _buildInfoRow(
+                        'Total Stock Available',
+                        '${p.stock}',
+                        icon: Icons.inventory_2,
+                      ),
                       const Divider(height: 16),
-                      _buildInfoRow('Low Stock Alert Threshold', '${p.lowStockThreshold}', icon: Icons.warning_amber_rounded),
+                      _buildInfoRow(
+                        'Low Stock Alert Threshold',
+                        '${p.lowStockThreshold}',
+                        icon: Icons.warning_amber_rounded,
+                      ),
                       const Divider(height: 16),
-                      _buildInfoRow('Track Quantity Level', p.trackQuantity ? 'Yes' : 'No', icon: Icons.check_circle_outline),
+                      _buildInfoRow(
+                        'Track Quantity Level',
+                        p.trackQuantity ? 'Yes' : 'No',
+                        icon: Icons.check_circle_outline,
+                      ),
                     ],
                   ),
                 ),
@@ -571,12 +766,24 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   title: 'Order Limits & MOQ',
                   child: Column(
                     children: [
-                      _buildInfoRow('Minimum Order Qty (MOQ)', '${p.moq}', icon: Icons.shopping_bag_outlined),
+                      _buildInfoRow(
+                        'Minimum Order Qty (MOQ)',
+                        '${p.moq}',
+                        icon: Icons.shopping_bag_outlined,
+                      ),
                       const Divider(height: 16),
-                      _buildInfoRow('MOQ Bulk Discount', p.moqDiscount > 0 ? '${p.moqDiscount}%' : 'No discount', icon: Icons.discount_outlined),
+                      _buildInfoRow(
+                        'MOQ Bulk Discount',
+                        p.moqDiscount > 0 ? '${p.moqDiscount}%' : 'No discount',
+                        icon: Icons.discount_outlined,
+                      ),
                       if (p.moqTiers.isNotEmpty) ...[
                         const Divider(height: 16),
-                        _buildInfoRow('MOQ Tiered Discounts', p.moqTiers, icon: Icons.playlist_add_check_circle_outlined),
+                        _buildInfoRow(
+                          'MOQ Tiered Discounts',
+                          p.moqTiers,
+                          icon: Icons.playlist_add_check_circle_outlined,
+                        ),
                       ],
                     ],
                   ),
@@ -603,9 +810,15 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
               children: [
                 _buildTextMetadataBlock('SEO Meta Title', p.seoTitle ?? p.name),
                 const SizedBox(height: 16),
-                _buildTextMetadataBlock('SEO Meta Description', p.seoDescription ?? 'No custom SEO description set.'),
+                _buildTextMetadataBlock(
+                  'SEO Meta Description',
+                  p.seoDescription ?? 'No custom SEO description set.',
+                ),
                 const SizedBox(height: 16),
-                _buildTextMetadataBlock('Friendly URL Slug', p.slug ?? 'Not generated'),
+                _buildTextMetadataBlock(
+                  'Friendly URL Slug',
+                  p.slug ?? 'Not generated',
+                ),
               ],
             ),
           ),
@@ -624,24 +837,41 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                   action: p.youtubeLink != null && p.youtubeLink!.isNotEmpty
                       ? IconButton(
                           onPressed: () => _launchURL(p.youtubeLink!),
-                          icon: const Icon(Icons.open_in_new, size: 18, color: Colors.blue),
+                          icon: const Icon(
+                            Icons.open_in_new,
+                            size: 18,
+                            color: Colors.blue,
+                          ),
                         )
                       : null,
                 ),
                 const Divider(height: 16),
                 Text(
                   'Search Tags',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey.shade700),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.grey.shade700,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 p.tags == null || p.tags!.isEmpty
-                    ? Text('No search tags specified.', style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 13))
+                    ? Text(
+                        'No search tags specified.',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey.shade400,
+                          fontSize: 13,
+                        ),
+                      )
                     : Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: p.tags!.map((t) {
                           return Chip(
-                            label: Text(t, style: GoogleFonts.inter(fontSize: 12)),
+                            label: Text(
+                              t,
+                              style: GoogleFonts.inter(fontSize: 12),
+                            ),
                             backgroundColor: Colors.indigo.shade50,
                             side: BorderSide.none,
                           );
@@ -650,23 +880,39 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                 const Divider(height: 16),
                 Text(
                   'Page Visibility Listings',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey.shade700),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.grey.shade700,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: _availablePages.map((page) {
-                    final isSelected = _selectedPages.any((p) => p.toLowerCase() == page.toLowerCase());
+                    final isSelected = _selectedPages.any(
+                      (p) => p.toLowerCase() == page.toLowerCase(),
+                    );
                     return FilterChip(
-                      label: Text(page, style: GoogleFonts.inter(fontSize: 12, color: isSelected ? Colors.teal.shade900 : Colors.grey.shade700)),
+                      label: Text(
+                        page,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: isSelected
+                              ? Colors.teal.shade900
+                              : Colors.grey.shade700,
+                        ),
+                      ),
                       selected: isSelected,
                       onSelected: (selected) {
                         setState(() {
                           if (selected) {
                             _selectedPages.add(page);
                           } else {
-                            _selectedPages.removeWhere((p) => p.toLowerCase() == page.toLowerCase());
+                            _selectedPages.removeWhere(
+                              (p) => p.toLowerCase() == page.toLowerCase(),
+                            );
                           }
                         });
                       },
@@ -679,15 +925,27 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: _isSavingPages ? null : _savePageVisibility,
-                  icon: _isSavingPages 
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  icon: _isSavingPages
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Icon(Icons.save_outlined, size: 16),
                   label: const Text('Save Page Visibility'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6B21A8),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ],
@@ -755,12 +1013,23 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
           if (vendor == null)
             Text(
               'No vendor details (Admin uploaded product).',
-              style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 13),
+              style: GoogleFonts.inter(
+                color: Colors.grey.shade500,
+                fontSize: 13,
+              ),
             )
           else ...[
-            _buildInfoRow('Shop Name', vendor.shopName ?? 'Direct Store', icon: Icons.shopify),
+            _buildInfoRow(
+              'Shop Name',
+              vendor.shopName ?? 'Direct Store',
+              icon: Icons.shopify,
+            ),
             const Divider(height: 16),
-            _buildInfoRow('Owner Name', vendor.name, icon: Icons.person_outline),
+            _buildInfoRow(
+              'Owner Name',
+              vendor.name,
+              icon: Icons.person_outline,
+            ),
             const Divider(height: 16),
             _buildInfoRow(
               'Email Address',
@@ -789,7 +1058,12 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {required IconData icon, Widget? action}) {
+  Widget _buildInfoRow(
+    String label,
+    String value, {
+    required IconData icon,
+    Widget? action,
+  }) {
     return Row(
       children: [
         Icon(icon, size: 18, color: Colors.grey.shade400),
@@ -798,9 +1072,22 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 11)),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: Colors.grey.shade500,
+                  fontSize: 11,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(value, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13, color: const Color(0xFF1E293B))),
+              Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: const Color(0xFF1E293B),
+                ),
+              ),
             ],
           ),
         ),
@@ -809,7 +1096,13 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
     );
   }
 
-  Widget _buildFinancialRow(String label, String value, {bool isCost = false, bool isCommission = false, bool isPrimary = false}) {
+  Widget _buildFinancialRow(
+    String label,
+    String value, {
+    bool isCost = false,
+    bool isCommission = false,
+    bool isPrimary = false,
+  }) {
     Color valColor = const Color(0xFF1E293B);
     if (isCost) {
       valColor = Colors.orange.shade700;
@@ -854,9 +1147,24 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.grey.shade400, letterSpacing: 0.5)),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              color: Colors.grey.shade400,
+              letterSpacing: 0.5,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(text, style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF1E293B), height: 1.4)),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: const Color(0xFF1E293B),
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );
@@ -868,7 +1176,9 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
       decoration: BoxDecoration(
         color: active ? Colors.green.shade50 : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: active ? Colors.green.shade200 : Colors.grey.shade200),
+        border: Border.all(
+          color: active ? Colors.green.shade200 : Colors.grey.shade200,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -896,12 +1206,12 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
     final s = status.toUpperCase();
     final isActive = s == 'ACTIVE';
     final isInactive = s == 'INACTIVE';
-    
+
     Color chipColor;
     Color borderColor;
     Color dotColor;
     Color textColor;
-    
+
     if (isActive) {
       chipColor = Colors.green.shade50;
       borderColor = Colors.green.shade200;
@@ -932,10 +1242,7 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
@@ -958,7 +1265,9 @@ class _ProductDetailsDialogState extends State<ProductDetailsDialog> with Single
       decoration: BoxDecoration(
         color: isPublic ? Colors.blue.shade50 : Colors.purple.shade50,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: isPublic ? Colors.blue.shade200 : Colors.purple.shade200),
+        border: Border.all(
+          color: isPublic ? Colors.blue.shade200 : Colors.purple.shade200,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

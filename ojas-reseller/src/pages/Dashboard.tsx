@@ -1,4 +1,4 @@
-import { useGetInfluencerDashboard, useGetInfluencerProfile } from "@/api-client";
+import { useGetResellerDashboard, useGetResellerProfile } from "@/api-client";
 import { formatCurrency, getStatusColor } from "@/lib/utils";
 import { TrendingUp, ShoppingCart, Package, MousePointerClick, Percent, IndianRupee, Clock, CheckCircle2, XCircle } from "lucide-react";
 
@@ -18,8 +18,8 @@ function StatCard({ label, value, sub, icon: Icon, accent }: { label: string; va
 }
 
 export default function Dashboard() {
-  const { data: stats, isLoading } = useGetInfluencerDashboard();
-  const { data: profile } = useGetInfluencerProfile();
+  const { data: stats, isLoading } = useGetResellerDashboard();
+  const { data: profile } = useGetResellerProfile();
 
   if (isLoading) {
     return (
@@ -40,9 +40,9 @@ export default function Dashboard() {
       <div className="mb-8">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-slate-800 font-bold text-2xl">Welcome back, {profile?.name?.split(" ")[0] ?? "Influencer"}</h1>
+            <h1 className="text-slate-800 font-bold text-2xl">Welcome back, {profile?.name?.split(" ")[0] ?? "Reseller"}</h1>
             <p className="text-slate-500 text-sm mt-0.5">
-              Code: <span className="font-mono font-semibold text-amber-600">{profile?.influencerCode}</span>
+              Code: <span className="font-mono font-semibold text-amber-600">{profile?.ResellerCode}</span>
               <span className={`ml-3 px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(profile?.status ?? "Active")}`}>{profile?.status}</span>
             </p>
           </div>

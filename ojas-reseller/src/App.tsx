@@ -4,12 +4,13 @@ import { queryClient } from "@/lib/queryClient";
 import { Toaster } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Layout } from "@/components/Layout";
-import { useGetInfluencerProfile, logoutInfluencer } from "@/api-client";
+import { useGetResellerProfile, logoutReseller } from "@/api-client";
 
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Products from "@/pages/Products";
 import MyProducts from "@/pages/MyProducts";
+// import Collections from "@/pages/Collections";
 import Referrals from "@/pages/Referrals";
 import Orders from "@/pages/Orders";
 import Wallet from "@/pages/Wallet";
@@ -18,18 +19,22 @@ import Analytics from "@/pages/Analytics";
 import Profile from "@/pages/Profile";
 import Register from "@/pages/Register";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminInfluencers from "@/pages/admin/AdminInfluencers";
-import AdminInfluencerDetail from "@/pages/admin/AdminInfluencerDetail";
+// import AdminResellers from "@/pages/admin/AdminResellers";
+// import AdminResellerDetail from "@/pages/admin/AdminResellerDetail";
 import AdminWithdrawals from "@/pages/admin/AdminWithdrawals";
 import AdminAnalytics from "@/pages/admin/AdminAnalytics";
-import AdminTopInfluencers from "@/pages/admin/AdminTopInfluencers";
+// import AdminTopResellers from "@/pages/admin/AdminTopResellers";
 import VendorOrders from "@/pages/vendor/VendorOrders";
+import AdminTopResellers from "./pages/admin/AdminTopInfluencers";
+import AdminResellerDetail from "./pages/admin/AdminInfluencerDetail";
+import AdminResellers from "./pages/admin/AdminInfluencers";
+import Collections from "./pages/Collections";
 
 function PendingScreen({ status }: { status: string }) {
   const qc = useQueryClient();
   const handleLogout = async () => {
     try {
-      await logoutInfluencer();
+      await logoutReseller();
       qc.clear();
       localStorage.removeItem("auth_token");
       window.location.href = "/login";
@@ -66,13 +71,13 @@ function PendingScreen({ status }: { status: string }) {
 
 function ProtectedRoute({ component: Component, roles }: { component: React.ComponentType; roles?: string[] }) {
   const { user, isLoading: isAuthLoading, isAuthenticated, role } = useAuth();
-  const { data: profile, isLoading: isProfileLoading } = useGetInfluencerProfile({
+  const { data: profile, isLoading: isProfileLoading } = useGetResellerProfile({
     query: {
-      enabled: isAuthenticated && (role === "influencer" || role === "reseller"),
+      enabled: isAuthenticated && (role === "Reseller" || role === "reseller"),
     } as any
   });
 
-  if (isAuthLoading || (isAuthenticated && (role === "influencer" || role === "reseller") && isProfileLoading)) {
+  if (isAuthLoading || (isAuthenticated && (role === "Reseller" || role === "reseller") && isProfileLoading)) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-900">
         <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -83,7 +88,7 @@ function ProtectedRoute({ component: Component, roles }: { component: React.Comp
   if (!isAuthenticated) return <Redirect to="/login" />;
   if (roles && role && !roles.includes(role)) return <Redirect to={role === "admin" ? "/admin" : role === "vendor" ? "/vendor/orders" : "/dashboard"} />;
 
-  if (role === "influencer" || role === "reseller") {
+  if (role === "Reseller" || role === "reseller") {
     const status = profile?.status?.toLowerCase();
     if (status && status !== "approved" && status !== "active") {
       return <PendingScreen status={profile?.status || "pending"} />;
@@ -111,24 +116,25 @@ function Router() {
       <Route path="/login" component={() => <PublicRoute component={Login} />} />
       <Route path="/register" component={() => <PublicRoute component={Register} />} />
 
-      {/* Influencer/Reseller routes */}
-      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} roles={["influencer", "reseller"]} />} />
-      <Route path="/products" component={() => <ProtectedRoute component={Products} roles={["influencer", "reseller"]} />} />
-      <Route path="/my-products" component={() => <ProtectedRoute component={MyProducts} roles={["influencer", "reseller"]} />} />
-      <Route path="/referrals" component={() => <ProtectedRoute component={Referrals} roles={["influencer", "reseller"]} />} />
-      <Route path="/orders" component={() => <ProtectedRoute component={Orders} roles={["influencer", "reseller"]} />} />
-      <Route path="/wallet" component={() => <ProtectedRoute component={Wallet} roles={["influencer", "reseller"]} />} />
-      <Route path="/withdrawals" component={() => <ProtectedRoute component={Withdrawals} roles={["influencer", "reseller"]} />} />
-      <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} roles={["influencer", "reseller"]} />} />
-      <Route path="/profile" component={() => <ProtectedRoute component={Profile} roles={["influencer", "reseller"]} />} />
+      {/* Reseller/Reseller routes */}
+      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} roles={["Reseller", "reseller"]} />} />
+      <Route path="/products" component={() => <ProtectedRoute component={Products} roles={["Reseller", "reseller"]} />} />
+      <Route path="/my-products" component={() => <ProtectedRoute component={MyProducts} roles={["Reseller", "reseller"]} />} />
+      <Route path="/collections" component={() => <ProtectedRoute component={Collections} roles={["Reseller", "reseller"]} />} />
+      <Route path="/referrals" component={() => <ProtectedRoute component={Referrals} roles={["Reseller", "reseller"]} />} />
+      <Route path="/orders" component={() => <ProtectedRoute component={Orders} roles={["Reseller", "reseller"]} />} />
+      <Route path="/wallet" component={() => <ProtectedRoute component={Wallet} roles={["Reseller", "reseller"]} />} />
+      <Route path="/withdrawals" component={() => <ProtectedRoute component={Withdrawals} roles={["Reseller", "reseller"]} />} />
+      <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} roles={["Reseller", "reseller"]} />} />
+      <Route path="/profile" component={() => <ProtectedRoute component={Profile} roles={["Reseller", "reseller"]} />} />
 
       {/* Admin routes */}
       <Route path="/admin" component={() => <ProtectedRoute component={AdminDashboard} roles={["admin"]} />} />
-      <Route path="/admin/influencers/:id" component={() => <ProtectedRoute component={AdminInfluencerDetail} roles={["admin"]} />} />
-      <Route path="/admin/influencers" component={() => <ProtectedRoute component={AdminInfluencers} roles={["admin"]} />} />
+      <Route path="/admin/Resellers/:id" component={() => <ProtectedRoute component={AdminResellerDetail} roles={["admin"]} />} />
+      <Route path="/admin/Resellers" component={() => <ProtectedRoute component={AdminResellers} roles={["admin"]} />} />
       <Route path="/admin/withdrawals" component={() => <ProtectedRoute component={AdminWithdrawals} roles={["admin"]} />} />
       <Route path="/admin/analytics" component={() => <ProtectedRoute component={AdminAnalytics} roles={["admin"]} />} />
-      <Route path="/admin/top-influencers" component={() => <ProtectedRoute component={AdminTopInfluencers} roles={["admin"]} />} />
+      <Route path="/admin/top-Resellers" component={() => <ProtectedRoute component={AdminTopResellers} roles={["admin"]} />} />
 
       {/* Vendor routes */}
       <Route path="/vendor/orders" component={() => <ProtectedRoute component={VendorOrders} roles={["vendor"]} />} />

@@ -18,19 +18,49 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="OJAS INDIA - Your trusted online shopping platform for quality products and gifts.">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="ojas_user">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/7590/7590132.png">
+  <meta name="apple-mobile-web-app-title" content="OJAS INDIA">
+  <link rel="apple-touch-icon" href="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2">
+
+  <!-- Open Graph / Facebook Link Preview Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OJAS INDIA">
+  <meta property="og:description" content="OJAS INDIA - Your trusted online shopping platform for quality products and gifts.">
+  <meta property="og:image" content="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2">
+  <meta property="og:url" content="https://ojasindia.com">
+
+  <!-- Twitter Link Preview Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="OJAS INDIA">
+  <meta name="twitter:description" content="OJAS INDIA - Your trusted online shopping platform for quality products and gifts.">
+  <meta name="twitter:image" content="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/7590/7590132.png"/>
+  <link rel="icon" type="image/png" href="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2"/>
 
-  <title>ojas_user</title>
+  <title>OJAS INDIA</title>
   <link rel="manifest" href="manifest.json">
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+  <script>
+    window.openCashfreeCheckout = function(paymentSessionId, mode) {
+      console.log("[Cashfree JS SDK] Initializing checkout with session ID:", paymentSessionId, "mode:", mode);
+      try {
+        const cashfree = Cashfree({
+          mode: mode
+        });
+        cashfree.checkout({
+          paymentSessionId: paymentSessionId,
+          redirectTarget: "_self"
+        });
+      } catch (err) {
+        console.error("[Cashfree JS SDK] Error:", err);
+      }
+    };
+  </script>
 </head>
 <body>
   <!--

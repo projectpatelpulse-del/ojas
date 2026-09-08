@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useLoginInfluencer, getGetCurrentUserQueryKey } from "@/api-client";
+import { useLoginReseller, getGetCurrentUserQueryKey } from "@/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Login() {
@@ -8,12 +8,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [, navigate] = useLocation();
   const qc = useQueryClient();
-  const login = useLoginInfluencer();
+  const login = useLoginReseller();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     login.mutate({ data: { email, password } }, {
       onSuccess: (data) => {
+        if ((data as any).token) {
+          localStorage.setItem("auth_token", (data as any).token);
+        }
         qc.invalidateQueries({ queryKey: getGetCurrentUserQueryKey() });
         const role = data.user.role;
         if (role === "admin") navigate("/admin");
@@ -32,7 +35,7 @@ export default function Login() {
             <span className="text-slate-900 font-black text-2xl">O</span>
           </div>
           <h1 className="text-white font-bold text-2xl">Ojas India</h1>
-          <p className="text-slate-400 text-sm mt-1">Reseller & Influencer Platform</p>
+          <p className="text-slate-400 text-sm mt-1">Reseller & Reseller Platform</p>
         </div>
 
         <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 shadow-2xl">
@@ -88,7 +91,7 @@ export default function Login() {
           {/* <div className="mt-4 p-3 bg-slate-700/50 rounded-lg text-xs text-slate-400 space-y-1">
             <p className="font-medium text-slate-300">Demo accounts:</p>
             <p>Admin: admin@ojasindia.com / admin123</p>
-            <p>Influencer: priya@demo.com / demo123</p>
+            <p>Reseller: priya@demo.com / demo123</p>
           </div> */}
         </div>
       </div>

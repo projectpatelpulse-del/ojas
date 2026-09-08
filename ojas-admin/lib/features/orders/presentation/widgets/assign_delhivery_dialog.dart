@@ -27,6 +27,11 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
   late TextEditingController shippingCityController;
   late TextEditingController shippingPinController;
   late TextEditingController shippingPhoneController;
+
+  late TextEditingController weightController;
+  late TextEditingController lengthController;
+  late TextEditingController breadthController;
+  late TextEditingController heightController;
   bool isLoading = false;
 
   @override
@@ -36,6 +41,8 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
     final vendorProfile = vendor['vendorProfile'] ?? vendor; // Try both structures
     final shipping = widget.order['shippingAddress'] ?? {};
     final user = widget.order['user'] ?? {};
+    final pd = widget.order['pickupDetails'] ?? {};
+    final dim = pd['dimensions'] ?? {};
 
     // Default Pickup from Vendor Profile/User
     pickupNameController = TextEditingController(
@@ -55,10 +62,43 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
 
     // Default Shipping from Order
     shippingNameController = TextEditingController(text: user['name'] ?? '');
-    shippingAddressController = TextEditingController(text: shipping['street'] ?? '');
+    final shippingParts = [
+      shipping['buildingName'],
+      shipping['street'],
+      shipping['area'],
+      shipping['landmark'],
+    ].where((e) => e != null && e.toString().trim().isNotEmpty).toList();
+    shippingAddressController = TextEditingController(
+      text: shippingParts.isNotEmpty ? shippingParts.join(', ') : ''
+    );
     shippingCityController = TextEditingController(text: shipping['city'] ?? '');
     shippingPinController = TextEditingController(text: shipping['zipCode']?.toString() ?? '');
     shippingPhoneController = TextEditingController(text: user['mobile']?.toString() ?? '');
+
+    // Default Dimensions from Order/Vendor Submission
+    weightController = TextEditingController(text: (pd['weight'] ?? '0.5').toString());
+    lengthController = TextEditingController(text: (dim['length'] ?? '10').toString());
+    breadthController = TextEditingController(text: (dim['width'] ?? dim['breadth'] ?? '10').toString());
+    heightController = TextEditingController(text: (dim['height'] ?? '10').toString());
+  }
+
+  @override
+  void dispose() {
+    pickupNameController.dispose();
+    pickupAddressController.dispose();
+    pickupCityController.dispose();
+    pickupPinController.dispose();
+    pickupPhoneController.dispose();
+    shippingNameController.dispose();
+    shippingAddressController.dispose();
+    shippingCityController.dispose();
+    shippingPinController.dispose();
+    shippingPhoneController.dispose();
+    weightController.dispose();
+    lengthController.dispose();
+    breadthController.dispose();
+    heightController.dispose();
+    super.dispose();
   }
 
   @override
@@ -161,6 +201,53 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
                         Expanded(child: _buildTextField('Pincode', shippingPinController, Icons.mark_as_unread_sharp)),
                       ],
                     ),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader('Package Dimensions'),
+                    if (widget.order['pickupDetails']?['dimensionsList'] != null && (widget.order['pickupDetails']['dimensionsList'] as List).length > 1) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.blue.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '📦 Vendor submitted ${(widget.order['pickupDetails']['dimensionsList'] as List).length} parcels:',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blue.shade900),
+                            ),
+                            const SizedBox(height: 4),
+                            ...(widget.order['pickupDetails']['dimensionsList'] as List).asMap().entries.map((entry) {
+                              final i = entry.key + 1;
+                              final item = entry.value;
+                              return Text(
+                                'Parcel #$i: ${item['length']} × ${item['width']} × ${item['height']} cm',
+                                style: GoogleFonts.inter(fontSize: 12, color: Colors.blue.shade800),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: _buildTextField('Weight (kg)', weightController, Icons.scale)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildTextField('Length (cm)', lengthController, Icons.square_foot)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: _buildTextField('Width (cm)', breadthController, Icons.square_foot)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildTextField('Height (cm)', heightController, Icons.square_foot)),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -190,6 +277,13 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
                           )
                         : ElevatedButton(
                             onPressed: () async {
+                              final parsedWeight = double.tryParse(weightController.text) ?? 0.5;
+                              if (parsedWeight <= 0 || parsedWeight > 25) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Parcel weight must be greater than 0 and cannot exceed 25 kg'), backgroundColor: Colors.red),
+                                );
+                                return;
+                              }
                               setState(() => isLoading = true);
                               try {
                                 final data = {
@@ -201,10 +295,10 @@ class _AssignDelhiveryDialogState extends State<AssignDelhiveryDialog> {
                                     'phone': shippingPhoneController.text,
                                   },
                                   'dimensions': {
-                                    'weight': 0.5,
-                                    'length': 10,
-                                    'breadth': 10,
-                                    'height': 10,
+                                    'weight': double.tryParse(weightController.text) ?? 0.5,
+                                    'length': double.tryParse(lengthController.text) ?? 10,
+                                    'breadth': double.tryParse(breadthController.text) ?? 10,
+                                    'height': double.tryParse(heightController.text) ?? 10,
                                   }
                                 };
                                 await widget.onConfirm(data);

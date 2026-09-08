@@ -359,7 +359,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _buildStatusBadge(order.status),
+                      _buildStatusBadge(order.displayStatus),
                       const SizedBox(height: 20),
                       Icon(Icons.chevron_right, color: AppColors.grey400),
                     ],
@@ -425,6 +425,12 @@ class _OrdersPageState extends State<OrdersPage> {
     } else if (s == 'processing') {
       color = Colors.indigo;
       icon = Icons.sync;
+    } else if (s == 'shipment requested' || s == 'pickup requested') {
+      color = Colors.purple;
+      icon = Icons.mark_as_unread_outlined;
+    } else if (s == 'shipment scheduled' || s == 'pickup scheduled') {
+      color = Colors.teal;
+      icon = Icons.event_available;
     }
 
     return Container(

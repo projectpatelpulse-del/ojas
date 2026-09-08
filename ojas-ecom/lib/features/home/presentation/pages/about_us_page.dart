@@ -7,6 +7,7 @@ import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:ojas_user/core/models/app_settings.dart';
+import 'package:ojas_user/core/widgets/formatted_text.dart';
 
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
@@ -103,7 +104,7 @@ class AboutUsPage extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
-            color: AppColors.primaryIndigo,
+            color: AppColors.primaryIndigo1,
           ),
         ),
         const SizedBox(height: 16),
@@ -131,9 +132,9 @@ class AboutUsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo)),
+          Text(title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1)),
           const SizedBox(height: 24),
-          Text(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
+          FormattedText(content, style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey[700], height: 1.6)),
         ],
       ),
     );
@@ -159,7 +160,7 @@ class AboutUsPage extends StatelessWidget {
                 child: Icon(icon, color: AppColors.primaryPink, size: 24),
               ),
               const SizedBox(width: 20),
-              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo))),
+              Expanded(child: Text(title, style: GoogleFonts.outfit(fontSize: isMobile ? 20 : 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1))),
             ],
           ),
           const SizedBox(height: 32),
@@ -193,7 +194,7 @@ class AboutUsPage extends StatelessWidget {
         children: [
           Text(
             'Get In Touch',
-            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo),
+            style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryIndigo1),
           ),
           const SizedBox(height: 16),
           Text(

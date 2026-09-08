@@ -109,9 +109,10 @@ class DeliveryChallanHelper {
               pw.SizedBox(height: 6),
               pw.Table.fromTextArray(
                 context: context,
-                headers: ['Product Name', 'HSN', 'Qty', 'Rate (Base)', 'GST %', 'GST Amt', 'Amount'],
+                headers: ['Product Name', 'SKU', 'HSN', 'Qty', 'Rate (Base)', 'GST %', 'GST Amt', 'Amount'],
                 data: items.map((item) {
                   final prod = item['product'];
+                  final sku = (prod is Map) ? (prod['sku'] ?? item['sku'] ?? '-') : (item['sku'] ?? '-');
                   final hsn = (prod is Map) ? (prod['hsnCode'] ?? item['hsnCode'] ?? '-') : (item['hsnCode'] ?? '-');
                   final qty = item['quantity'] ?? 0;
                   final unitPrice = item['price'] ?? 0.0;
@@ -121,6 +122,7 @@ class DeliveryChallanHelper {
 
                   return [
                     item['name'] ?? 'Product',
+                    sku.toString(),
                     hsn.toString(),
                     qty.toString(),
                     'Rs. ${unitPrice.toStringAsFixed(2)}',

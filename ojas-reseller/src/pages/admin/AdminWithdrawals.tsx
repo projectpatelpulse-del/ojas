@@ -26,7 +26,7 @@ export default function AdminWithdrawals() {
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-slate-800 font-bold text-2xl">Withdrawal Requests</h1>
-        <p className="text-slate-500 text-sm mt-1">Review and process influencer withdrawal requests</p>
+        <p className="text-slate-500 text-sm mt-1">Review and process Reseller withdrawal requests</p>
       </div>
 
       <div className="flex flex-wrap gap-1 bg-white border border-slate-200 rounded-xl p-1 mb-5 w-fit">
@@ -42,7 +42,7 @@ export default function AdminWithdrawals() {
           <table className="w-full min-w-[800px] text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="text-left px-5 py-3 text-slate-500 font-medium">Influencer</th>
+                <th className="text-left px-5 py-3 text-slate-500 font-medium">Reseller</th>
                 <th className="text-right px-5 py-3 text-slate-500 font-medium">Amount</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-medium">Bank Details</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-medium">Requested</th>
@@ -58,8 +58,8 @@ export default function AdminWithdrawals() {
               ) : withdrawals.map(w => (
                 <tr key={w.id} className="hover:bg-slate-50">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-slate-800">{w.influencerName ?? "Influencer #" + w.influencerId}</p>
-                    <p className="text-slate-400 text-xs">ID: #{w.influencerId}</p>
+                    <p className="font-medium text-slate-800">{w.ResellerName ?? "Reseller #" + w.ResellerId}</p>
+                    <p className="text-slate-400 text-xs">ID: #{w.ResellerId}</p>
                   </td>
                   <td className="px-5 py-4 text-right font-bold text-slate-800 text-base">{formatCurrency(Number(w.amount))}</td>
                   <td className="px-5 py-4">

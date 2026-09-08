@@ -20,6 +20,9 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return OjasLayout(
       activeTitle: 'HOME',
+      onRefresh: () async {
+        await SettingsController.instance.fetchSettings();
+      },
       child: ListenableBuilder(
         listenable: SettingsController.instance,
         builder: (context, _) {

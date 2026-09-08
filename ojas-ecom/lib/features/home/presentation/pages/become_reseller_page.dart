@@ -11,8 +11,11 @@ import 'package:ojas_user/features/auth/application/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:ojas_user/core/controllers/settings_controller.dart';
+import 'package:ojas_user/core/widgets/scrollable_terms_dialog.dart';
 
 import '../../../auth/domain/models/user_model.dart';
+import 'package:ojas_user/core/controllers/home_controller.dart';
 
 class BecomeResellerPage extends StatefulWidget {
   const BecomeResellerPage({super.key});
@@ -22,7 +25,10 @@ class BecomeResellerPage extends StatefulWidget {
 }
 
 class _BecomeResellerPageState extends State<BecomeResellerPage> {
-  final _formKey = GlobalKey<FormState>();
+  final _accountFormKey = GlobalKey<FormState>();
+  final _bankFormKey = GlobalKey<FormState>();
+  final _taxFormKey = GlobalKey<FormState>();
+  int _currentStep = 0;
   bool _isLoading = false;
   bool _agreedToTerms = false;
 
@@ -31,7 +37,8 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
 
   // Login controllers
   final TextEditingController _loginEmailController = TextEditingController();
-  final TextEditingController _loginPasswordController = TextEditingController();
+  final TextEditingController _loginPasswordController =
+      TextEditingController();
   final bool _obscureLoginPassword = true;
 
   // Registration Controllers (For unexisting/logged-out users)
@@ -41,9 +48,11 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   // Reseller Application Controllers
-  final TextEditingController _accountHolderController = TextEditingController();
+  final TextEditingController _accountHolderController =
+      TextEditingController();
   final TextEditingController _bankNameController = TextEditingController();
-  final TextEditingController _accountNumberController = TextEditingController();
+  final TextEditingController _accountNumberController =
+      TextEditingController();
   final TextEditingController _ifscController = TextEditingController();
   final TextEditingController _upiIdController = TextEditingController();
   final TextEditingController _panController = TextEditingController();
@@ -97,14 +106,18 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
           SessionService.instance.setUser(user, token: token);
         }
 
-        final resellerPanelUrl = 'http://reseller.ojasindia.com/#/?token=$token';
+        final resellerPanelUrl =
+            'http://reseller.ojasindia.com/#/?token=$token';
         print('Reseller Panel Redirect URL: $resellerPanelUrl');
         Future.delayed(const Duration(seconds: 1), () {
           html.window.location.href = resellerPanelUrl;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Login failed'), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(data['message'] ?? 'Login failed'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } catch (e) {
@@ -116,8 +129,28 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
     }
   }
 
+  void _showTermsAndConditionsPopup() {
+    final String terms = SettingsController.instance.settings.termsConditions;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ScrollableTermsDialog(
+        title: "Terms & Conditions",
+        termsContent: terms,
+        primaryColor: AppColors.primaryPink,
+        onAccepted: (accepted) {
+          if (accepted) {
+            setState(() {
+              _agreedToTerms = true;
+            });
+          }
+        },
+      ),
+    );
+  }
+
   Future<void> _submitApplication() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_taxFormKey.currentState!.validate()) return;
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -172,9 +205,7 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
             'ifsc': _ifscController.text.trim().toUpperCase(),
             'accountHolderName': _accountHolderController.text.trim(),
           },
-          'upiDetails': {
-            'upiId': _upiIdController.text.trim(),
-          },
+          'upiDetails': {'upiId': _upiIdController.text.trim()},
           'panNumber': _panController.text.trim().toUpperCase(),
           'gstNumber': _gstController.text.trim().toUpperCase(),
         }),
@@ -184,7 +215,9 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
       try {
         data = jsonDecode(response.body);
       } catch (e) {
-        throw FormatException('Server returned an invalid response (not JSON). Please make sure your local backend server is running. Status Code: ${response.statusCode}');
+        throw FormatException(
+          'Server returned an invalid response (not JSON). Please make sure your local backend server is running. Status Code: ${response.statusCode}',
+        );
       }
 
       if (response.statusCode == 201) {
@@ -210,17 +243,16 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['message'] ?? 'Failed to submit reseller application'),
+            content: Text(
+              data['message'] ?? 'Failed to submit reseller application',
+            ),
             backgroundColor: Colors.redAccent,
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -230,6 +262,7 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
   void _toggleMode(bool login) {
     setState(() {
       _isLogin = login;
+      _currentStep = 0;
     });
   }
 
@@ -237,55 +270,25 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
 
-    return OjasLayout(
-      activeTitle: 'BECOME RESELLER',
-      child: Container(
-        color: const Color(0xFFF8FAFC),
-        padding: EdgeInsets.symmetric(vertical: isMobile ? 32 : 80),
-        child: CenteredContent(
-          horizontalPadding: isMobile ? 16 : 40,
-          child: Column(
-            children: [
-              if (!_isLogin)
-                Text(
-                  'Become a Reseller',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    fontSize: isMobile ? 32 : 48,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-              if (!_isLogin) const SizedBox(height: 12),
-              Text(
-                _isLogin
-                    ? 'Access your reseller dashboard to manage your products, referrals, and earnings.'
-                    : 'Promote high-quality products and earn direct commissions on every purchase.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: isMobile ? 15 : 18,
-                  color: const Color(0xFF475569),
-                  height: 1.5,
-                ),
+    final Widget formContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              const SizedBox(height: 32),
-
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Flex(
-                  direction: isMobile ? Axis.vertical : Axis.horizontal,
+            ],
+          ),
+          child: isMobile
+              ? Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
@@ -293,39 +296,201 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
                       child: _ToggleButton(
                         title: 'Become a Reseller',
                         isActive: !_isLogin,
-                        fullWidth: isMobile,
+                        fullWidth: true,
                       ),
                     ),
-                    if (isMobile) const SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     GestureDetector(
                       onTap: () => _toggleMode(true),
                       child: _ToggleButton(
                         title: 'Login',
                         isActive: _isLogin,
-                        fullWidth: isMobile,
+                        fullWidth: true,
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _toggleMode(false),
+                        child: _ToggleButton(
+                          title: 'Become a Reseller',
+                          isActive: !_isLogin,
+                          fullWidth: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _toggleMode(true),
+                        child: _ToggleButton(
+                          title: 'Login',
+                          isActive: _isLogin,
+                          fullWidth: true,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 40),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _isLogin
-                    ? _buildLoginForm(isMobile)
-                    : _buildApplicationForm(isMobile),
-              ),
-            ],
+        ),
+        const SizedBox(height: 40),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _isLogin
+              ? _buildLoginForm(isMobile)
+              : _buildApplicationForm(isMobile),
+        ),
+      ],
+    );
+
+    if (isMobile) {
+      return OjasLayout(
+        activeTitle: 'BECOME RESELLER',
+        child: Container(
+          color: const Color(0xFFF8FAFC),
+          padding: const EdgeInsets.symmetric(vertical: 32),
+          child: CenteredContent(
+            horizontalPadding: 16,
+            child: Column(
+              children: [
+                if (!_isLogin) ...[
+                  Text(
+                    'Become a Reseller',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Text(
+                  _isLogin
+                      ? 'Access your reseller dashboard to manage your products, referrals, and earnings.'
+                      : 'Promote high-quality products and earn direct commissions on every purchase.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    color: const Color(0xFF475569),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                formContent,
+              ],
+            ),
           ),
         ),
-      ),
+      );
+    }
+
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double containerHeight = (screenWidth / 1.77).clamp(800.0, 1080.0);
+
+    return ListenableBuilder(
+      listenable: HomeController.instance,
+      builder: (context, _) {
+        final banner = HomeController.instance.resellerAuthBanner;
+        final ImageProvider imageProvider = banner.imageUrl.startsWith('http')
+            ? NetworkImage(banner.imageUrl)
+            : AssetImage(banner.imageUrl) as ImageProvider;
+
+        return OjasLayout(
+          activeTitle: 'BECOME RESELLER',
+          child: Container(
+            width: double.infinity,
+            height: containerHeight,
+            decoration: BoxDecoration(
+              image: DecorationImage(image: imageProvider, fit: BoxFit.fill),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Spacer(flex: 65),
+                Expanded(
+                  flex: 31,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        top: 40,
+                        bottom: 150,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 450),
+                        child: formContent,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(flex: 4),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildLoginForm(bool isMobile) {
+    Widget formFields = Column(
+      children: [
+        _buildTextFormField(
+          controller: _loginEmailController,
+          label: 'Email Address *',
+          hint: 'demo@example.com',
+          validator: (v) =>
+              v == null || v.isEmpty ? 'Please enter email' : null,
+        ),
+        const SizedBox(height: 20),
+        _buildTextFormField(
+          controller: _loginPasswordController,
+          label: 'Password *',
+          hint: '••••••••',
+          obscureText: _obscureLoginPassword,
+          validator: (v) =>
+              v == null || v.length < 6 ? 'Password too short' : null,
+        ),
+        const SizedBox(height: 32),
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _loginReseller,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF5C0B1B),
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: AppColors.white)
+                : Text(
+                    'Sign In',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+
+    if (!isMobile) {
+      return formFields;
+    }
+
     return Container(
-      width: isMobile ? double.infinity : 500,
-      padding: EdgeInsets.all(isMobile ? 24 : 48),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
@@ -341,11 +506,11 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
       child: Column(
         children: [
           CircleAvatar(
-            radius: isMobile ? 32 : 40,
+            radius: 32,
             backgroundColor: const Color(0xFFEEF2F6),
-            child: Icon(
+            child: const Icon(
               Icons.person_outline,
-              size: isMobile ? 28 : 36,
+              size: 28,
               color: AppColors.primaryIndigo,
             ),
           ),
@@ -353,52 +518,13 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
           Text(
             'Reseller Login',
             style: GoogleFonts.outfit(
-              fontSize: isMobile ? 24 : 28,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF0F172A),
             ),
           ),
           const SizedBox(height: 32),
-          _buildTextFormField(
-            controller: _loginEmailController,
-            label: 'Email Address *',
-            hint: 'demo@example.com',
-            validator: (v) => v == null || v.isEmpty ? 'Please enter email' : null,
-          ),
-          const SizedBox(height: 20),
-          _buildTextFormField(
-            controller: _loginPasswordController,
-            label: 'Password *',
-            hint: '••••••••',
-            obscureText: _obscureLoginPassword,
-            validator: (v) => v == null || v.length < 6 ? 'Password too short' : null,
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _loginReseller,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentOrange,
-                foregroundColor: AppColors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: AppColors.white)
-                  : Text(
-                      'Sign In',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        // color: AppColors.white,
-                      ),
-                    ),
-            ),
-          ),
+          formFields,
           const SizedBox(height: 24),
           TextButton(
             onPressed: () => _toggleMode(false),
@@ -416,9 +542,340 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
   }
 
   Widget _buildApplicationForm(bool isMobile) {
+    final Widget progressIndicator = isMobile
+        ? _ResellerMobileProgress(currentStep: _currentStep)
+        : _ResellerDesktopProgress(currentStep: _currentStep);
+
+    Widget stepContent;
+    switch (_currentStep) {
+      case 0:
+        stepContent = Form(
+          key: _accountFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '1. Create Account',
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF5C0B1B),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildTextFormField(
+                controller: _nameController,
+                label: 'Full Name *',
+                hint: 'Enter your full name',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Please enter your name';
+                  if (v.trim().length < 3)
+                    return 'Name must be at least 3 characters';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _emailController,
+                label: 'Email Address *',
+                hint: 'you@example.com',
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Please enter email';
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(v)) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _mobileController,
+                label: 'Mobile Number *',
+                hint: '10-digit number',
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                validator: (v) {
+                  if (v == null || v.isEmpty)
+                    return 'Please enter mobile number';
+                  if (v.length != 10) {
+                    return 'Please enter exactly 10 digits';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _passwordController,
+                label: 'Password *',
+                hint: 'Choose a strong password',
+                obscureText: true,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Please enter password';
+                  if (v.length < 6)
+                    return 'Password must be at least 6 characters';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        );
+        break;
+      case 1:
+        stepContent = Form(
+          key: _bankFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '2. Bank Details & UPI',
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF5C0B1B),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildTextFormField(
+                controller: _accountHolderController,
+                label: 'Account Holder Name *',
+                hint: 'Name as in bank records',
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Please enter account holder name'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _bankNameController,
+                label: 'Bank Name *',
+                hint: 'e.g. HDFC Bank, SBI',
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Please enter bank name'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _accountNumberController,
+                label: 'Account Number *',
+                hint: 'Enter account number',
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(18),
+                ],
+                validator: (v) {
+                  if (v == null || v.isEmpty)
+                    return 'Please enter account number';
+                  if (v.length < 9 || v.length > 18) {
+                    return 'Please enter a valid account number (9 to 18 digits)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _ifscController,
+                label: 'IFSC Code *',
+                hint: 'e.g. HDFC0001234',
+                inputFormatters: [LengthLimitingTextInputFormatter(11)],
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Please enter IFSC code';
+                  if (!RegExp(
+                    r'^[A-Z]{4}0[A-Z0-9]{6}$',
+                  ).hasMatch(v.toUpperCase())) {
+                    return 'Please enter a valid 11-character IFSC code';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _upiIdController,
+                label: 'UPI ID *',
+                hint: 'e.g. name@upi',
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Please enter UPI ID';
+                  if (!v.contains('@')) {
+                    return 'Please enter a valid UPI ID (e.g. name@upi)';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        );
+        break;
+      case 2:
+      default:
+        stepContent = Form(
+          key: _taxFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '3. Tax Information (Optional)',
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF5C0B1B),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildTextFormField(
+                controller: _panController,
+                label: 'PAN Number',
+                hint: 'ABCDE1234F',
+                validator: (v) {
+                  if (v != null && v.isNotEmpty) {
+                    if (!RegExp(
+                      r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$',
+                    ).hasMatch(v.toUpperCase())) {
+                      return 'Please enter a valid 10-character PAN number';
+                    }
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextFormField(
+                controller: _gstController,
+                label: 'GST Number',
+                hint: '22AAAAA0000A1Z5',
+                validator: (v) {
+                  if (v != null && v.isNotEmpty) {
+                    if (!RegExp(
+                      r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
+                    ).hasMatch(v.toUpperCase())) {
+                      return 'Please enter a valid 15-character GST number';
+                    }
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: _agreedToTerms,
+                    activeColor: AppColors.primaryPink,
+                    onChanged: (v) {
+                      if (v == true) {
+                        _showTermsAndConditionsPopup();
+                      } else {
+                        setState(() => _agreedToTerms = false);
+                      }
+                    },
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'I accept the Reseller Agreement Terms & Conditions and authorize Ojas India to process commission payouts to the provided account details.',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+        break;
+    }
+
+    final Widget navButtons = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        if (_currentStep > 0)
+          ElevatedButton(
+            onPressed: () => setState(() => _currentStep--),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: const Color(0xFF5C0B1B),
+              shadowColor: Colors.transparent,
+              side: const BorderSide(color: Color(0xFF5C0B1B)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.arrow_back, size: 16),
+                SizedBox(width: 8),
+                Text('Back', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+          )
+        else
+          const SizedBox(),
+        ElevatedButton(
+          onPressed: () {
+            if (_currentStep == 0) {
+              if (_accountFormKey.currentState!.validate()) {
+                setState(() => _currentStep = 1);
+              }
+            } else if (_currentStep == 1) {
+              if (_bankFormKey.currentState!.validate()) {
+                setState(() => _currentStep = 2);
+              }
+            } else {
+              _submitApplication();
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF5C0B1B),
+            foregroundColor: AppColors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: Row(
+            children: [
+              Text(
+                _currentStep == 2 ? 'Apply as Reseller' : 'Next',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              if (_currentStep < 2) ...[
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward, size: 16),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+
+    final Widget formFields = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        progressIndicator,
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 16),
+        stepContent,
+        const SizedBox(height: 32),
+        navButtons,
+      ],
+    );
+
+    if (!isMobile) {
+      return formFields;
+    }
+
     return Container(
-      width: isMobile ? double.infinity : 650,
-      padding: EdgeInsets.all(isMobile ? 20 : 40),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
@@ -431,214 +888,7 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
           ),
         ],
       ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '1. Create Account',
-              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.bgPrimaryDark),
-            ),
-            const SizedBox(height: 24),
-            _buildTextFormField(
-              controller: _nameController,
-              label: 'Full Name *',
-              hint: 'Enter your full name',
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Please enter your name';
-                if (v.trim().length < 3) return 'Name must be at least 3 characters';
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _emailController,
-              label: 'Email Address *',
-              hint: 'you@example.com',
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Please enter email';
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                  return 'Please enter a valid email address';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _mobileController,
-              label: 'Mobile Number *',
-              hint: '10-digit number',
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-              ],
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Please enter mobile number';
-                if (v.length != 10) {
-                  return 'Please enter exactly 10 digits';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _passwordController,
-              label: 'Password *',
-              hint: 'Choose a strong password',
-              obscureText: true,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Please enter password';
-                if (v.length < 6) return 'Password must be at least 6 characters';
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 24),
-            Text(
-              '2. Bank Details & UPI',
-              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.bgPrimaryDark),
-            ),
-            const SizedBox(height: 24),
-            _buildTextFormField(
-              controller: _accountHolderController,
-              label: 'Account Holder Name *',
-              hint: 'Name as in bank records',
-              validator: (v) => v == null || v.trim().isEmpty ? 'Please enter account holder name' : null,
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _bankNameController,
-              label: 'Bank Name *',
-              hint: 'e.g. HDFC Bank, SBI',
-              validator: (v) => v == null || v.trim().isEmpty ? 'Please enter bank name' : null,
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _accountNumberController,
-              label: 'Account Number *',
-              hint: 'Enter account number',
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(18),
-              ],
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Please enter account number';
-                if (v.length < 9 || v.length > 18) {
-                  return 'Please enter a valid account number (9 to 18 digits)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _ifscController,
-              label: 'IFSC Code *',
-              hint: 'e.g. HDFC0001234',
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(11),
-              ],
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Please enter IFSC code';
-                if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(v.toUpperCase())) {
-                  return 'Please enter a valid 11-character IFSC code';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _upiIdController,
-              label: 'UPI ID *',
-              hint: 'e.g. name@upi',
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Please enter UPI ID';
-                if (!v.contains('@')) {
-                  return 'Please enter a valid UPI ID (e.g. name@upi)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 24),
-            Text(
-              '3. Tax Information (Optional)',
-              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.bgPrimaryDark),
-            ),
-            const SizedBox(height: 24),
-            _buildTextFormField(
-              controller: _panController,
-              label: 'PAN Number',
-              hint: 'ABCDE1234F',
-              validator: (v) {
-                if (v != null && v.isNotEmpty) {
-                  if (!RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$').hasMatch(v.toUpperCase())) {
-                    return 'Please enter a valid 10-character PAN number';
-                  }
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              controller: _gstController,
-              label: 'GST Number',
-              hint: '22AAAAA0000A1Z5',
-              validator: (v) {
-                if (v != null && v.isNotEmpty) {
-                  if (!RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$').hasMatch(v.toUpperCase())) {
-                    return 'Please enter a valid 15-character GST number';
-                  }
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: _agreedToTerms,
-                  activeColor: AppColors.primaryIndigo,
-                  onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      'I accept the Reseller Agreement Terms & Conditions and authorize Ojas India to process commission payouts to the provided account details.',
-                      style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _submitApplication,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentOrange,
-                  foregroundColor: AppColors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: AppColors.white)
-                    : const Text(
-                        'Apply as Reseller',
-                        style: TextStyle( fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: formFields,
     );
   }
 
@@ -656,7 +906,11 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF334155)),
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF334155),
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -667,11 +921,22 @@ class _BecomeResellerPageState extends State<BecomeResellerPage> {
           inputFormatters: inputFormatters,
           style: const TextStyle(color: AppColors.black),
           decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.white,
             hintText: hint,
             hintStyle: GoogleFonts.inter(color: AppColors.grey, fontSize: 14),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primaryIndigo, width: 2)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF5C0B1B), width: 2),
+            ),
           ),
         ),
       ],
@@ -695,7 +960,7 @@ class _ToggleButton extends StatelessWidget {
       width: fullWidth ? double.infinity : 200,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.primaryBlue : AppColors.transparent,
+        color: isActive ? const Color(0xFF5C0B1B) : AppColors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       alignment: Alignment.center,
@@ -704,10 +969,92 @@ class _ToggleButton extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: isActive ? AppColors.black : const Color(0xFF64748B),
+          color: isActive ? AppColors.white : const Color(0xFF64748B),
         ),
       ),
     );
   }
 }
 
+class _ResellerDesktopProgress extends StatelessWidget {
+  final int currentStep;
+  const _ResellerDesktopProgress({required this.currentStep});
+
+  static const steps = [
+    {'icon': Icons.person_outline, 'title': 'Account'},
+    {'icon': Icons.account_balance_outlined, 'title': 'Bank Details'},
+    {'icon': Icons.description_outlined, 'title': 'Tax & Apply'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(
+        3,
+        (index) => Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: currentStep >= index
+                    ? const Color(0xFF5C0B1B)
+                    : const Color(0xFFF1F5F9),
+                child: Icon(
+                  steps[index]['icon'] as IconData,
+                  color: currentStep >= index
+                      ? AppColors.white
+                      : const Color(0xFF64748B),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                steps[index]['title'] as String,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: currentStep >= index
+                      ? const Color(0xFF5C0B1B)
+                      : const Color(0xFF0F172A),
+                  fontWeight: currentStep >= index
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResellerMobileProgress extends StatelessWidget {
+  final int currentStep;
+  const _ResellerMobileProgress({required this.currentStep});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        3,
+        (index) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Container(
+            width: index == currentStep ? 24 : 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: index == currentStep
+                  ? const Color(0xFF5C0B1B)
+                  : const Color(0xFFCBD5E1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

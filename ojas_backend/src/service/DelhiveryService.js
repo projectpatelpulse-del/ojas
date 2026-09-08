@@ -92,7 +92,7 @@ class DelhiveryService {
     static async createShipment(shipmentData, warehouseName) {
         try {
             const payload = {
-                shipments: [shipmentData],
+                shipments: Array.isArray(shipmentData) ? shipmentData : [shipmentData],
                 pickup_location: {
                     name: warehouseName
                 }
@@ -120,6 +120,35 @@ class DelhiveryService {
     }
 
     /**
+     * Schedule Pickup Request with Delhivery Logistics
+     */
+    static async schedulePickup({ pickupLocation, pickupDate, pickupTime, count }) {
+        try {
+            console.log(`[DelhiveryService] Scheduling pickup at location ${pickupLocation}...`);
+            const payload = {
+                pickup_location: pickupLocation,
+                pickup_date: pickupDate || new Date().toISOString().split('T')[0],
+                pickup_time: pickupTime || "14:00:00",
+                expected_package_count: count || 1
+            };
+
+            const response = await axios.post(
+                `${this.getApiUrl()}/fm/request/create/`,
+                payload,
+                {
+                    headers: await this.getHeaders()
+                }
+            );
+
+            console.log("[DelhiveryService] Schedule Pickup API Response:", JSON.stringify(response.data));
+            return response.data;
+        } catch (error) {
+            console.error("[DelhiveryService] Schedule Pickup Error:", error.response?.data || error.message);
+            return { success: false, error: error.response?.data || error.message };
+        }
+    }
+
+    /**
      * Track Shipment status using AWB (Waybill)
      */
     static async trackShipment(awb) {
@@ -134,6 +163,62 @@ class DelhiveryService {
         } catch (error) {
             console.error("[DelhiveryService] Tracking Error:", error.response?.data || error.message);
             throw error;
+        }
+    }
+
+    /**
+     * Get Shipping Label PDF URL from Delhivery
+     */
+    static async getLabelUrl(awb, size = 'A6') {
+        try {
+            const headers = await this.getHeaders();
+            const response = await axios.get(
+                `${this.getApiUrl()}/api/v2/get-label-urls/${size}/${awb}`,
+                { headers }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("[DelhiveryService] Get Label URL Error:", error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch a list of waybills in bulk from Delhivery
+     */
+    static async fetchWaybills(count) {
+        try {
+            const Setting = require('../model/Setting');
+            const setting = await Setting.findOne();
+            const token = setting?.delhiveryToken || process.env.DELHIVERY_TOKEN || process.env.DELHIVERY_API_TOKEN || process.env.DELHI_VERY_TOKEN;
+            
+            const response = await axios.get(
+                `${this.getApiUrl()}/waybill/api/bulk/json/?count=${count}&token=${token}`,
+                {
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+            
+            console.log("[DelhiveryService] Bulk Waybills Response:", response.data);
+            
+            let waybillList = [];
+            if (typeof response.data === 'string') {
+                waybillList = response.data.split(',').map(w => w.trim()).filter(Boolean);
+            } else if (response.data && Array.isArray(response.data.waybill_list)) {
+                waybillList = response.data.waybill_list;
+            } else if (response.data && Array.isArray(response.data.waybills)) {
+                waybillList = response.data.waybills;
+            } else {
+                const text = String(response.data);
+                waybillList = text.split(',').map(w => w.trim()).filter(Boolean);
+            }
+            
+            return waybillList;
+        } catch (error) {
+            console.error("[DelhiveryService] Fetch Waybills Error:", error.response?.data || error.message);
+            throw new Error(`Failed to fetch waybills from Delhivery: ${error.response?.data || error.message}`);
         }
     }
 }

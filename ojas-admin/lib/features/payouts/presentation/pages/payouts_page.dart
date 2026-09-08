@@ -22,12 +22,15 @@ class PayoutsPage extends StatefulWidget {
 
 class _PayoutsPageState extends State<PayoutsPage> {
   List<dynamic> payouts = [];
+  List<dynamic> resellerPayouts = [];
   bool isLoading = true;
+  bool isResellerLoading = true;
 
   @override
   void initState() {
     super.initState();
     fetchPayouts();
+    fetchResellerPayouts();
   }
 
   Future<void> fetchPayouts() async {
@@ -44,6 +47,20 @@ class _PayoutsPageState extends State<PayoutsPage> {
     }
   }
 
+  Future<void> fetchResellerPayouts() async {
+    setState(() => isResellerLoading = true);
+    try {
+      final res = await ApiService().dio.get('/admin/reseller/withdrawals');
+      setState(() {
+        resellerPayouts = res.data;
+        isResellerLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching reseller payouts: $e');
+      setState(() => isResellerLoading = false);
+    }
+  }
+
   Future<void> updateStatus(String id, String action, {Map<String, dynamic>? extraData}) async {
     try {
       String endpoint = '/admin/payout/$id/$action';
@@ -54,6 +71,21 @@ class _PayoutsPageState extends State<PayoutsPage> {
       }
     } catch (e) {
       debugPrint('Error updating payout: $e');
+      String msg = "Failed to update payout";
+      if (e is DioException) msg = e.response?.data['message'] ?? msg;
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+    }
+  }
+
+  Future<void> updateResellerStatus(String id, String status) async {
+    try {
+      final res = await ApiService().dio.patch('/admin/reseller/withdrawals/$id', data: {'status': status});
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res.data['message'] ?? "Status updated")));
+        fetchResellerPayouts();
+      }
+    } catch (e) {
+      debugPrint('Error updating reseller payout: $e');
       String msg = "Failed to update payout";
       if (e is DioException) msg = e.response?.data['message'] ?? msg;
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
@@ -269,6 +301,223 @@ class _PayoutsPageState extends State<PayoutsPage> {
     );
   }
 
+  Widget _buildVendorPayoutsTab() {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (payouts.isEmpty) {
+      return Center(
+        child: Text('No vendor payouts found.', style: GoogleFonts.inter(color: Colors.grey, fontSize: 16)),
+      );
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildStatCard('Pending', payouts.where((p) => p['status'] == 'pending').length.toString(), Colors.orange),
+              const SizedBox(width: 24),
+              _buildStatCard('Approved', payouts.where((p) => p['status'] == 'approved').length.toString(), Colors.blue),
+              const SizedBox(width: 24),
+              _buildStatCard('Paid', payouts.where((p) => p['status'] == 'paid').length.toString(), Colors.green),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.grey.shade100),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
+                    dataRowHeight: 80,
+                    horizontalMargin: 24,
+                    columns: const [
+                      DataColumn(label: Text('VENDOR INFO')),
+                      DataColumn(label: Text('AMOUNT')),
+                      DataColumn(label: Text('METHOD')),
+                      DataColumn(label: Text('DETAILS')),
+                      DataColumn(label: Text('STATUS')),
+                      DataColumn(label: Text('ACTIONS')),
+                    ],
+                    rows: payouts.map((p) {
+                      final vendorUser = p['vendor']?['user'];
+                      return DataRow(cells: [
+                        DataCell(Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              child: Text(vendorUser?['name']?[0] ?? 'V', style: TextStyle(color: AppColors.primary)),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(vendorUser?['name']?.toString() ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text(vendorUser?['email']?.toString() ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              ],
+                            ),
+                          ],
+                        )),
+                        DataCell(Text('₹${p["amount"]?.toString() ?? "0"}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                        DataCell(Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(20)),
+                          child: Text(p["methodType"]?.toString().toUpperCase() ?? "UNKNOWN", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                        )),
+                        DataCell(_buildDetailsCell(p["methodType"]?.toString() ?? "", p["details"] ?? {})),
+                        DataCell(_buildStatusBadge(p["status"]?.toString() ?? "pending")),
+                        DataCell(_buildActions(p)),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResellerPayoutsTab() {
+    if (isResellerLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (resellerPayouts.isEmpty) {
+      return Center(
+        child: Text('No reseller payouts found.', style: GoogleFonts.inter(color: Colors.grey, fontSize: 16)),
+      );
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildStatCard('Pending', resellerPayouts.where((p) => p['status'] == 'pending').length.toString(), Colors.orange),
+              const SizedBox(width: 24),
+              _buildStatCard('Approved', resellerPayouts.where((p) => p['status'] == 'approved').length.toString(), Colors.blue),
+              const SizedBox(width: 24),
+              _buildStatCard('Rejected', resellerPayouts.where((p) => p['status'] == 'rejected').length.toString(), Colors.red),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.grey.shade100),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
+                    dataRowHeight: 90,
+                    horizontalMargin: 24,
+                    columns: const [
+                      DataColumn(label: Text('RESELLER INFO')),
+                      DataColumn(label: Text('AMOUNT')),
+                      DataColumn(label: Text('PAYMENT DETAILS')),
+                      DataColumn(label: Text('ORDERS & VENDORS')),
+                      DataColumn(label: Text('STATUS')),
+                      DataColumn(label: Text('ACTIONS')),
+                    ],
+                    rows: resellerPayouts.map((p) {
+                      final isPending = p["status"]?.toString().toLowerCase() == 'pending';
+                      final upi = p["upiId"];
+                      return DataRow(cells: [
+                        DataCell(Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(p["ResellerName"]?.toString() ?? 'Unknown Reseller', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(p["upiId"]?.toString() ?? p["accountNumber"]?.toString() ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        )),
+                        DataCell(Text('₹${p["amount"]?.toString() ?? "0"}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                        DataCell(Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (upi != null && upi.toString().isNotEmpty)
+                              Text('UPI: $upi')
+                            else ...[
+                              Text('Acc: ${p["accountNumber"] ?? "N/A"}'),
+                              Text('IFSC: ${p["ifsc"] ?? "N/A"} (${p["bankName"] ?? ""})', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            ]
+                          ],
+                        )),
+                        DataCell(Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Orders: ${p["ordersCount"] ?? 0}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              p["vendorsList"] != null && (p["vendorsList"] as List).isNotEmpty
+                                  ? 'Vendors: ${(p["vendorsList"] as List).join(", ")}'
+                                  : 'No Vendors',
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        )),
+                        DataCell(_buildStatusBadge(p["status"]?.toString() ?? "pending")),
+                        DataCell(isPending
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+                                    onPressed: () => updateResellerStatus(p["id"], 'approved'),
+                                    tooltip: 'Approve Payout',
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.cancel_outlined, color: Colors.red),
+                                    onPressed: () => updateResellerStatus(p["id"], 'rejected'),
+                                    tooltip: 'Reject Payout',
+                                  ),
+                                ],
+                              )
+                            : const Text('Processed', style: TextStyle(color: Colors.grey, fontSize: 12))),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLedgerSummaryItem(String label, String value) {
     return Column(
       children: [
@@ -286,99 +535,35 @@ class _PayoutsPageState extends State<PayoutsPage> {
         children: [
           const Sidebar(currentRoute: '/payouts'),
           Expanded(
-            child: Column(
-              children: [
-                const TopBar(),
-                Expanded(
-                  child: isLoading 
-                    ? const Center(child: CircularProgressIndicator())
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Vendor Payout Requests', style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 32),
-                            
-                            // Stats Overview (Optional but makes UI better)
-                            Row(
-                              children: [
-                                _buildStatCard('Pending', payouts.where((p) => p['status'] == 'pending').length.toString(), Colors.orange),
-                                const SizedBox(width: 24),
-                                _buildStatCard('Approved', payouts.where((p) => p['status'] == 'approved').length.toString(), Colors.blue),
-                                const SizedBox(width: 24),
-                                _buildStatCard('Paid', payouts.where((p) => p['status'] == 'paid').length.toString(), Colors.green),
-                              ],
-                            ),
-                            const SizedBox(height: 32),
-
-                            Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Theme(
-                                  data: Theme.of(context).copyWith(
-                                    dividerColor: Colors.grey.shade100,
-                                  ),
-                                  child: DataTable(
-                                    headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
-                                    dataRowHeight: 80,
-                                    horizontalMargin: 24,
-                                    columns: const [
-                                      DataColumn(label: Text('VENDOR INFO')),
-                                      DataColumn(label: Text('AMOUNT')),
-                                      DataColumn(label: Text('METHOD')),
-                                      DataColumn(label: Text('DETAILS')),
-                                      DataColumn(label: Text('STATUS')),
-                                      DataColumn(label: Text('ACTIONS')),
-                                    ],
-                                    rows: payouts.map((p) {
-                                      final vendorUser = p['vendor']?['user'];
-                                      return DataRow(cells: [
-                                        DataCell(Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: AppColors.primary.withOpacity(0.1),
-                                              child: Text(vendorUser?['name']?[0] ?? 'V', style: TextStyle(color: AppColors.primary)),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(vendorUser?['name']?.toString() ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                                Text(vendorUser?['email']?.toString() ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                                              ],
-                                            ),
-                                          ],
-                                        )),
-                                        DataCell(Text('₹${p["amount"]?.toString() ?? "0"}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                                        DataCell(Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(20)),
-                                          child: Text(p["methodType"]?.toString().toUpperCase() ?? "UNKNOWN", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                                        )),
-                                        DataCell(_buildDetailsCell(p["methodType"]?.toString() ?? "", p["details"] ?? {})),
-                                        DataCell(_buildStatusBadge(p["status"]?.toString() ?? "pending")),
-                                        DataCell(_buildActions(p)),
-                                      ]);
-                                    }).toList(),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                ),
-              ],
+            child: DefaultTabController(
+              length: 2,
+              child: Column(
+                children: [
+                  const TopBar(),
+                  Container(
+                    color: Colors.white,
+                    child: TabBar(
+                      labelColor: const Color(0xFF6B21A8),
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: const Color(0xFF6B21A8),
+                      labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+                      unselectedLabelStyle: GoogleFonts.outfit(fontSize: 15),
+                      tabs: const [
+                        Tab(text: "Vendor Payouts"),
+                        Tab(text: "Reseller Payouts"),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildVendorPayoutsTab(),
+                        _buildResellerPayoutsTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

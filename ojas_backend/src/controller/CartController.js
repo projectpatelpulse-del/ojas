@@ -5,7 +5,7 @@ const { calculateProductPricing } = require('../utils/pricing.js');
 
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, variationId } = req.body;
     const userId = req.user.id; // Assuming user is available via auth middleware
 
     const product = await Product.findById(productId);
@@ -13,8 +13,17 @@ exports.addToCart = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    let minQty = product.moq || 1;
+    let selectedVar = null;
+    if (variationId && product.variations && product.variations.length > 0) {
+      selectedVar = product.variations.find(v => (v._id?.toString() === variationId || v.id?.toString() === variationId));
+      if (selectedVar && selectedVar.moq > 0) {
+        minQty = selectedVar.moq;
+      }
+    }
+
     // Base price for commission: use discountPrice if available, else regular price
-    const basePrice = (product.discountPrice > 0) ? product.discountPrice : product.price;
+    const basePrice = (selectedVar && selectedVar.price) ? selectedVar.price : ((product.discountPrice > 0) ? product.discountPrice : product.price);
 
     const vendor = await Vendor.findOne({ user: product.user });
     const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
@@ -28,20 +37,20 @@ exports.addToCart = async (req, res) => {
     let cart = await Cart.findOne({ user: userId });
     
     if (cart) {
-      itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+      itemIndex = cart.items.findIndex(item => item.product.toString() === productId && (item.variationId || "") === (variationId || ""));
       if (itemIndex > -1) {
         newQuantity = cart.items[itemIndex].quantity + quantity;
       }
     }
 
     // Enforce MOQ check
-    const minQty = product.moq || 1;
     if (newQuantity < minQty) {
       newQuantity = minQty;
     }
 
     const itemData = {
       product: productId,
+      variationId: variationId || undefined,
       quantity: newQuantity,
       price: pricing.sellingPrice, // Display price
       originalPrice: pricing.originalPrice,
@@ -101,7 +110,7 @@ exports.getCart = async (req, res) => {
 
 exports.updateCartItem = async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, variationId } = req.body;
     const userId = req.user.id;
 
     if (quantity < 1) {
@@ -111,15 +120,22 @@ exports.updateCartItem = async (req, res) => {
     const cart = await Cart.findOne({ user: userId });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
-    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId && (item.variationId || "") === (variationId || ""));
     if (itemIndex > -1) {
       const product = await Product.findById(productId);
       if (!product) return res.status(404).json({ message: 'Product not found' });
       
-      const minQty = product.moq || 1;
+      let minQty = product.moq || 1;
+      let selectedVar = null;
+      if (variationId && product.variations && product.variations.length > 0) {
+        selectedVar = product.variations.find(v => (v._id?.toString() === variationId || v.id?.toString() === variationId));
+        if (selectedVar && selectedVar.moq > 0) {
+          minQty = selectedVar.moq;
+        }
+      }
       const targetQuantity = Math.max(quantity, minQty);
 
-      const basePrice = (product.discountPrice > 0) ? product.discountPrice : product.price;
+      const basePrice = (selectedVar && selectedVar.price) ? selectedVar.price : ((product.discountPrice > 0) ? product.discountPrice : product.price);
       const vendor = await Vendor.findOne({ user: product.user });
       const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
       const gstPercent = product.gst || 0;

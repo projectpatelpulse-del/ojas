@@ -31,11 +31,11 @@ export default function AdminDashboard() {
       </div>
 
       <div className="mb-6">
-        <h2 className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">Influencer Overview</h2>
+        <h2 className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-3">Reseller Overview</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total Influencers" value={String(stats?.totalInfluencers ?? 0)} icon={Users} />
-          <StatCard label="Active" value={String(stats?.activeInfluencers ?? 0)} icon={Users} accent />
-          <StatCard label="Pending Approval" value={String(stats?.pendingInfluencers ?? 0)} icon={Clock} />
+          <StatCard label="Total Resellers" value={String(stats?.totalResellers ?? 0)} icon={Users} />
+          <StatCard label="Active" value={String(stats?.activeResellers ?? 0)} icon={Users} accent />
+          <StatCard label="Pending Approval" value={String(stats?.pendingResellers ?? 0)} icon={Clock} />
           <StatCard label="Conversion Rate" value={`${stats?.conversionRate ?? 0}%`} icon={Percent} />
         </div>
       </div>

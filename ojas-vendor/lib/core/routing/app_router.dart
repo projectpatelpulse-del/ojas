@@ -11,7 +11,7 @@ import 'package:ojas_vendor/features/discounts/presentation/pages/discounts_page
 import 'package:ojas_vendor/features/discounts/presentation/pages/product_discounts_page.dart';
 import 'package:ojas_vendor/features/settings/presentation/pages/settings_page.dart';
 import 'package:ojas_vendor/features/analytics/presentation/pages/analytics_page.dart';
-import 'package:ojas_vendor/features/help/presentation/pages/help_page.dart';
+import 'package:ojas_vendor/features/help/presentation/pages/faq.dart';
 import 'package:ojas_vendor/features/auth/presentation/pages/login_page.dart';
 import 'package:ojas_vendor/features/auth/presentation/pages/register_page.dart';
 import 'package:ojas_vendor/features/payouts/presentation/pages/payout_page.dart';
@@ -19,6 +19,7 @@ import 'package:ojas_vendor/core/services/api_service.dart';
 import 'package:ojas_vendor/core/services/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import 'package:ojas_vendor/features/help/presentation/pages/help_page.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -168,6 +169,11 @@ class AppRouter {
         path: '/help',
         name: 'help',
         builder: (context, state) => const HelpPage(),
+      ),
+      GoRoute(
+        path: '/faq',
+        name: 'faq',
+        builder: (context, state) => const FaqPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

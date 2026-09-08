@@ -19,12 +19,14 @@ class OjasLayout extends StatefulWidget {
   final Widget child;
   final String activeTitle;
   final bool hideNavigation;
+  final Future<void> Function()? onRefresh;
   
   const OjasLayout({
     super.key,
     required this.child,
     this.activeTitle = 'HOME',
     this.hideNavigation = false,
+    this.onRefresh,
   });
 
   @override
@@ -54,12 +56,14 @@ class _OjasLayoutState extends State<OjasLayout> {
             ? (isAuthScreen || SessionService.instance.refCode != null ? 70 : 130)
             : (SessionService.instance.refCode != null ? 110 : 140));
 
-    // Request focus once layout is built to capture keyboard events immediately
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_focusNode.hasFocus) {
-        _focusNode.requestFocus();
-      }
-    });
+    // Request focus once layout is built to capture keyboard events immediately (Desktop/Web only)
+    if (!isMobile) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_focusNode.hasFocus) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimaryLight,
@@ -120,16 +124,31 @@ class _OjasLayoutState extends State<OjasLayout> {
             Positioned.fill(
               child: Scrollbar(
                 controller: _scrollController,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  child: Column(
-                    children: [
-                      SizedBox(height: navbarHeight), // Responsive Navbar height
-                      widget.child,
-                      if (!widget.hideNavigation && SessionService.instance.refCode == null) const OjasFooter(), // Included here so it scrolls with content
-                    ],
-                  ),
-                ),
+                child: widget.onRefresh != null
+                    ? RefreshIndicator(
+                        onRefresh: widget.onRefresh!,
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              SizedBox(height: navbarHeight),
+                              widget.child,
+                              if (!widget.hideNavigation && SessionService.instance.refCode == null) const OjasFooter(),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        controller: _scrollController,
+                        child: Column(
+                          children: [
+                            SizedBox(height: navbarHeight),
+                            widget.child,
+                            if (!widget.hideNavigation && SessionService.instance.refCode == null) const OjasFooter(),
+                          ],
+                        ),
+                      ),
               ),
             ),
             

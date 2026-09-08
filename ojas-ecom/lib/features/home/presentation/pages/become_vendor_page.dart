@@ -13,6 +13,8 @@ import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:ojas_user/core/services/api_service.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
+import 'package:ojas_user/core/controllers/settings_controller.dart';
+import 'package:ojas_user/core/widgets/scrollable_terms_dialog.dart';
 
 class BecomeVendorPage extends StatefulWidget {
   const BecomeVendorPage({super.key});
@@ -160,6 +162,26 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
     }
   }
 
+  void _showTermsAndConditionsPopup() {
+    final String terms = SettingsController.instance.settings.vendorTermsConditions;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ScrollableTermsDialog(
+        title: "Terms & Conditions",
+        termsContent: terms,
+        primaryColor: AppColors.primaryPink,
+        onAccepted: (accepted) {
+          if (accepted) {
+            setState(() {
+              _agreedToTerms = true;
+            });
+          }
+        },
+      ),
+    );
+  }
+
   Future<void> _submitApplication() async {
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -235,7 +257,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
             otp = vendorData['whatsappOtp']?.toString();
           }
         }
-        _showOTPDialog(_phoneController.text, otp);
+        _showOTPDialog(_emailController.text, _phoneController.text, otp);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -251,17 +273,17 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
     }
   }
 
-  void _showOTPDialog(String phone, String? otp) {
+  void _showOTPDialog(String email, String phone, String? otp) {
     final TextEditingController otpController = TextEditingController();
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text('Verify WhatsApp OTP', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text('Verify Email OTP', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Enter the 6-digit OTP sent to your WhatsApp number +91 $phone'),
+            Text('Enter the 6-digit OTP sent to your email address $email'),
             if (otp != null) ...[
               const SizedBox(height: 16),
               Container(
@@ -334,7 +356,7 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
                     builder: (context) => AlertDialog(
                       title: const Text('Success'),
                       content: const Text(
-                        'WhatsApp number verified successfully! Please wait for admin approval.',
+                        'Email address verified successfully! Please wait for admin approval.',
                       ),
                       actions: [
                         TextButton(
@@ -583,36 +605,46 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
       );
     }
 
-    return OjasLayout(
-      activeTitle: 'BECOME VENDOR',
-      child: Container(
-        width: double.infinity,
-        height: containerHeight,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/auth.png'),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: Row(
-          children: [
-            const Spacer(flex: 58),
-            Expanded(
-              flex: 38,
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 450),
-                    child: formContent,
-                  ),
-                ),
+    return ListenableBuilder(
+      listenable: HomeController.instance,
+      builder: (context, _) {
+        final banner = HomeController.instance.vendorAuthBanner;
+        final ImageProvider imageProvider = banner.imageUrl.startsWith('http')
+            ? NetworkImage(banner.imageUrl)
+            : AssetImage(banner.imageUrl) as ImageProvider;
+
+        return OjasLayout(
+          activeTitle: 'BECOME VENDOR',
+          child: Container(
+            width: double.infinity,
+            height: containerHeight,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: imageProvider,
+                fit: BoxFit.fill,
               ),
             ),
-            const Spacer(flex: 4),
-          ],
-        ),
-      ),
+            child: Row(
+              children: [
+                const Spacer(flex: 65),
+                Expanded(
+                  flex: 35,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 450),
+                        child: formContent,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(flex: 4),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -958,11 +990,11 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
             label: 'Business Type *',
             items: const [
               'Select type',
-              'Individual',
-              'Partnership',
-              'LLC',
-              'Corporation',
-              'Other',
+              'Manufacturer',
+              'Wholesaler',
+              'Retailer',
+              'Trader',
+              'Independent',
             ],
             value: _businessType,
             onChanged: (val) => setState(() => _businessType = val!),
@@ -1346,7 +1378,13 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
               width: 24,
               child: Checkbox(
                 value: _agreedToTerms,
-                onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
+                onChanged: (v) {
+                  if (v == true) {
+                    _showTermsAndConditionsPopup();
+                  } else {
+                    setState(() => _agreedToTerms = false);
+                  }
+                },
                 activeColor: AppColors.primaryPink,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -1356,7 +1394,13 @@ class _BecomeVendorPageState extends State<BecomeVendorPage> {
             const SizedBox(width: 12),
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                onTap: () {
+                  if (!_agreedToTerms) {
+                    _showTermsAndConditionsPopup();
+                  } else {
+                    setState(() => _agreedToTerms = false);
+                  }
+                },
                 child: RichText(
                   text: TextSpan(
                     style: GoogleFonts.inter(

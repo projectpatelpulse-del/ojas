@@ -225,9 +225,14 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Order confirmation email will be sent to ${SessionService.instance.currentUser?.email ?? 'your email'}',
-                style: TextStyle(color: AppColors.grey[600], fontSize: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Text(
+                    'Order confirmation email will be sent to ${SessionService.instance.currentUser?.email ?? 'your email'}',
+                    style: TextStyle(color: AppColors.grey[600], fontSize: 12),
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: () => setState(() => _activeStep = 2),
@@ -447,7 +452,10 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
     final response = await _cartController.checkout(
       paymentMethod: _selectedPaymentMethod,
       shippingAddress: {
+        'buildingName': _addressController.selectedAddress!.buildingName,
         'street': _addressController.selectedAddress!.street,
+        'area': _addressController.selectedAddress!.area,
+        'landmark': _addressController.selectedAddress!.landmark,
         'city': _addressController.selectedAddress!.city,
         'state': _addressController.selectedAddress!.state,
         'zipCode': _addressController.selectedAddress!.zipCode,

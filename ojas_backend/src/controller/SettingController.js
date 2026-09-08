@@ -16,6 +16,7 @@ const defaultSettings = {
   contactAddress: "Ghaziabad, Uttar Pradesh",
   returnRefundPolicy: "",
   termsConditions: "",
+  vendorTermsConditions: "",
   privacyPolicy: "",
   aboutUsContent: "",
   facebookLink: "",
@@ -49,6 +50,15 @@ const getOrCreateSetting = async () => {
   let setting = await Setting.findOne();
   if (!setting) {
     setting = await Setting.create(defaultSettings);
+  } else {
+    let updated = false;
+    if (setting.vendorTermsConditions === undefined) {
+      setting.vendorTermsConditions = "";
+      updated = true;
+    }
+    if (updated) {
+      await setting.save();
+    }
   }
   return setting;
 };
@@ -76,6 +86,8 @@ const getPublicSettings = async (req, res) => {
     delete publicData.emailUser;
     delete publicData.emailPass;
     delete publicData.whatsappToken;
+    delete publicData.whatsappApiUrl;
+    delete publicData.whatsappInstanceId;
     
     res.status(200).json({ data: publicData });
   } catch (error) {
@@ -104,6 +116,7 @@ const updateSettings = async (req, res) => {
       contactAddress,
       returnRefundPolicy,
       termsConditions,
+      vendorTermsConditions,
       privacyPolicy,
       aboutUsContent,
       facebookLink,
@@ -118,6 +131,8 @@ const updateSettings = async (req, res) => {
       emailPass,
       whatsappToken,
       whatsappNumber,
+      whatsappApiUrl,
+      whatsappInstanceId,
       geminiApiKey,
       openAiApiKey,
       navigationMenuItems,
@@ -157,6 +172,7 @@ const updateSettings = async (req, res) => {
     if (contactAddress !== undefined) setting.contactAddress = contactAddress;
     if (returnRefundPolicy !== undefined) setting.returnRefundPolicy = returnRefundPolicy;
     if (termsConditions !== undefined) setting.termsConditions = termsConditions;
+    if (vendorTermsConditions !== undefined) setting.vendorTermsConditions = vendorTermsConditions;
     if (privacyPolicy !== undefined) setting.privacyPolicy = privacyPolicy;
     if (aboutUsContent !== undefined) setting.aboutUsContent = aboutUsContent;
     if (facebookLink !== undefined) setting.facebookLink = facebookLink;
@@ -196,6 +212,8 @@ const updateSettings = async (req, res) => {
     if (emailUser !== undefined) setting.emailUser = emailUser;
     if (emailPass !== undefined) setting.emailPass = emailPass;
     if (whatsappToken !== undefined) setting.whatsappToken = whatsappToken;
+    if (whatsappApiUrl !== undefined) setting.whatsappApiUrl = whatsappApiUrl;
+    if (whatsappInstanceId !== undefined) setting.whatsappInstanceId = whatsappInstanceId;
 
     await setting.save();
 
@@ -240,4 +258,17 @@ const resetSettings = async (req, res) => {
   }
 };
 
-module.exports = { getSettings, getPublicSettings, updateSettings, resetSettings };
+const getSettingsFaviconRedirect = async (req, res) => {
+  try {
+    const setting = await getOrCreateSetting();
+    if (setting && setting.favicon) {
+      return res.redirect(setting.favicon);
+    }
+    return res.redirect("/favicon.png");
+  } catch (error) {
+    console.error("Favicon redirect error:", error.message);
+    return res.redirect("/favicon.png");
+  }
+};
+
+module.exports = { getSettings, getPublicSettings, updateSettings, resetSettings, getSettingsFaviconRedirect };

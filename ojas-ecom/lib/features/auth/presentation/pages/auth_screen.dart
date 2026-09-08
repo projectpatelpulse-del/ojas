@@ -56,8 +56,8 @@ class _AuthScreenState extends State<AuthScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Top Logo Area
-                _buildLogo(),
-                const SizedBox(height: 24),
+                // _buildLogo(),
+                // const SizedBox(height: 24),
 
                 // Card Container
                 Container(
@@ -167,6 +167,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           ],
         ),
+    
       ],
     );
   }

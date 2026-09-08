@@ -346,6 +346,18 @@ class _BannersPageState extends State<BannersPage> {
         return Colors.redAccent;
       case 'become_vendor':
         return Colors.tealAccent.shade700;
+      case 'vendor_auth':
+        return Colors.deepOrange;
+      case 'reseller_auth':
+        return Colors.deepPurple;
+      case 'promo_grid_0':
+        return Colors.blueAccent;
+      case 'promo_grid_1':
+        return Colors.orangeAccent;
+      case 'promo_grid_2':
+        return Colors.greenAccent;
+      case 'promo_grid_3':
+        return Colors.purpleAccent;
       default:
         return Colors.grey;
     }
@@ -370,6 +382,18 @@ String _getTypeLabel(String type) {
       return 'Summer Sale Banner';
     case 'become_vendor':
       return 'Become Vendor Banner';
+    case 'vendor_auth':
+      return 'Vendor Auth Page Banner';
+    case 'reseller_auth':
+      return 'Reseller Auth Page Banner';
+    case 'promo_grid_0':
+      return 'Promo Grid 1 (e.g. Idols & Deities)';
+    case 'promo_grid_1':
+      return 'Promo Grid 2 (e.g. Gifting)';
+    case 'promo_grid_2':
+      return 'Promo Grid 3 (e.g. Home Decor)';
+    case 'promo_grid_3':
+      return 'Promo Grid 4 (e.g. Corporate Gifting)';
     default:
       return type.replaceAll('_', ' ').toUpperCase();
   }
@@ -392,6 +416,7 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
   late TextEditingController _subtitleController;
   late TextEditingController _linkController;
   late TextEditingController _tagController;
+  late TextEditingController _bgColorController;
   String _selectedType = 'main_slider';
   bool _isActive = true;
   
@@ -406,11 +431,22 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
     _subtitleController = TextEditingController(text: widget.banner?.subtitle);
     _linkController = TextEditingController(text: widget.banner?.link ?? '/');
     _tagController = TextEditingController(text: widget.banner?.tag);
+    _bgColorController = TextEditingController(text: widget.banner?.bgColor ?? '#3B82F6');
     final String initialType = widget.banner?.type ?? 'main_slider';
     _selectedType = (initialType == 'main' || initialType == 'main_slider_1' || initialType == 'main_slider_2')
         ? 'main_slider'
         : initialType;
     _isActive = widget.banner?.isActive ?? true;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _subtitleController.dispose();
+    _linkController.dispose();
+    _tagController.dispose();
+    _bgColorController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImage() async {
@@ -467,6 +503,7 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
           link: _linkController.text,
           tag: _tagController.text,
           type: _selectedType,
+          bgColor: _bgColorController.text.trim(),
           imageBytes: _selectedImageBytes,
           fileName: _selectedFileName,
         );
@@ -478,6 +515,7 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
           link: _linkController.text,
           tag: _tagController.text,
           type: _selectedType,
+          bgColor: _bgColorController.text.trim(),
           isActive: _isActive,
           imageBytes: _selectedImageBytes,
           fileName: _selectedFileName,
@@ -508,38 +546,40 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: InkWell(
-                    onTap: _pickImage,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      height: 180,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300, width: 2, style: BorderStyle.solid),
+                if (!_selectedType.startsWith('promo_grid_')) ...[
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: InkWell(
+                      onTap: _pickImage,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        height: 180,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade300, width: 2, style: BorderStyle.solid),
+                        ),
+                        child: _selectedImageBytes != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
+                              )
+                            : (widget.banner != null && widget.banner!.imageUrl.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.network(
+                                      widget.banner!.imageUrl, 
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => _buildUploadPlaceholder(),
+                                    ),
+                                  )
+                                : _buildUploadPlaceholder()),
                       ),
-                      child: _selectedImageBytes != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
-                            )
-                          : (widget.banner != null && widget.banner!.imageUrl.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: Image.network(
-                                    widget.banner!.imageUrl, 
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => _buildUploadPlaceholder(),
-                                  ),
-                                )
-                              : _buildUploadPlaceholder()),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                ],
                 DropdownButtonFormField<String>(
                   value: _selectedType,
                   decoration: const InputDecoration(labelText: 'Banner Type', border: OutlineInputBorder()),
@@ -553,8 +593,13 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
                     DropdownMenuItem(value: 'summer_sale', child: Text('Summer Sale Banner (Middle of Homepage)')),
                     DropdownMenuItem(value: 'become_vendor', child: Text('Become Vendor Banner (Middle of Homepage)')),
                     DropdownMenuItem(value: 'gift_promo_strip', child: Text('Gift Promo Strip (Why Choose Ojas Banner)')),
-                    // DropdownMenuItem(value: 'how_it_works', child: Text('How it Works Banner')),
                     DropdownMenuItem(value: 'b2b_partner', child: Text('B2B Partner Banner (Trusted Gifting Partner Banner)')),
+                    DropdownMenuItem(value: 'vendor_auth', child: Text('Vendor Auth Page Banner (Login/Register Background)')),
+                    DropdownMenuItem(value: 'reseller_auth', child: Text('Reseller Auth Page Banner (Login/Register Background)')),
+                    DropdownMenuItem(value: 'promo_grid_0', child: Text('Promo Grid 1 (e.g. Idols & Deities)')),
+                    DropdownMenuItem(value: 'promo_grid_1', child: Text('Promo Grid 2 (e.g. Gifting)')),
+                    DropdownMenuItem(value: 'promo_grid_2', child: Text('Promo Grid 3 (e.g. Home Decor)')),
+                    DropdownMenuItem(value: 'promo_grid_3', child: Text('Promo Grid 4 (e.g. Corporate Gifting)')),
                   ],
                   onChanged: (v) => setState(() => _selectedType = v!),
                 ),
@@ -569,22 +614,34 @@ class _BannerFormDialogState extends State<BannerFormDialog> {
                   decoration: const InputDecoration(labelText: 'Subtitle', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _tagController,
-                        decoration: const InputDecoration(labelText: 'Tag (e.g. HOT DEAL)', border: OutlineInputBorder()),
+                if (_selectedType.startsWith('promo_grid_')) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _tagController,
+                          decoration: const InputDecoration(labelText: 'Tag (e.g. HOT DEAL)', border: OutlineInputBorder()),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _linkController,
-                        decoration: const InputDecoration(labelText: 'Action Link', border: OutlineInputBorder()),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _bgColorController,
+                          decoration: const InputDecoration(labelText: 'Background Color (Hex code e.g. #3B82F6)', border: OutlineInputBorder()),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ] else ...[
+                  TextFormField(
+                    controller: _tagController,
+                    decoration: const InputDecoration(labelText: 'Tag (e.g. HOT DEAL)', border: OutlineInputBorder()),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _linkController,
+                  decoration: const InputDecoration(labelText: 'Action Link', border: OutlineInputBorder()),
                 ),
                 if (widget.banner != null) ...[
                   const SizedBox(height: 8),

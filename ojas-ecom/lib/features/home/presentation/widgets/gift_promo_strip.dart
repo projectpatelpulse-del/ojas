@@ -26,16 +26,17 @@ class GiftPromoStrip extends StatelessWidget {
         if (imageUrl.isNotEmpty) {
           final bool isTablet = Responsive.isTablet(context);
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: EdgeInsets.symmetric(vertical: isMobile ? 8.0 : 16.0),
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 onTap: () => Navigator.pushNamed(context, link),
                 child: Container(
                   width: double.infinity,
-                  constraints: BoxConstraints(
-                    maxHeight: isMobile ? 180 : (isTablet ? 280 : 360),
-                  ),
+                  //  constraints: BoxConstraints(
+                  //   maxHeight: isMobile ? 300 : (isTablet ? 280 : 360),
+                  // ),
+                  height: isMobile ? 120 : (isTablet ? 280 : 360),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     // border: Border.all(color: AppColors.borderLight.withOpacity(0.8)),
@@ -61,7 +62,7 @@ class GiftPromoStrip extends StatelessWidget {
         }
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 8.0 : 16.0),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final bool isSmall = constraints.maxWidth < 600;

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ojas_admin/core/services/shipping_label_service.dart';
+import 'package:ojas_admin/features/orders/application/order_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShippingLabelDialog extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -23,6 +25,8 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
   late TextEditingController _dimensionsController;
   late TextEditingController _dateController;
   late TextEditingController _remarksController;
+  final OrderController _orderController = OrderController();
+  bool _isDownloadingOfficial = false;
 
   @override
   void initState() {
@@ -49,11 +53,14 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
     String fullShippingAddress = '';
     if (shipping.isNotEmpty) {
       fullShippingAddress = [
+        shipping['buildingName'],
         shipping['street'],
+        shipping['area'],
+        shipping['landmark'],
         shipping['city'],
         shipping['state'],
         shipping['zipCode']
-      ].where((e) => e != null && e.toString().isNotEmpty).join(', ');
+      ].where((e) => e != null && e.toString().trim().isNotEmpty).toSet().join(', ');
     }
     _shipToAddressController = TextEditingController(text: fullShippingAddress);
     _shipToPhoneController = TextEditingController(text: (customer['mobile'] ?? '').toString());
@@ -80,8 +87,31 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
     _fromAddressController = TextEditingController(text: fullVendorAddress);
     _fromPhoneController = TextEditingController(text: (vendor['mobile'] ?? '').toString());
 
-    _weightController = TextEditingController(text: '0.5 KG');
-    _dimensionsController = TextEditingController(text: '10x10x10 cm');
+    final pd = getMap(widget.order['pickupDetails'] ?? {});
+    String defaultWeight = '0.5 KG';
+    if (pd['weight'] != null && pd['weight'].toString().trim().isNotEmpty) {
+      defaultWeight = '${pd['weight']} KG';
+    }
+
+    String defaultDimensions = '10x10x10 cm';
+    if (pd['dimensionsList'] != null && (pd['dimensionsList'] as List).isNotEmpty) {
+      final List dList = pd['dimensionsList'];
+      final List<String> dimsStr = [];
+      for (var d in dList) {
+        if (d is Map) {
+          dimsStr.add('${d['length']}x${d['width']}x${d['height']}');
+        }
+      }
+      if (dimsStr.isNotEmpty) {
+        defaultDimensions = '${dimsStr.join(', ')} cm';
+      }
+    } else if (pd['dimensions'] != null && pd['dimensions'] is Map) {
+      final dim = pd['dimensions'];
+      defaultDimensions = '${dim['length']}x${dim['width']}x${dim['height']} cm';
+    }
+
+    _weightController = TextEditingController(text: defaultWeight);
+    _dimensionsController = TextEditingController(text: defaultDimensions);
     _dateController = TextEditingController(text: widget.order['createdAt'] != null 
         ? DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.order['createdAt'].toString()))
         : DateFormat('yyyy-MM-dd').format(DateTime.now()));
@@ -170,6 +200,7 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
                   child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey)),
                 ),
                 const SizedBox(width: 12),
+
                 ElevatedButton(
                   onPressed: () {
                     final customData = {

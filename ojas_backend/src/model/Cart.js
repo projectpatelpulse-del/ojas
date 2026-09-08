@@ -6,6 +6,7 @@ const cartItemSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
+  variationId: String,
   quantity: {
     type: Number,
     required: true,

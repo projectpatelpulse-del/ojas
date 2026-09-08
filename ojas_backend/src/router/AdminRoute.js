@@ -15,7 +15,7 @@ const upload = require("../middlewere/Upload.js");
 const payoutController = require("../controller/PayoutController.js");
 const checkPermission = require("../middlewere/PermissionAuth.js");
 
-const router = express.Router();
+const router = express.Router({ caseSensitive: true });
 
 router.post("/register", registerAdmin);
 router.post("/login", loginAdmin);
@@ -87,14 +87,14 @@ router.put("/blogs/:id", Adminauth, checkPermission('manage_settings'), upload.s
 router.delete("/blogs/:id", Adminauth, checkPermission('manage_settings'), deleteBlog);
 
 // Admin Reseller Routes
-router.get("/influencers", Adminauth, resellerController.adminListInfluencers);
-router.get("/influencers/:id", Adminauth, resellerController.adminGetInfluencer);
-router.patch("/influencers/:id/status", Adminauth, resellerController.adminUpdateInfluencerStatus);
+router.get("/Resellers", Adminauth, resellerController.adminListResellers);
+router.get("/Resellers/:id", Adminauth, resellerController.adminGetReseller);
+router.patch("/Resellers/:id/status", Adminauth, resellerController.adminUpdateResellerStatus);
 router.get("/reseller/dashboard", Adminauth, resellerController.adminGetDashboard);
 router.get("/reseller/withdrawals", Adminauth, resellerController.adminListWithdrawals);
 router.patch("/reseller/withdrawals/:id", Adminauth, resellerController.adminUpdateWithdrawal);
 router.get("/reseller/analytics", Adminauth, resellerController.adminGetAnalytics);
-router.get("/reseller/top-influencers", Adminauth, resellerController.adminGetTopInfluencers);
+router.get("/reseller/top-Resellers", Adminauth, resellerController.adminGetTopResellers);
 
 // New Reseller App Admin Routes
 const resellerAppController = require("../controller/ResellerAppController.js");

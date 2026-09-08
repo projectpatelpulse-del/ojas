@@ -10,6 +10,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const WhatsAppService = require("../service/WhatsAppService");
+const emailService = require("../service/emailService");
 
 // Create Product (Vendor)
 const createVendorProduct = async (req, res) => {
@@ -19,7 +20,7 @@ const createVendorProduct = async (req, res) => {
         const {
             name, title, price, discountPrice, description, shortDescription,
             category, subCategory, brand, stock, sku, lowStockThreshold,
-            trackQuantity, weight, length, width, height, requiresShipping,
+            trackQuantity, weight, length, width, height, weightUnit, dimensionsUnit, requiresShipping,
             seoTitle, seoDescription, slug, youtubeLink, status, visibility,
             attributes, specs, tags, variations, showOnPages, relatedProducts,
             gst, hsnCode, moq, moqDiscount
@@ -33,7 +34,7 @@ const createVendorProduct = async (req, res) => {
                 const uploadResponse = await imagekit.files.upload({
                     file: req.files.image[0].buffer.toString('base64'),
                     fileName: `product_${Date.now()}.png`,
-                    folder: "/products",
+                    folder: "/ojas/products",
                 });
                 imageUrl = uploadResponse.url;
             }
@@ -43,11 +44,36 @@ const createVendorProduct = async (req, res) => {
                     const uploadResponse = await imagekit.files.upload({
                         file: file.buffer.toString('base64'),
                         fileName: `gallery_${Date.now()}.png`,
-                        folder: "/products",
+                        folder: "/ojas/products",
                     });
                     galleryUrls.push(uploadResponse.url);
                 }
             }
+        }
+
+        // Helper to parse JSON safely
+        const safeParse = (data, fallback) => {
+            if (!data) return fallback;
+            if (typeof data !== 'string') return data;
+            try {
+                return JSON.parse(data);
+            } catch (e) {
+                console.error("JSON parse error:", e);
+                return fallback;
+            }
+        };
+
+        // Enforce at least one product image requirement
+        let hasProductImage = false;
+        if (imageUrl || (galleryUrls && galleryUrls.length > 0)) hasProductImage = true;
+        if (req.body.image || req.body.imageUrl) hasProductImage = true;
+        const parsedVarsCheck = safeParse(variations, []);
+        if (parsedVarsCheck && parsedVarsCheck.some(v => (v.image && v.image.trim() !== '') || (v.images && v.images.some(img => img && img.trim() !== '')))) {
+            hasProductImage = true;
+        }
+
+        if (!hasProductImage) {
+            return res.status(400).json({ success: false, message: "At least one product image is required to create a product." });
         }
 
         // Generate unique slug
@@ -68,17 +94,6 @@ const createVendorProduct = async (req, res) => {
             counter++;
         }
 
-        // Helper to parse JSON safely
-        const safeParse = (data, fallback) => {
-            if (!data) return fallback;
-            if (typeof data !== 'string') return data;
-            try {
-                return JSON.parse(data);
-            } catch (e) {
-                console.error("JSON parse error:", e);
-                return fallback;
-            }
-        };
 
         const productData = {
             name,
@@ -95,11 +110,13 @@ const createVendorProduct = async (req, res) => {
             lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : 5,
             trackQuantity: trackQuantity === 'false' ? false : true,
             weight: weight ? Number(weight) : undefined,
+            weightUnit: weightUnit || undefined,
             dimensions: (length || width || height) ? {
                 length: length ? Number(length) : 0,
                 width: width ? Number(width) : 0,
                 height: height ? Number(height) : 0
             } : undefined,
+            dimensionsUnit: dimensionsUnit || undefined,
             requiresShipping: requiresShipping === 'false' ? false : true,
             image: imageUrl,
             gallery: galleryUrls,
@@ -161,7 +178,7 @@ const createVendorCategory = async (req, res) => {
             const uploadResponse = await imagekit.files.upload({
                 file: req.file.buffer.toString('base64'),
                 fileName: `category_${Date.now()}.png`,
-                folder: "/categories",
+                folder: "/ojas/categories",
             });
             imageUrl = uploadResponse.url;
         }
@@ -215,7 +232,7 @@ const updateVendorProduct = async (req, res) => {
                 const uploadResponse = await imagekit.files.upload({
                     file: req.files.image[0].buffer.toString('base64'),
                     fileName: `product_${Date.now()}.png`,
-                    folder: "/products",
+                    folder: "/ojas/products",
                 });
                 updateData.image = uploadResponse.url;
             }
@@ -226,7 +243,7 @@ const updateVendorProduct = async (req, res) => {
                     const uploadResponse = await imagekit.files.upload({
                         file: file.buffer.toString('base64'),
                         fileName: `gallery_${Date.now()}.png`,
-                        folder: "/products",
+                        folder: "/ojas/products",
                     });
                     newGalleryUrls.push(uploadResponse.url);
                 }
@@ -511,7 +528,7 @@ const updateVendorCategory = async (req, res) => {
             const uploadResponse = await imagekit.files.upload({
                 file: req.file.buffer.toString('base64'),
                 fileName: `category_${Date.now()}.png`,
-                folder: "/categories",
+                folder: "/ojas/categories",
             });
             updateData.image = uploadResponse.url;
         }
@@ -766,7 +783,7 @@ const vendorSignup = async (req, res) => {
             const uploadResponse = await imagekit.files.upload({
                 file: req.file.buffer.toString('base64'),
                 fileName: `license_${Date.now()}.png`,
-                folder: "/vendor_docs",
+                folder: "/ojas/vendor_docs",
             });
             licenseUrl = uploadResponse.url;
         }
@@ -804,6 +821,13 @@ const vendorSignup = async (req, res) => {
         // Send OTP via WhatsApp
         await WhatsAppService.sendOTP(phone, otp);
 
+        // Send OTP via Email
+        try {
+            await emailService.sendVendorVerificationEmail(email, `${firstName} ${lastName}`, otp);
+        } catch (emailErr) {
+            console.error("[EmailService] Failed to send verification email:", emailErr.message);
+        }
+
         // ---------------------------------------------------------
         // AUTOMATIC DELHIVERY WAREHOUSE CREATION
         // ---------------------------------------------------------
@@ -822,7 +846,11 @@ const vendorSignup = async (req, res) => {
             console.error("[Delhivery] Background sync failed:", syncError.message);
         }
 
-        res.status(201).json({ message: "OTP sent to your WhatsApp number. Please verify to complete registration.", data: vendor });
+        const vendorData = vendor.toObject();
+        delete vendorData.whatsappOtp;
+        delete vendorData.whatsappOtpExpires;
+
+        res.status(201).json({ message: "OTP sent to your email and WhatsApp number. Please verify to complete registration.", data: vendorData });
     } catch (error) {
         console.error("Vendor signup error:", error);
 
@@ -1100,7 +1128,7 @@ const updateVendorSettings = async (req, res) => {
             const uploadResponse = await imagekit.files.upload({
                 file: req.files.photo[0].buffer.toString('base64'),
                 fileName: `profile_${Date.now()}.png`,
-                folder: "/profiles",
+                folder: "/ojas/profiles",
             });
             userUpdateData.photo = uploadResponse.url;
         }

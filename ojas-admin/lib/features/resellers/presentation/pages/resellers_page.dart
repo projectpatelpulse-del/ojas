@@ -566,11 +566,17 @@ class _ResellersPageState extends State<ResellersPage> {
                     Expanded(child: _buildDetailField('PAN Number', reseller['panNumber'] ?? 'N/A')),
                   ],
                 ),
-                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(child: _buildDetailField('GST Number', reseller['gstNumber'] ?? 'N/A')),
                     Expanded(child: _buildDetailField('Referral Count', (reseller['referralCount'] ?? 0).toString())),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _buildDetailField('Total Orders', (reseller['totalOrders'] ?? 0).toString())),
+                    const Spacer(),
                   ],
                 ),
               ],

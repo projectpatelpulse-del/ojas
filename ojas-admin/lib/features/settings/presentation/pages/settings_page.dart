@@ -30,6 +30,7 @@ class _SettingsPageState extends State<SettingsPage> {
   // New: Legal pages
   final TextEditingController _returnRefundController = TextEditingController();
   final TextEditingController _termsController = TextEditingController();
+  final TextEditingController _vendorTermsController = TextEditingController();
   final TextEditingController _privacyController = TextEditingController();
   final TextEditingController _aboutUsController = TextEditingController();
   // New: Social links
@@ -46,6 +47,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _emailPassController = TextEditingController();
   final TextEditingController _whatsappTokenController = TextEditingController();
   final TextEditingController _whatsappNumberController = TextEditingController();
+  final TextEditingController _whatsappApiUrlController = TextEditingController();
+  final TextEditingController _whatsappInstanceIdController = TextEditingController();
   final TextEditingController _geminiKeyController = TextEditingController();
   final TextEditingController _navigationMenuItemsController = TextEditingController();
   final TextEditingController _homeSectionsActiveController = TextEditingController();
@@ -101,6 +104,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _contactAddressController.text = data['contactAddress'] ?? '';
         _returnRefundController.text = data['returnRefundPolicy'] ?? '';
         _termsController.text = data['termsConditions'] ?? '';
+        _vendorTermsController.text = data['vendorTermsConditions'] ?? '';
         _privacyController.text = data['privacyPolicy'] ?? '';
         _aboutUsController.text = data['aboutUsContent'] ?? '';
         // New: Social links
@@ -117,6 +121,8 @@ class _SettingsPageState extends State<SettingsPage> {
         _emailPassController.text = data['emailPass'] ?? '';
         _whatsappTokenController.text = data['whatsappToken'] ?? '';
         _whatsappNumberController.text = data['whatsappNumber'] ?? '';
+        _whatsappApiUrlController.text = data['whatsappApiUrl'] ?? 'https://mankiwave.in/api/send';
+        _whatsappInstanceIdController.text = data['whatsappInstanceId'] ?? '';
         _geminiKeyController.text = data['geminiApiKey'] ?? '';
         _navigationMenuItemsController.text = data['navigationMenuItems'] ?? '';
         _homeSectionsActiveController.text = data['homeSectionsActive'] ?? '';
@@ -169,6 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
         'contactAddress': _contactAddressController.text,
         'returnRefundPolicy': _returnRefundController.text,
         'termsConditions': _termsController.text,
+        'vendorTermsConditions': _vendorTermsController.text,
         'privacyPolicy': _privacyController.text,
         'aboutUsContent': _aboutUsController.text,
         // New: Social links
@@ -185,6 +192,8 @@ class _SettingsPageState extends State<SettingsPage> {
         'emailPass': _emailPassController.text,
         'whatsappToken': _whatsappTokenController.text,
         'whatsappNumber': _whatsappNumberController.text,
+        'whatsappApiUrl': _whatsappApiUrlController.text,
+        'whatsappInstanceId': _whatsappInstanceIdController.text,
         'geminiApiKey': _geminiKeyController.text,
         'navigationMenuItems': _navigationMenuItemsController.text,
         'homeSectionsActive': _homeSectionsActiveController.text,
@@ -869,13 +878,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 24),
-          _buildTextField('Return & Refund Policy', _returnRefundController, maxLines: 10),
+          _buildTextField('Return & Refund Policy', _returnRefundController, maxLines: 10, showFormattingToolbar: true),
           const SizedBox(height: 20),
-          _buildTextField('Terms & Conditions', _termsController, maxLines: 10),
+          _buildTextField('Terms & Conditions (Customer)', _termsController, maxLines: 10, showFormattingToolbar: true),
           const SizedBox(height: 20),
-          _buildTextField('Privacy Policy', _privacyController, maxLines: 10),
+          _buildTextField('Terms & Conditions (Vendor)', _vendorTermsController, maxLines: 10, showFormattingToolbar: true),
           const SizedBox(height: 20),
-          _buildTextField('About Us Content', _aboutUsController, maxLines: 10),
+          _buildTextField('Privacy Policy', _privacyController, maxLines: 10, showFormattingToolbar: true),
+          const SizedBox(height: 20),
+          _buildTextField('About Us Content', _aboutUsController, maxLines: 10, showFormattingToolbar: true),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1100,7 +1111,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildTextField('WhatsApp Token', _whatsappTokenController),
+          _buildTextField('WhatsApp Token / Access Token', _whatsappTokenController),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _buildTextField('WhatsApp API URL', _whatsappApiUrlController)),
+              const SizedBox(width: 20),
+              Expanded(child: _buildTextField('WhatsApp Instance ID', _whatsappInstanceIdController)),
+            ],
+          ),
           const SizedBox(height: 20),
           _buildTextField('Gemini API Key', _geminiKeyController),
         ],
@@ -1194,12 +1213,95 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController? controller, {int maxLines = 1}) {
+  void _toggleFormat(TextEditingController controller, String startTag, String endTag) {
+    final text = controller.text;
+    final selection = controller.selection;
+    if (!selection.isValid) {
+      final currentText = controller.text;
+      final cursorPosition = selection.baseOffset >= 0 ? selection.baseOffset : currentText.length;
+      final newText = currentText.replaceRange(cursorPosition, cursorPosition, '$startTag$endTag');
+      controller.value = controller.value.copyWith(
+        text: newText,
+        selection: TextSelection.collapsed(offset: cursorPosition + startTag.length),
+      );
+      setState(() {});
+      return;
+    }
+    
+    final selectedText = selection.textInside(text);
+    final newText = text.replaceRange(selection.start, selection.end, '$startTag$selectedText$endTag');
+    controller.value = controller.value.copyWith(
+      text: newText,
+      selection: TextSelection(
+        baseOffset: selection.start + startTag.length,
+        extentOffset: selection.end + startTag.length,
+      ),
+    );
+    setState(() {});
+  }
+
+  Widget _buildToolbarButton({required IconData icon, required String tooltip, required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Tooltip(
+          message: tooltip,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Icon(icon, size: 18, color: Colors.grey.shade700),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController? controller, {int maxLines = 1, bool showFormattingToolbar = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade700, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
+        if (showFormattingToolbar && controller != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Row(
+              children: [
+                _buildToolbarButton(
+                  icon: Icons.format_bold,
+                  tooltip: 'Bold (<b>)',
+                  onTap: () => _toggleFormat(controller, '<b>', '</b>'),
+                ),
+                const SizedBox(width: 4),
+                _buildToolbarButton(
+                  icon: Icons.format_italic,
+                  tooltip: 'Italic (<i>)',
+                  onTap: () => _toggleFormat(controller, '<i>', '</i>'),
+                ),
+                const SizedBox(width: 4),
+                _buildToolbarButton(
+                  icon: Icons.format_list_bulleted,
+                  tooltip: 'List Item (<li>)',
+                  onTap: () => _toggleFormat(controller, '<li>', '</li>'),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Format: select text and click B or I',
+                  style: GoogleFonts.inter(fontSize: 10, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ],
         TextField(
           controller: controller,
           maxLines: maxLines,
@@ -1207,15 +1309,30 @@ class _SettingsPageState extends State<SettingsPage> {
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: showFormattingToolbar
+                  ? const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8),
+                    )
+                  : BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: showFormattingToolbar
+                  ? const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8),
+                    )
+                  : BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: showFormattingToolbar
+                  ? const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      bottomRight: Radius.circular(8),
+                    )
+                  : BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFF8B5CF6)),
             ),
           ),

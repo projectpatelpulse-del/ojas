@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { useGetInfluencerProfile, useUpdateInfluencerProfile, getGetInfluencerProfileQueryKey } from "@/api-client";
+import { useGetResellerProfile, useUpdateResellerProfile, getGetResellerProfileQueryKey } from "@/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { User, Instagram, Youtube, Globe, CreditCard } from "lucide-react";
 
 export default function Profile() {
-  const { data: profile } = useGetInfluencerProfile();
+  const { data: profile } = useGetResellerProfile();
   const qc = useQueryClient();
-  const update = useUpdateInfluencerProfile();
+  const update = useUpdateResellerProfile();
   const [form, setForm] = useState({ name: "", mobile: "", pan: "", instagramProfile: "", youtubeChannel: "", socialMediaUrl: "" });
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function Profile() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     update.mutate({ data: form }, {
-      onSuccess: () => { qc.invalidateQueries({ queryKey: getGetInfluencerProfileQueryKey() }); toast.success("Profile updated!"); }
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getGetResellerProfileQueryKey() }); toast.success("Profile updated!"); }
     });
   };
 
@@ -27,7 +27,7 @@ export default function Profile() {
     <div className="p-8 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-slate-800 font-bold text-2xl">My Profile</h1>
-        <p className="text-slate-500 text-sm mt-1">Manage your influencer account details</p>
+        <p className="text-slate-500 text-sm mt-1">Manage your Reseller account details</p>
       </div>
 
       {/* Profile header */}
@@ -40,7 +40,7 @@ export default function Profile() {
             <h2 className="text-slate-800 font-bold text-lg">{profile?.name}</h2>
             <p className="text-slate-500 text-sm">{profile?.email}</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="font-mono text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">{profile?.influencerCode}</span>
+              <span className="font-mono text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">{profile?.ResellerCode}</span>
               <span className={`text-xs font-medium px-2 py-0.5 rounded ${profile?.status === "Active" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{profile?.status}</span>
             </div>
           </div>

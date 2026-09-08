@@ -1,23 +1,23 @@
 import { useRoute } from "wouter";
-import { useAdminGetInfluencer } from "@/api-client";
+import { useAdminGetReseller } from "@/api-client";
 import { formatCurrency, formatDate, getStatusColor } from "@/lib/utils";
 import { ArrowLeft, User } from "lucide-react";
 import { Link } from "wouter";
 
-export default function AdminInfluencerDetail() {
-  const [, params] = useRoute("/admin/influencers/:id");
+export default function AdminResellerDetail() {
+  const [, params] = useRoute("/admin/Resellers/:id");
   const id = parseInt(params?.id ?? "0", 10);
-  const { data: inf, isLoading } = useAdminGetInfluencer(id);
+  const { data: inf, isLoading } = useAdminGetReseller(id);
 
   if (isLoading) return <div className="p-8"><div className="animate-pulse space-y-4"><div className="h-8 bg-slate-200 rounded w-48" /><div className="h-32 bg-slate-200 rounded-xl" /></div></div>;
-  if (!inf) return <div className="p-8 text-slate-500">Influencer not found</div>;
+  if (!inf) return <div className="p-8 text-slate-500">Reseller not found</div>;
 
   return (
     <div className="p-8 max-w-3xl">
-      <Link href="/admin/influencers">
+      <Link href="/admin/Resellers">
         <div className="flex items-center gap-2 text-slate-500 hover:text-amber-500 text-sm mb-6 cursor-pointer">
           <ArrowLeft size={16} />
-          Back to Influencers
+          Back to Resellers
         </div>
       </Link>
 
@@ -30,7 +30,7 @@ export default function AdminInfluencerDetail() {
             <h1 className="text-slate-800 font-bold text-xl">{inf.name}</h1>
             <p className="text-slate-500 text-sm">{inf.email} • {inf.mobile}</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="font-mono text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">{inf.influencerCode}</span>
+              <span className="font-mono text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">{inf.ResellerCode}</span>
               <span className={`text-xs font-medium px-2 py-0.5 rounded ${getStatusColor(inf.status)}`}>{inf.status}</span>
             </div>
           </div>
@@ -56,7 +56,7 @@ export default function AdminInfluencerDetail() {
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div><dt className="text-slate-400">Member Since</dt><dd className="font-medium text-slate-700 mt-0.5">{formatDate(inf.createdAt)}</dd></div>
           <div><dt className="text-slate-400">Products Shared</dt><dd className="font-medium text-slate-700 mt-0.5">{inf.productsShared}</dd></div>
-          <div><dt className="text-slate-400">Influencer ID</dt><dd className="font-mono text-slate-700 mt-0.5">#{inf.id}</dd></div>
+          <div><dt className="text-slate-400">Reseller ID</dt><dd className="font-mono text-slate-700 mt-0.5">#{inf.id}</dd></div>
           <div><dt className="text-slate-400">User ID</dt><dd className="font-mono text-slate-700 mt-0.5">#{inf.userId}</dd></div>
         </dl>
       </div>

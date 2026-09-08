@@ -82,6 +82,30 @@ class HomeController with ChangeNotifier {
     (b) => b.type == 'become_vendor',
     orElse: () => _defaultBecomeVendorBanner,
   );
+  BannerModel get vendorAuthBanner => _banners.firstWhere(
+    (b) => b.type == 'vendor_auth',
+    orElse: () => _defaultVendorAuthBanner,
+  );
+  BannerModel get resellerAuthBanner => _banners.firstWhere(
+    (b) => b.type == 'reseller_auth',
+    orElse: () => _defaultResellerAuthBanner,
+  );
+  BannerModel get promoGrid0 => _banners.firstWhere(
+    (b) => b.type == 'promo_grid_0',
+    orElse: () => _defaultPromoGrid0,
+  );
+  BannerModel get promoGrid1 => _banners.firstWhere(
+    (b) => b.type == 'promo_grid_1',
+    orElse: () => _defaultPromoGrid1,
+  );
+  BannerModel get promoGrid2 => _banners.firstWhere(
+    (b) => b.type == 'promo_grid_2',
+    orElse: () => _defaultPromoGrid2,
+  );
+  BannerModel get promoGrid3 => _banners.firstWhere(
+    (b) => b.type == 'promo_grid_3',
+    orElse: () => _defaultPromoGrid3,
+  );
   List<BannerModel> get promoBanners =>
       _banners.where((b) => b.type == 'promo').toList();
 
@@ -93,6 +117,7 @@ class HomeController with ChangeNotifier {
     link: '/',
     tag: 'Trending',
     type: 'side_top',
+    bgColor: '#3B82F6',
   );
 
   static final _defaultSideBottom = BannerModel(
@@ -103,6 +128,7 @@ class HomeController with ChangeNotifier {
     link: '/',
     tag: 'Premium',
     type: 'side_bottom',
+    bgColor: '#14B8A6',
   );
 
   static final _defaultOfferBanner = BannerModel(
@@ -114,6 +140,7 @@ class HomeController with ChangeNotifier {
     link: '/',
     tag: 'LIMITED TIME',
     type: 'offer',
+    bgColor: '#F59E0B',
   );
 
   static final _defaultTrendingBanner = BannerModel(
@@ -125,6 +152,7 @@ class HomeController with ChangeNotifier {
     link: '/',
     tag: 'Trending',
     type: 'trending',
+    bgColor: '#8B5CF6',
   );
 
   static final _defaultSummerSaleBanner = BannerModel(
@@ -135,6 +163,7 @@ class HomeController with ChangeNotifier {
     link: '/shop',
     tag: 'Hot Deal',
     type: 'summer_sale',
+    bgColor: '#EF4444',
   );
 
   static final _defaultBecomeVendorBanner = BannerModel(
@@ -145,6 +174,73 @@ class HomeController with ChangeNotifier {
     link: '/become-vendor',
     tag: '20% FLAT DISCOUNT',
     type: 'become_vendor',
+    bgColor: '#0F766E',
+  );
+
+  static final _defaultVendorAuthBanner = BannerModel(
+    id: 'default_vendor_auth',
+    title: 'Vendor Auth Page Banner',
+    subtitle: '',
+    imageUrl: 'assets/images/auth.png',
+    link: '/',
+    tag: '',
+    type: 'vendor_auth',
+    bgColor: '#3B82F6',
+  );
+
+  static final _defaultResellerAuthBanner = BannerModel(
+    id: 'default_reseller_auth',
+    title: 'Reseller Auth Page Banner',
+    subtitle: '',
+    imageUrl: 'assets/images/auth2.png',
+    link: '/',
+    tag: '',
+    type: 'reseller_auth',
+    bgColor: '#3B82F6',
+  );
+
+  static final _defaultPromoGrid0 = BannerModel(
+    id: 'default_promo_grid_0',
+    title: 'Beauty & Personal Care',
+    subtitle: 'Beauty & Personal Care',
+    imageUrl: '',
+    link: '/shop',
+    tag: 'BEST SALE',
+    type: 'promo_grid_0',
+    bgColor: '#3B82F6',
+  );
+
+  static final _defaultPromoGrid1 = BannerModel(
+    id: 'default_promo_grid_1',
+    title: 'Toys & Games',
+    subtitle: 'Toys & Games',
+    imageUrl: '',
+    link: '/shop',
+    tag: 'NEW ARRIVAL',
+    type: 'promo_grid_1',
+    bgColor: '#FFA500',
+  );
+
+  static final _defaultPromoGrid2 = BannerModel(
+    id: 'default_promo_grid_2',
+    title: 'Gadgets',
+    subtitle: 'Gadgets',
+    imageUrl: '',
+    link: '/shop',
+    tag: 'OFF 15%',
+    type: 'promo_grid_2',
+    bgColor: '#10B981',
+  );
+
+  static final _defaultPromoGrid3 = BannerModel(
+    id: 'default_promo_grid_3',
+    title: 'Books & Stationery',
+    subtitle: 'Books & Stationery',
+    imageUrl: '',
+    link: '/shop',
+    tag: 'FREE SHIPPING',
+    type: 'promo_grid_3',
+    bgColor: '#6B21A8',
   );
 
   Future<void> init() async {

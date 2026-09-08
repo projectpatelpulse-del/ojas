@@ -1,19 +1,20 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { useLogoutInfluencer, getGetCurrentUserQueryKey } from "@/api-client";
+import { useLogoutReseller, getGetCurrentUserQueryKey } from "@/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Package, ShoppingBag, Link2, Wallet, ArrowDownToLine,
   BarChart2, User, ChevronRight, LogOut, Settings, Users, CreditCard,
-  TrendingUp, ShoppingCart, Award, Menu, X
+  TrendingUp, ShoppingCart, Award, Menu, X, FolderOpen
 } from "lucide-react";
 
-const influencerNav = [
+const ResellerNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Browse Products", icon: Package },
   { href: "/my-products", label: "My Products", icon: ShoppingBag },
+  { href: "/collections", label: "My Collections", icon: FolderOpen },
   { href: "/referrals", label: "Referral Links", icon: Link2 },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/wallet", label: "Wallet", icon: Wallet },
@@ -24,10 +25,10 @@ const influencerNav = [
 
 const adminNav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/influencers", label: "Influencers", icon: Users },
+  { href: "/admin/Resellers", label: "Resellers", icon: Users },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: CreditCard },
   { href: "/admin/analytics", label: "Analytics", icon: TrendingUp },
-  { href: "/admin/top-influencers", label: "Top Performers", icon: Award },
+  { href: "/admin/top-Resellers", label: "Top Performers", icon: Award },
 ];
 
 const vendorNav = [
@@ -56,7 +57,7 @@ function NavItem({ href, label, icon: Icon }: { href: string; label: string; ico
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, role } = useAuth();
   const qc = useQueryClient();
-  const logout = useLogoutInfluencer();
+  const logout = useLogoutReseller();
   const [location, navigate] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -65,8 +66,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  const navItems = role === "admin" ? adminNav : role === "vendor" ? vendorNav : influencerNav;
-  const panelLabel = role === "admin" ? "Admin Panel" : role === "vendor" ? "Vendor Panel" : "Influencer Panel";
+  const navItems = role === "admin" ? adminNav : role === "vendor" ? vendorNav : ResellerNav;
+  const panelLabel = role === "admin" ? "Admin Panel" : role === "vendor" ? "Vendor Panel" : "Reseller Panel";
 
   const handleLogout = () => {
     logout.mutate(undefined, {
@@ -107,7 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* User section */}
       <div className="px-3 pb-4 border-t border-slate-800 pt-3 space-y-1">
-        {role === "influencer" && (
+        {role === "Reseller" && (
           <Link href="/profile">
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
@@ -120,7 +121,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
         )}
-        {role !== "influencer" && (
+        {role !== "Reseller" && (
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
               <span className="text-slate-300 text-xs font-bold">{user?.name?.charAt(0) ?? "A"}</span>

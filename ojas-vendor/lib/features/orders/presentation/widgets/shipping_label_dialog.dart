@@ -50,11 +50,14 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
     String fullShippingAddress = '';
     if (shipping.isNotEmpty) {
       fullShippingAddress = [
+        shipping['buildingName'],
         shipping['street'],
+        shipping['area'],
+        shipping['landmark'],
         shipping['city'],
         shipping['state'],
         shipping['zipCode']
-      ].where((e) => e != null && e.toString().isNotEmpty).join(', ');
+      ].where((e) => e != null && e.toString().trim().isNotEmpty).toSet().join(', ');
     }
     _shipToAddressController = TextEditingController(text: fullShippingAddress);
     
@@ -88,8 +91,31 @@ class _ShippingLabelDialogState extends State<ShippingLabelDialog> {
     _fromAddressController = TextEditingController(text: fullVendorAddress);
     _fromPhoneController = TextEditingController(text: (vendor['mobile'] ?? '').toString());
 
-    _weightController = TextEditingController(text: '0.5 KG');
-    _dimensionsController = TextEditingController(text: '10x10x10 cm');
+    final pd = getMap(widget.order['pickupDetails'] ?? {});
+    String defaultWeight = '0.5 KG';
+    if (pd['weight'] != null && pd['weight'].toString().trim().isNotEmpty) {
+      defaultWeight = '${pd['weight']} KG';
+    }
+
+    String defaultDimensions = '10x10x10 cm';
+    if (pd['dimensionsList'] != null && (pd['dimensionsList'] as List).isNotEmpty) {
+      final List dList = pd['dimensionsList'];
+      final List<String> dimsStr = [];
+      for (var d in dList) {
+        if (d is Map) {
+          dimsStr.add('${d['length']}x${d['width']}x${d['height']}');
+        }
+      }
+      if (dimsStr.isNotEmpty) {
+        defaultDimensions = '${dimsStr.join(', ')} cm';
+      }
+    } else if (pd['dimensions'] != null && pd['dimensions'] is Map) {
+      final dim = pd['dimensions'];
+      defaultDimensions = '${dim['length']}x${dim['width']}x${dim['height']} cm';
+    }
+
+    _weightController = TextEditingController(text: defaultWeight);
+    _dimensionsController = TextEditingController(text: defaultDimensions);
     _dateController = TextEditingController(text: widget.order['createdAt'] != null 
         ? DateFormat('yyyy-MM-dd').format(DateTime.parse(widget.order['createdAt'].toString()))
         : DateFormat('yyyy-MM-dd').format(DateTime.now()));

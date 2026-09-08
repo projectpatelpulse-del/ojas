@@ -218,7 +218,18 @@ class _DashboardPageState extends State<DashboardPage> {
                               itemBuilder: (context, index) {
                                 final order = _recentOrders[index];
                                 final amount = order['totalAmount'] ?? 0;
-                                final status = order['status'] ?? 'Pending';
+                                final String rawStatus = order['status'] ?? 'Pending';
+                                final String pickupStatus = order['pickupStatus'] ?? 'Pending';
+                                String effectiveStatus = rawStatus;
+                                if (!['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'ESCALATED'].contains(rawStatus.toUpperCase())) {
+                                  if (pickupStatus == 'Pickup Requested') {
+                                    effectiveStatus = 'SHIPMENT REQUESTED';
+                                  } else if (pickupStatus == 'Pickup Scheduled') {
+                                    effectiveStatus = 'SHIPMENT SCHEDULED';
+                                  } else if (pickupStatus == 'Picked Up') {
+                                    effectiveStatus = 'PICKED UP';
+                                  }
+                                }
                                 final orderId = order['orderId'] ?? order['_id'].toString().substring(0, 8);
                                 final customerName = order['user'] != null ? order['user']['name'] : 'Unknown';
                                 final itemsCount = (order['items'] as List?)?.length ?? 1;
@@ -233,13 +244,41 @@ class _DashboardPageState extends State<DashboardPage> {
                                       Expanded(child: Text('$itemsCount items', style: GoogleFonts.inter(fontSize: 12))),
                                       Expanded(child: Text('₹${amount.toStringAsFixed(2)}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold))),
                                       Expanded(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue.shade50,
-                                            borderRadius: BorderRadius.circular(12),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: _getStatusColor(effectiveStatus).withOpacity(0.12),
+                                              borderRadius: BorderRadius.circular(30),
+                                              border: Border.all(color: _getStatusColor(effectiveStatus).withOpacity(0.2), width: 1),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  width: 6,
+                                                  height: 6,
+                                                  decoration: BoxDecoration(color: _getStatusColor(effectiveStatus), shape: BoxShape.circle),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Flexible(
+                                                  child: FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    child: Text(
+                                                      effectiveStatus.toUpperCase(), 
+                                                      style: GoogleFonts.inter(
+                                                        fontSize: 10, 
+                                                        color: _getStatusColor(effectiveStatus),
+                                                        fontWeight: FontWeight.bold,
+                                                        letterSpacing: 0.3,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          child: Text(status, style: GoogleFonts.inter(fontSize: 10, color: Colors.blue.shade700)),
                                         ),
                                       ),
                                     ],
@@ -555,6 +594,28 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    final s = status.toUpperCase();
+    if (s == 'PAID' || s == 'SHIPPED') {
+      return Colors.blue;
+    } else if (s == 'DELIVERED') {
+      return Colors.green;
+    } else if (s == 'CANCELLED') {
+      return Colors.red;
+    } else if (s == 'PROCESSING') {
+      return Colors.indigo;
+    } else if (s == 'ESCALATED') {
+      return Colors.deepOrange;
+    } else if (s == 'SHIPMENT REQUESTED' || s == 'PICKUP REQUESTED') {
+      return Colors.purple;
+    } else if (s == 'SHIPMENT SCHEDULED' || s == 'PICKUP SCHEDULED') {
+      return Colors.teal;
+    } else if (s == 'PICKED UP') {
+      return Colors.indigo;
+    }
+    return Colors.amber;
   }
 }
 class _StatCard extends StatelessWidget {

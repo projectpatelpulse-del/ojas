@@ -9,7 +9,9 @@ export default function Referrals() {
 
   const getDisplayUrl = (url: string) => {
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return url.replace("https://ojasindia.com/product/", "http://ojasindia.com/#/product/");
+      return url
+        .replace("https://ojasindia.com/product/", "http://localhost:5173/product/")
+        .replace("https://mycollectionsforyou.com/product/", "http://localhost:5173/product/");
     }
     return url;
   };

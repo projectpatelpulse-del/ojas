@@ -1,0 +1,236 @@
+/* Checkout Modal Styling */
+.checkout-modal {
+  max-width: 600px;
+}
+
+.checkout-content {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--accent-gold);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.new-address-form {
+  background-color: #FAF8F6;
+  padding: 24px;
+  border-radius: 12px;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+}
+
+.new-address-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.new-address-form label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.new-address-form input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.new-address-form input:focus {
+  border-color: var(--accent-gold);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(198, 146, 72, 0.15);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 580px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cancel-btn {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.save-address-btn {
+  background-color: var(--accent-gold);
+  color: #FFFFFF;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.address-card {
+  display: flex;
+  gap: 12px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.address-card.active {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.addr-details .name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.addr-details p {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--text-p);
+  line-height: 1.4;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.payment-card {
+  display: flex;
+  gap: 12px;
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-card.active {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.payment-meta .title {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.payment-meta .desc {
+  font-size: 12px;
+  color: var(--text-p);
+}
+
+.checkout-summary-section {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.place-order-btn {
+  background-color: var(--accent);
+  color: #FFFFFF;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.place-order-btn:disabled {
+  background-color: #CBD5E1;
+  cursor: not-allowed;
+}
+
+/* Success View */
+.checkout-success-view {
+  text-align: center;
+}
+
+.success-icon-container {
+  color: #22C55E;
+  margin-bottom: 16px;
+}
+
+.success-msg {
+  color: var(--text-p);
+  margin-bottom: 24px;
+}
+
+.order-details-card {
+  background-color: #F8F9FA;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.done-btn {
+  background-color: var(--accent);
+  color: #FFFFFF;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}

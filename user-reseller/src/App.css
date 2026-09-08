@@ -1,0 +1,249 @@
+/* Ojas Storefront Premium Stylesheet */
+
+.storefront-wrapper {
+  background-color: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+  font-family: var(--sans);
+}
+
+/* Base Layout / Main area */
+.main-content-area {
+  flex-grow: 1;
+}
+
+/* Loading & Error Screen styling */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.catalog-loading-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: var(--text-p);
+}
+
+.catalog-error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 24px;
+}
+
+.error-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border);
+  padding: 40px 32px;
+  border-radius: 20px;
+  max-width: 480px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.error-card svg {
+  color: var(--accent-secondary);
+  margin-bottom: 20px;
+}
+
+.error-card h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  color: var(--text-h);
+}
+
+.error-card p {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.retry-btn {
+  background-color: var(--accent);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.retry-btn:hover {
+  opacity: 0.9;
+}
+
+.back-btn {
+  background-color: transparent;
+  color: var(--accent-gold);
+  border: 1px solid var(--accent-gold);
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background-color: rgba(198, 146, 72, 0.05);
+}
+
+/* Empty Catalog State */
+.empty-catalog-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 24px;
+}
+
+.empty-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border);
+  padding: 40px 32px;
+  border-radius: 20px;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.empty-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  color: var(--text-h);
+}
+
+.empty-card p {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.contact-support-btn {
+  display: inline-block;
+  background-color: var(--accent-gold);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 8px;
+  transition: opacity 0.2s;
+}
+
+.contact-support-btn:hover {
+  opacity: 0.9;
+}
+
+/* Keyframes & Shared Animations */
+@keyframes modalEnter {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Common Modal structural definitions */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-container {
+  background-color: #FFFFFF;
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Profile Grid responsive behavior */
+@media (max-width: 768px) {
+  .profile-grid-layout {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}

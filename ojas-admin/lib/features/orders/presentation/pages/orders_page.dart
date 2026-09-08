@@ -27,7 +27,37 @@ class _OrdersPageState extends State<OrdersPage> {
   final String _selectedPayment = 'All Payments';
   String _searchQuery = '';
 
-  final List<String> _statusOptions = ['All Status', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Escalated'];
+  final List<String> _statusOptions = [
+    'All Status',
+    'Pending',
+    'Processing',
+    'Ready to Dispatch',
+    'Shipment Requested',
+    'Shipment Scheduled',
+    'Shipped',
+    'Delivered',
+    'Cancelled',
+    'Escalated',
+  ];
+
+  String _getEffectiveStatus(Map<String, dynamic> o) {
+    final String rawStatus = o['status'] ?? 'Pending';
+    final String pickupStatus = o['pickupStatus'] ?? 'Pending';
+    String effectiveStatus = rawStatus;
+    if (rawStatus.toUpperCase() == 'READY_TO_DISPATCH') {
+      return 'READY TO DISPATCH';
+    }
+    if (!['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'ESCALATED'].contains(rawStatus.toUpperCase())) {
+      if (pickupStatus == 'Pickup Requested') {
+        effectiveStatus = 'SHIPMENT REQUESTED';
+      } else if (pickupStatus == 'Pickup Scheduled') {
+        effectiveStatus = 'SHIPMENT SCHEDULED';
+      } else if (pickupStatus == 'Picked Up') {
+        effectiveStatus = 'PICKED UP';
+      }
+    }
+    return effectiveStatus;
+  }
   final List<String> _paymentOptions = ['All Payments', 'Paid', 'Unpaid', 'Refunded'];
 
   @override
@@ -57,7 +87,18 @@ class _OrdersPageState extends State<OrdersPage> {
         listenable: _controller,
         builder: (context, _) {
           final orders = _controller.orders.where((o) {
-            bool matchesStatus = _selectedStatus == 'All Status' || o['status'] == _selectedStatus;
+            bool matchesStatus = _selectedStatus == 'All Status' || (() {
+              final String eff = _getEffectiveStatus(o).toUpperCase();
+              final String selected = _selectedStatus.toUpperCase();
+              if (selected == 'PENDING') {
+                return eff == 'PENDING' || eff == 'CREATED';
+              } else if (selected == 'SHIPPED') {
+                return eff == 'SHIPPED' || eff == 'SHIPMENT SCHEDULED';
+              } else if (selected == 'READY TO DISPATCH' || selected == 'READY_TO_DISPATCH') {
+                return eff == 'READY TO DISPATCH' || eff == 'READY_TO_DISPATCH';
+              }
+              return eff == selected;
+            }());
             bool matchesSearch = _searchQuery.isEmpty || 
                 (o['orderId']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
                 (o['user']?['name']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
@@ -173,6 +214,25 @@ class _OrdersPageState extends State<OrdersPage> {
                               items: _statusOptions,
                               onChanged: (v) => setState(() => _selectedStatus = v!),
                             ),
+                            const SizedBox(width: 12),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                await _controller.requestNotificationPermission();
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Web Notifications configured!'), backgroundColor: Colors.purple),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.notifications_active, size: 16),
+                              label: const Text('Enable Notifications'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6B21A8),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -202,10 +262,10 @@ class _OrdersPageState extends State<OrdersPage> {
                                   _tableHeader('VENDOR', flex: 2),
                                   _tableHeader('ITEMS', flex: 1),
                                   _tableHeader('TOTAL', flex: 1),
-                                  _tableHeader('STATUS', flex: 2),
+                                  _tableHeader('STATUS', flex: 3),
                                   _tableHeader('AWB', flex: 2),
                                   _tableHeader('DATE', flex: 2),
-                                  _tableHeader('ACTIONS', flex: 3),
+                                  _tableHeader('ACTIONS', flex: 4),
                                 ],
                               ),
                             ),
@@ -227,6 +287,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                   final List items = o['items'] ?? [];
                                   final double total = (o['totalAmount'] ?? 0).toDouble();
                                   final String status = o['status'] ?? 'Pending';
+                                  final String effectiveStatus = _getEffectiveStatus(o);
                                   final String date = o['createdAt'] != null ? DateTime.parse(o['createdAt'].toString()).toString().split(' ')[0] : '-';
 
                                   return Container(
@@ -234,7 +295,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                     child: Row(
                                       children: [
                                         Expanded(
-                                          flex: 14,
+                                          flex: 15,
                                           child: InkWell(
                                             onTap: () {
                                               showDialog(
@@ -249,7 +310,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                                 Expanded(flex: 2, child: Text(vendor, style: GoogleFonts.inter(fontSize: 13, color: Colors.indigo))),
                                                 Expanded(flex: 1, child: Text('${items.length}', style: GoogleFonts.inter(fontSize: 13))),
                                                 Expanded(flex: 1, child: Text('₹$total', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold))),
-                                                Expanded(flex: 2, child: _buildStatusBadge(status)),
+                                                Expanded(flex: 3, child: _buildStatusBadge(effectiveStatus)),
                                                 Expanded(
                                                   flex: 2, 
                                                   child: Text(
@@ -264,7 +325,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                           ),
                                         ),
                                           Expanded(
-                                            flex: 3, 
+                                            flex: 4, 
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
@@ -284,6 +345,31 @@ class _OrdersPageState extends State<OrdersPage> {
                                                     padding: EdgeInsets.zero,
                                                     constraints: const BoxConstraints(),
                                                   ),
+                                                  if (o['vendorInvoiceUrl'] != null && o['vendorInvoiceUrl'].toString().isNotEmpty) ...[
+                                                    const SizedBox(width: 8),
+                                                    IconButton(
+                                                      onPressed: () async {
+                                                        final url = Uri.parse(o['vendorInvoiceUrl']);
+                                                        if (await canLaunchUrl(url)) {
+                                                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                        } else {
+                                                          if (context.mounted) {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text('Could not open vendor invoice URL')),
+                                                            );
+                                                          }
+                                                        }
+                                                      },
+                                                      icon: const Icon(
+                                                        Icons.receipt, 
+                                                        size: 20, 
+                                                        color: Colors.green,
+                                                      ),
+                                                      tooltip: 'Download Vendor Invoice',
+                                                      padding: EdgeInsets.zero,
+                                                      constraints: const BoxConstraints(),
+                                                    ),
+                                                  ],
                                                 const SizedBox(width: 8),
                                                 IconButton(
                                                   onPressed: (status.toLowerCase() != 'cancelled' && 
@@ -316,21 +402,16 @@ class _OrdersPageState extends State<OrdersPage> {
                                                             builder: (dialogContext) => AssignDelhiveryDialog(
                                                               order: o,
                                                               onConfirm: (data) async {
-                                                                final success = await _controller.assignDelhivery(o['_id'], data: data);
+                                                                final result = await _controller.assignDelhivery(o['_id'], data: data);
                                                                 if (!mounted) return;
-                                                                if (success) {
-                                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                                    const SnackBar(
-                                                                        content: Text('Delivery assigned successfully to Delhivery!'),
-                                                                        backgroundColor: Colors.green),
-                                                                  );
-                                                                  } else {
-                                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                                      const SnackBar(
-                                                                          content: Text('Failed to assign delivery. Please try again.'),
-                                                                          backgroundColor: Colors.red),
-                                                                    );
-                                                                  }
+                                                                final isSuccess = result['success'] == true;
+                                                                final message = result['message'] ?? (isSuccess ? 'Delivery assigned successfully!' : 'Failed to assign delivery.');
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(
+                                                                    content: Text(message),
+                                                                    backgroundColor: isSuccess ? Colors.green : Colors.red,
+                                                                  ),
+                                                                );
                                                               },
                                                             ),
                                                           );
@@ -451,9 +532,13 @@ class _OrdersPageState extends State<OrdersPage> {
     else if (s == 'CANCELLED') color = Colors.red;
     else if (s == 'PROCESSING') color = Colors.indigo;
     else if (s == 'ESCALATED') color = Colors.deepOrange;
+    else if (s == 'SHIPMENT REQUESTED' || s == 'PICKUP REQUESTED') color = Colors.purple;
+    else if (s == 'SHIPMENT SCHEDULED' || s == 'PICKUP SCHEDULED') color = Colors.teal;
+    else if (s == 'PICKED UP') color = Colors.indigo;
+    else if (s == 'READY TO DISPATCH' || s == 'READY_TO_DISPATCH') color = Colors.orange;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(30),
@@ -467,14 +552,19 @@ class _OrdersPageState extends State<OrdersPage> {
             height: 6,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 8),
-          Text(
-            status.toUpperCase(),
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: color,
-              letterSpacing: 0.5,
+          const SizedBox(width: 6),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                status.toUpperCase(),
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  letterSpacing: 0.3,
+                ),
+              ),
             ),
           ),
         ],

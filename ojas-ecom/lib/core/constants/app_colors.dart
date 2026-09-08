@@ -12,6 +12,8 @@ class AppColors {
   static const Color cardBorderTint = Color(0xFFD1BBAA);  // Card Border/Shadow Tint
 
   // Role Mappings to existing variables for seamless integration
+  static const Color primaryIndigo1 = maroonFestive; 
+
   static const Color primaryIndigo = cardBgBeige;         // Card Background (Soft Beige)
   static const Color primaryBlue = goldAccent;            // Gold (Buttons & Accents)
   static const Color accentOrange = goldAccent;           // Gold

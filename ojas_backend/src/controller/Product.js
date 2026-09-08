@@ -3,6 +3,57 @@ const Vendor = require("../model/Vendor.js");
 const { calculateProductPricing } = require("../utils/pricing.js");
 const imagekit = require("../config/imagekit.js");
 const multer = require("multer");
+const sharp = require("sharp");
+
+// Compress image buffer using sharp
+async function compressImageBuffer(buffer, mimetype = "image/png") {
+    try {
+        const originalSize = buffer.length;
+        let compressedBuffer = buffer;
+
+        if (mimetype === "image/jpeg" || mimetype === "image/jpg") {
+            compressedBuffer = await sharp(buffer).jpeg({ quality: 70 }).toBuffer();
+        } else if (mimetype === "image/png") {
+            compressedBuffer = await sharp(buffer).png({ quality: 70, compressionLevel: 8 }).toBuffer();
+        } else if (mimetype === "image/webp") {
+            compressedBuffer = await sharp(buffer).webp({ quality: 70 }).toBuffer();
+        } else {
+            compressedBuffer = await sharp(buffer).jpeg({ quality: 70 }).toBuffer();
+        }
+
+        const compressedSize = compressedBuffer.length;
+        const savingsPercent = (((originalSize - compressedSize) / originalSize) * 100).toFixed(1);
+        console.log(`[Product Image Compressor] Original: ${(originalSize / 1024).toFixed(1)} KB, Compressed: ${(compressedSize / 1024).toFixed(1)} KB (Saved ${savingsPercent}%)`);
+        return compressedBuffer;
+    } catch (err) {
+        console.error("[Product Image Compressor] Compression failed:", err.message);
+        return buffer; // Fallback to original buffer
+    }
+}
+
+// Delete image from ImageKit by URL
+async function deleteImageFromImageKit(url) {
+    if (!url || !url.includes("imagekit.io")) return;
+    try {
+        const parts = url.split("/");
+        const fileName = parts[parts.length - 1]; // e.g. "product_12345.png" or "gallery_12345.png"
+
+        // Search for file by name to get its fileId
+        const files = await imagekit.listFiles({
+            searchQuery: `name = "${fileName}"`
+        });
+
+        if (files && files.length > 0) {
+            await imagekit.deleteFile(files[0].fileId);
+            console.log(`[ImageKit Cleanup] Deleted file: ${fileName} (ID: ${files[0].fileId})`);
+        } else {
+            console.log(`[ImageKit Cleanup] File not found: ${fileName}`);
+        }
+    } catch (err) {
+        console.error("[ImageKit Cleanup] Error deleting file:", err.message);
+    }
+}
+
 const createProduct = async (req, res) => {
     try {
         if (!req.admin || !req.admin.id) {
@@ -13,7 +64,7 @@ const createProduct = async (req, res) => {
         const {
             name, title, price, discountPrice, description, shortDescription,
             category, subCategory, brand, stock, sku, lowStockThreshold,
-            trackQuantity, weight, length, width, height, requiresShipping,
+            trackQuantity, weight, length, width, height, weightUnit, dimensionsUnit, requiresShipping,
             seoTitle, seoDescription, slug, youtubeLink, status, visibility,
             attributes, specs, tags, variations, showOnPages, relatedProducts,
             gst, hsnCode, moq, moqDiscount, rating, numReviews
@@ -25,10 +76,11 @@ const createProduct = async (req, res) => {
         if (req.files) {
             if (req.files.image && req.files.image[0]) {
                 try {
+                    const compressedBuffer = await compressImageBuffer(req.files.image[0].buffer, req.files.image[0].mimetype);
                     const uploadResponse = await imagekit.files.upload({
-                        file: req.files.image[0].buffer.toString('base64'),
+                        file: compressedBuffer.toString('base64'),
                         fileName: `product_${Date.now()}.png`,
-                        folder: "/products",
+                        folder: "/ojas/products",
                     });
                     imageUrl = uploadResponse.url;
                 } catch (imageKitError) {
@@ -43,10 +95,11 @@ const createProduct = async (req, res) => {
             if (req.files.gallery) {
                 try {
                     for (const file of req.files.gallery) {
+                        const compressedBuffer = await compressImageBuffer(file.buffer, file.mimetype);
                         const uploadResponse = await imagekit.files.upload({
-                            file: file.buffer.toString('base64'),
+                            file: compressedBuffer.toString('base64'),
                             fileName: `gallery_${Date.now()}.png`,
-                            folder: "/products",
+                            folder: "/ojas/products",
                         });
                         galleryUrls.push(uploadResponse.url);
                     }
@@ -64,11 +117,25 @@ const createProduct = async (req, res) => {
             return res.status(400).json({ message: "Name, title, price, description, category, and stock are required" });
         }
 
+        let hasProductImage = false;
+        if (imageUrl || (galleryUrls && galleryUrls.length > 0)) hasProductImage = true;
+        if (req.body.image || req.body.imageUrl) hasProductImage = true;
+        try {
+            const parsedVarsCheck = typeof variations === 'string' ? JSON.parse(variations) : variations;
+            if (parsedVarsCheck && Array.isArray(parsedVarsCheck) && parsedVarsCheck.some(v => (v.image && v.image.trim() !== '') || (v.images && v.images.some(img => img && img.trim() !== '')))) {
+                hasProductImage = true;
+            }
+        } catch (e) {}
+
+        if (!hasProductImage) {
+            return res.status(400).json({ message: "At least one product image is required to create a product." });
+        }
+
         // Generate unique slug
-        let finalSlug = (slug && slug.trim() !== "") 
+        let finalSlug = (slug && slug.trim() !== "")
             ? slug.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
             : (name ? name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') : "product");
-        
+
         // Ensure slug is unique by appending suffix if exists
         let slugExists = await Product.findOne({ slug: finalSlug });
         let counter = 1;
@@ -88,25 +155,27 @@ const createProduct = async (req, res) => {
             price,
             discountPrice: discountPrice ? Number(discountPrice) : 0,
             description,
-            shortDescription, 
+            shortDescription,
             category,
             subCategory,
             brand: brand || "Generic",
-            stock, 
-            sku: (sku && sku.trim() !== "") ? sku : undefined, 
+            stock,
+            sku: (sku && sku.trim() !== "") ? sku : undefined,
             lowStockThreshold: lowStockThreshold ? Number(lowStockThreshold) : 5,
             trackQuantity: trackQuantity === 'false' ? false : true,
             weight: weight ? Number(weight) : undefined,
+            weightUnit: weightUnit || undefined,
             dimensions: (length || width || height) ? {
                 length: length ? Number(length) : 0,
                 width: width ? Number(width) : 0,
                 height: height ? Number(height) : 0
             } : undefined,
+            dimensionsUnit: dimensionsUnit || undefined,
             requiresShipping: requiresShipping === 'false' ? false : true,
             image: imageUrl,
-            gallery: galleryUrls, 
+            gallery: galleryUrls,
             seoTitle,
-            seoDescription, 
+            seoDescription,
             slug: finalSlug,
             youtubeLink,
             status: status || "Draft",
@@ -137,12 +206,12 @@ const createProduct = async (req, res) => {
         res.status(201).json({ data: product, message: "Product created successfully" });
     } catch (error) {
         console.error("Product creation error stack:", error.stack);
-        
+
         // Handle Mongoose Validation Errors
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: "Validation Error: " + Object.values(error.errors).map(e => e.message).join(", ") 
+                message: "Validation Error: " + Object.values(error.errors).map(e => e.message).join(", ")
             });
         }
 
@@ -150,7 +219,7 @@ const createProduct = async (req, res) => {
         if (error.code === 11000) {
             const field = Object.keys(error.keyPattern)[0];
             const value = error.keyValue[field];
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 message: `The ${field.toUpperCase()} "${value}" is already in use. Please use a unique ${field.toUpperCase()}.`
             });
@@ -165,7 +234,7 @@ const createProduct = async (req, res) => {
 const getProducts = async (req, res) => {
     try {
         const { category, subCategory, search, limit, status } = req.query;
-        
+
         let query = {};
         if (status && status !== 'All') {
             query.status = status;
@@ -200,11 +269,16 @@ const getProducts = async (req, res) => {
             }
         }
 
-        const products = await Product.find(query)
+        let productsQuery = Product.find(query)
             .populate("user", "name email mobile shopName")
             .populate("relatedProducts")
-            .limit(limit ? parseInt(limit) : 100)
             .sort({ createdAt: -1 });
+
+        if (limit) {
+            productsQuery = productsQuery.limit(parseInt(limit));
+        }
+
+        const products = await productsQuery;
 
         // Calculate prices with vendor commission
         const vendorIds = [...new Set(products.map(p => p.user?._id))].filter(id => id != null);
@@ -223,7 +297,7 @@ const getProducts = async (req, res) => {
             const vendorId = product.user?._id?.toString();
             const commissionRate = commissionMap[vendorId] || 0;
             const gstRate = productObj.gst || 0;
-            
+
             // Limit products on other pages for non-admin
             if (!req.admin && vendorId) {
                 const limit = maxProductsMap[vendorId] !== undefined ? maxProductsMap[vendorId] : 5;
@@ -251,22 +325,22 @@ const getProducts = async (req, res) => {
             if (productObj.discountPrice > 0) {
                 const pricingDiscount = calculateProductPricing(productObj.discountPrice, commissionRate, gstRate);
                 const pricingRegular = calculateProductPricing(productObj.price, commissionRate, gstRate);
-                
+
                 productObj.originalPrice = pricingRegular.originalPrice;
                 productObj.commissionPercent = pricingDiscount.commissionPercent;
                 productObj.commissionAmount = pricingDiscount.commissionAmount;
                 productObj.sellingPrice = pricingDiscount.sellingPrice;
-                
+
                 productObj.price = pricingRegular.sellingPrice;
                 productObj.discountPrice = pricingDiscount.sellingPrice;
             } else {
                 const pricing = calculateProductPricing(productObj.price, commissionRate, gstRate);
-                
+
                 productObj.originalPrice = pricing.originalPrice;
                 productObj.commissionPercent = pricing.commissionPercent;
                 productObj.commissionAmount = pricing.commissionAmount;
                 productObj.sellingPrice = pricing.sellingPrice;
-                
+
                 productObj.price = pricing.sellingPrice;
                 productObj.discountPrice = 0;
             }
@@ -282,7 +356,7 @@ const getProducts = async (req, res) => {
                     return updatedVar;
                 });
             }
-            
+
             return productObj;
         });
 
@@ -312,35 +386,39 @@ const getProduct = async (req, res) => {
             const rp = await ResellerProduct.findOne({ referralCode: ref, product: req.params.id });
             if (rp) {
                 markupAmount = rp.markupAmount || 0;
-                resellerId = rp.influencer;
+                resellerId = rp.Reseller;
                 resellerCode = rp.referralCode;
+
+                // Increment click count
+                rp.clicks = (rp.clicks || 0) + 1;
+                await rp.save().catch(err => console.error("Error saving reseller product clicks:", err.message));
             }
         }
 
         const productObj = product.toObject();
         const vendor = await Vendor.findOne({ user: product.user?._id });
-        
+
         const commissionRate = vendor ? (vendor.commissionRate || 0) : 0;
         const gstRate = productObj.gst || 0;
 
         if (productObj.discountPrice > 0) {
             const pricingDiscount = calculateProductPricing(productObj.discountPrice, commissionRate, gstRate);
             const pricingRegular = calculateProductPricing(productObj.price, commissionRate, gstRate);
-            
+
             productObj.originalPrice = pricingRegular.originalPrice;
             productObj.commissionPercent = pricingDiscount.commissionPercent;
             productObj.commissionAmount = pricingDiscount.commissionAmount;
-            
+
             productObj.sellingPrice = pricingDiscount.sellingPrice + markupAmount;
             productObj.price = pricingRegular.sellingPrice + markupAmount;
             productObj.discountPrice = pricingDiscount.sellingPrice + markupAmount;
         } else {
             const pricing = calculateProductPricing(productObj.price, commissionRate, gstRate);
-            
+
             productObj.originalPrice = pricing.originalPrice;
             productObj.commissionPercent = pricing.commissionPercent;
             productObj.commissionAmount = pricing.commissionAmount;
-            
+
             productObj.sellingPrice = pricing.sellingPrice + markupAmount;
             productObj.price = pricing.sellingPrice + markupAmount;
             productObj.discountPrice = 0;
@@ -386,10 +464,16 @@ const updateProduct = async (req, res) => {
 
         if (req.files) {
             if (req.files.image && req.files.image[0]) {
+                // Delete old main image if replacing
+                if (product.image) {
+                    deleteImageFromImageKit(product.image);
+                }
+
+                const compressedBuffer = await compressImageBuffer(req.files.image[0].buffer, req.files.image[0].mimetype);
                 const uploadResponse = await imagekit.files.upload({
-                    file: req.files.image[0].buffer.toString('base64'),
+                    file: compressedBuffer.toString('base64'),
                     fileName: `product_${Date.now()}.png`,
-                    folder: "/products",
+                    folder: "/ojas/products",
                 });
                 updateData.image = uploadResponse.url;
             }
@@ -397,14 +481,15 @@ const updateProduct = async (req, res) => {
             if (req.files.gallery) {
                 let newGalleryUrls = [];
                 for (const file of req.files.gallery) {
+                    const compressedBuffer = await compressImageBuffer(file.buffer, file.mimetype);
                     const uploadResponse = await imagekit.files.upload({
-                        file: file.buffer.toString('base64'),
+                        file: compressedBuffer.toString('base64'),
                         fileName: `gallery_${Date.now()}.png`,
-                        folder: "/products",
+                        folder: "/ojas/products",
                     });
                     newGalleryUrls.push(uploadResponse.url);
                 }
-                
+
                 let existingGallery = [];
                 if (req.body.gallery) {
                     try {
@@ -415,19 +500,40 @@ const updateProduct = async (req, res) => {
                 } else {
                     existingGallery = product.gallery || [];
                 }
+                
+                // If any gallery images were removed during the update
+                const oldGallery = product.gallery || [];
+                oldGallery.forEach(url => {
+                    if (!existingGallery.includes(url)) {
+                        deleteImageFromImageKit(url);
+                    }
+                });
+
                 updateData.gallery = [...existingGallery, ...newGalleryUrls];
             }
         }
 
+        // If main image was removed without replacement
         if (!req.files || !req.files.image) {
             if (req.body.image === null || req.body.image === "" || req.body.image === "null") {
+                if (product.image) {
+                    deleteImageFromImageKit(product.image);
+                }
                 updateData.image = "";
             }
         }
 
+        // If gallery images were deleted without uploading new ones
         if ((!req.files || !req.files.gallery) && req.body.gallery !== undefined) {
             try {
-                updateData.gallery = typeof req.body.gallery === 'string' ? JSON.parse(req.body.gallery) : req.body.gallery;
+                const newGallery = typeof req.body.gallery === 'string' ? JSON.parse(req.body.gallery) : req.body.gallery;
+                const oldGallery = product.gallery || [];
+                oldGallery.forEach(url => {
+                    if (!newGallery.includes(url)) {
+                        deleteImageFromImageKit(url);
+                    }
+                });
+                updateData.gallery = newGallery;
             } catch (e) {
                 updateData.gallery = product.gallery;
             }
@@ -439,7 +545,7 @@ const updateProduct = async (req, res) => {
         if (updateData.tags) updateData.tags = typeof updateData.tags === 'string' ? JSON.parse(updateData.tags) : updateData.tags;
         if (updateData.showOnPages) updateData.showOnPages = typeof updateData.showOnPages === 'string' ? JSON.parse(updateData.showOnPages) : updateData.showOnPages;
         if (updateData.relatedProducts) updateData.relatedProducts = typeof updateData.relatedProducts === 'string' ? JSON.parse(updateData.relatedProducts) : updateData.relatedProducts;
-        
+
         if (updateData.gst !== undefined) updateData.gst = Number(updateData.gst);
         if (updateData.moq !== undefined) updateData.moq = Number(updateData.moq);
         if (updateData.moqDiscount !== undefined) updateData.moqDiscount = Number(updateData.moqDiscount);
@@ -458,7 +564,7 @@ const updateProduct = async (req, res) => {
                 delete updateData.slug;
             }
         }
-        
+
         if (updateData.length || updateData.width || updateData.height) {
             updateData.dimensions = {
                 length: updateData.length ? Number(updateData.length) : (product.dimensions?.length || 0),
@@ -468,7 +574,7 @@ const updateProduct = async (req, res) => {
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
-        
+
         // Emit socket event
         const io = req.app.get("io");
         if (io) {
@@ -478,12 +584,12 @@ const updateProduct = async (req, res) => {
         res.status(200).json({ data: updatedProduct, message: "Product updated successfully" });
     } catch (error) {
         console.error("Product update error:", error.message);
-        
+
         // Handle Mongoose Validation Errors
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: "Validation Error: " + Object.values(error.errors).map(e => e.message).join(", ") 
+                message: "Validation Error: " + Object.values(error.errors).map(e => e.message).join(", ")
             });
         }
 
@@ -491,7 +597,7 @@ const updateProduct = async (req, res) => {
         if (error.code === 11000) {
             const field = Object.keys(error.keyPattern)[0];
             const value = error.keyValue[field];
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 message: `The ${field.toUpperCase()} "${value}" is already in use. Please use a unique ${field.toUpperCase()}.`
             });
@@ -505,7 +611,18 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
-        
+
+        if (product) {
+            // Delete main image from ImageKit
+            if (product.image) {
+                deleteImageFromImageKit(product.image);
+            }
+            // Delete all gallery images from ImageKit
+            if (product.gallery && product.gallery.length > 0) {
+                product.gallery.forEach(url => deleteImageFromImageKit(url));
+            }
+        }
+
         // Emit socket event
         const io = req.app.get("io");
         if (io) {

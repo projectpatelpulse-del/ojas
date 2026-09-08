@@ -15,8 +15,9 @@ const getDashboardStats = async (req, res) => {
         // Revenue Logic: Count Paid OR Delivered orders
         const revenueMatch = { 
             $or: [
-                { paymentStatus: "Paid" },
-                { status: "Delivered" }
+                { paymentStatus: "SUCCESS" },
+                { status: "PAID" },
+                { status: "DELIVERED" }
             ]
         };
 
@@ -27,7 +28,7 @@ const getDashboardStats = async (req, res) => {
         ]);
         const totalRevenue = totalRevenueResult.length > 0 ? totalRevenueResult[0].total : 0;
 
-        const totalOrders = await Order.countDocuments({ status: { $ne: "Cancelled" } });
+        const totalOrders = await Order.countDocuments({ status: { $ne: "CANCELLED" } });
         const activeVendors = await Vendor.countDocuments({ status: "approved" });
         const totalCustomers = await User.countDocuments({ role: "user" });
 
@@ -47,8 +48,8 @@ const getDashboardStats = async (req, res) => {
         const revenueChange = revLastMonth === 0 ? (revThisMonth > 0 ? 100 : 0) : ((revThisMonth - revLastMonth) / revLastMonth) * 100;
 
         // Orders This Month vs Last Month
-        const ordersThisMonth = await Order.countDocuments({ status: { $ne: "Cancelled" }, createdAt: { $gte: firstDayThisMonth } });
-        const ordersLastMonth = await Order.countDocuments({ status: { $ne: "Cancelled" }, createdAt: { $gte: firstDayLastMonth, $lt: firstDayThisMonth } });
+        const ordersThisMonth = await Order.countDocuments({ status: { $ne: "CANCELLED" }, createdAt: { $gte: firstDayThisMonth } });
+        const ordersLastMonth = await Order.countDocuments({ status: { $ne: "CANCELLED" }, createdAt: { $gte: firstDayLastMonth, $lt: firstDayThisMonth } });
         const ordersChange = ordersLastMonth === 0 ? (ordersThisMonth > 0 ? 100 : 0) : ((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100;
 
         // Vendors Change
@@ -65,7 +66,7 @@ const getDashboardStats = async (req, res) => {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-        const weeklyRevenue = await Order.aggregate([
+        const weeklyRevenueRaw = await Order.aggregate([
             {
                 $match: {
                     createdAt: { $gte: sevenDaysAgo },
@@ -81,11 +82,31 @@ const getDashboardStats = async (req, res) => {
             { $sort: { "_id": 1 } }
         ]);
 
+        // Construct complete list of last 7 days with 0 as default
+        const weeklyMap = {};
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            weeklyMap[dateStr] = 0;
+        }
+
+        weeklyRevenueRaw.forEach(item => {
+            if (weeklyMap[item._id] !== undefined) {
+                weeklyMap[item._id] = item.revenue;
+            }
+        });
+
+        const weeklyRevenue = Object.keys(weeklyMap).sort().map(date => ({
+            _id: date,
+            revenue: weeklyMap[date]
+        }));
+
         // 3. Sales Trend (Last 6 months)
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-        const monthlyRevenue = await Order.aggregate([
+        const monthlyRevenueRaw = await Order.aggregate([
             {
                 $match: {
                     createdAt: { $gte: sixMonthsAgo },
@@ -100,6 +121,26 @@ const getDashboardStats = async (req, res) => {
             },
             { $sort: { "_id": 1 } }
         ]);
+
+        // Construct complete list of last 6 months with 0 as default
+        const monthlyMap = {};
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const monthStr = d.toISOString().substring(0, 7); // "YYYY-MM"
+            monthlyMap[monthStr] = 0;
+        }
+
+        monthlyRevenueRaw.forEach(item => {
+            if (monthlyMap[item._id] !== undefined) {
+                monthlyMap[item._id] = item.revenue;
+            }
+        });
+
+        const monthlyRevenue = Object.keys(monthlyMap).sort().map(month => ({
+            _id: month,
+            revenue: monthlyMap[month]
+        }));
 //  const trendingProducts = await Order.aggregate([
 //             { $match: { status: { $ne: "Cancelled" } } },
 //             { $unwind: "$items" },
@@ -129,7 +170,7 @@ const getDashboardStats = async (req, res) => {
         }));
 
         // 5. Top Revenue Vendors (Top 5)
-        const topVendors = await Order.aggregate([
+        const topVendorsOrders = await Order.aggregate([
             { $match: revenueMatch },
             {
                 $group: {
@@ -159,6 +200,7 @@ const getDashboardStats = async (req, res) => {
             {
                 $project: {
                     businessName: "$vendorDetails.businessName",
+                    ownerName: "$userDetails.name",
                     photo: "$userDetails.photo",
                     revenue: 1,
                     orderCount: 1
@@ -167,6 +209,37 @@ const getDashboardStats = async (req, res) => {
             { $sort: { revenue: -1 } },
             { $limit: 5 }
         ]);
+
+        let topVendors = topVendorsOrders.map(v => ({
+            _id: v._id,
+            businessName: v.ownerName ? `${v.ownerName} (${v.businessName})` : v.businessName,
+            photo: v.photo,
+            revenue: v.revenue,
+            orderCount: v.orderCount
+        }));
+
+        if (topVendors.length < 5) {
+            const existingVendorUserIds = topVendors.map(v => v._id.toString());
+            const remainingCount = 5 - topVendors.length;
+            const fallbackVendors = await Vendor.find({
+                status: "approved",
+                user: { $nin: existingVendorUserIds }
+            })
+            .populate("user")
+            .limit(remainingCount);
+
+            const fallbackList = fallbackVendors
+                .filter(v => v.user)
+                .map(v => ({
+                    _id: v.user._id,
+                    businessName: v.user.name ? `${v.user.name} (${v.businessName})` : v.businessName,
+                    photo: v.user.photo || null,
+                    revenue: 0,
+                    orderCount: 0
+                }));
+
+            topVendors = [...topVendors, ...fallbackList];
+        }
 
         // 6. Categories & Subcategories overview
         const latestCategories = await Category.find().sort({ createdAt: -1 }).limit(5);

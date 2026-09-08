@@ -490,7 +490,7 @@ class _MainNavBarContent extends StatelessWidget {
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _AuthLink(key: ValueKey('nav_login'), title: 'User Login'),
+                const _AuthLink(key: ValueKey('nav_login'), title: 'Buyer Login'),
                 const SizedBox(width: 8),
                 _RegisterButton(key: const ValueKey('nav_register')),
               ],

@@ -33,6 +33,12 @@ const paymentSchema = new mongoose.Schema(
             type: String,
             default: "PayU",
         },
+        paymentLink: {
+            type: String,
+        },
+        paymentSessionId: {
+            type: String,
+        },
     },
     {
         timestamps: true,

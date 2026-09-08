@@ -8,6 +8,9 @@ import 'package:ojas_vendor/core/services/service_locator.dart';
 import 'package:ojas_vendor/features/help/data/services/support_service.dart';
 import 'package:ojas_vendor/features/help/domain/models/support_ticket_model.dart';
 import 'package:intl/intl.dart';
+
+import '../../data/services/faq_vendor_service.dart';
+
 class HelpPage extends StatefulWidget {
   const HelpPage({super.key});
 
@@ -16,6 +19,20 @@ class HelpPage extends StatefulWidget {
 }
 
 class _HelpPageState extends State<HelpPage> {
+  final FaqVendorService _faqService = FaqVendorService();
+  late Future<List<dynamic>> _faqsFuture;
+  late Future<List<SupportTicketModel>> _ticketsFuture;
+  final TextEditingController _faqSearchController = TextEditingController();
+  String _faqSearch = '';
+  String _selectedCategory = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+    _faqsFuture = _faqService.getVendorFaqs();
+    _ticketsFuture = sl<SupportService>().getMyTickets();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SidebarLayout(
@@ -23,143 +40,156 @@ class _HelpPageState extends State<HelpPage> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: const VendorTopBar(),
-        body: FutureBuilder<List<SupportTicketModel>>(
-          future: sl<SupportService>().getMyTickets(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final tickets = snapshot.data ?? [];
-            final activeCount = tickets.where((t) => t.status == 'Open' || t.status == 'In Progress').length;
-            final resolvedCount = tickets.where((t) => t.status == 'Resolved' || t.status == 'Closed').length;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Redesigned Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Redesigned Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Text(
+                        'Support Center',
+                        style: GoogleFonts.outfit(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Manage your support tickets and get assistance from our team',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () => _showRaiseTicketDialog(context),
+                    icon: const Icon(Icons.add_circle_outline, size: 20),
+                    label: Text(
+                      'Raise New Ticket',
+                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 48),
+
+              // Dynamic Stats & Support Tickets Section
+              FutureBuilder<List<SupportTicketModel>>(
+                future: _ticketsFuture,
+                builder: (context, snapshot) {
+                  final tickets = snapshot.data ?? [];
+                  final activeCount = tickets.where((t) => t.status == 'Open' || t.status == 'In Progress').length;
+                  final resolvedCount = tickets.where((t) => t.status == 'Resolved' || t.status == 'Closed').length;
+
+                  return Column(
+                    children: [
+                      // Overview Stats (Now Dynamic)
+                      Row(
                         children: [
-                          Text(
-                            'Support Center',
-                            style: GoogleFonts.outfit(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Manage your support tickets and get assistance from our team',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
+                          _buildStatCard('Active Tickets', activeCount.toString(), Icons.confirmation_number_outlined, Colors.blue),
+                          const SizedBox(width: 24),
+                          _buildStatCard('Resolved', resolvedCount.toString(), Icons.check_circle_outline, Colors.green),
+                          const SizedBox(width: 24),
+                          _buildStatCard('Response Time', '< 24h', Icons.timer_outlined, Colors.orange),
                         ],
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () => _showRaiseTicketDialog(context),
-                        icon: const Icon(Icons.add_circle_outline, size: 20),
-                        label: Text(
-                          'Raise New Ticket',
-                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 40),
+
+                      // My Tickets Section
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'My Support Tickets',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      _ticketsFuture = sl<SupportService>().getMyTickets();
+                                    });
+                                  },
+                                  icon: const Icon(Icons.refresh, size: 18),
+                                  label: const Text('Refresh'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            if (snapshot.connectionState == ConnectionState.waiting)
+                              const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()))
+                            else if (tickets.isEmpty)
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 40),
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.confirmation_number_outlined, size: 48, color: Colors.grey.shade300),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No tickets raised yet',
+                                        style: GoogleFonts.inter(color: AppColors.textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: tickets.length,
+                                separatorBuilder: (context, index) => const Divider(height: 32),
+                                itemBuilder: (context, index) {
+                                  final ticket = tickets[index];
+                                  return _buildTicketItem(ticket);
+                                },
+                              ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Overview Stats (Now Dynamic)
-                  Row(
-                    children: [
-                      _buildStatCard('Active Tickets', activeCount.toString(), Icons.confirmation_number_outlined, Colors.blue),
-                      const SizedBox(width: 24),
-                      _buildStatCard('Resolved', resolvedCount.toString(), Icons.check_circle_outline, Colors.green),
-                      const SizedBox(width: 24),
-                      _buildStatCard('Response Time', '< 24h', Icons.timer_outlined, Colors.orange),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-
-                  // My Tickets Section
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'My Support Tickets',
-                              style: GoogleFonts.inter(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => setState(() {}),
-                              icon: const Icon(Icons.refresh, size: 18),
-                              label: const Text('Refresh'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        if (tickets.isEmpty)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 40),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.confirmation_number_outlined, size: 48, color: Colors.grey.shade300),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No tickets raised yet',
-                                    style: GoogleFonts.inter(color: AppColors.textSecondary),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: tickets.length,
-                            separatorBuilder: (context, index) => const Divider(height: 32),
-                            itemBuilder: (context, index) {
-                              final ticket = tickets[index];
-                              return _buildTicketItem(ticket);
-                            },
-                          ),
-                      ],
-                    ),
-                  ),
+                  );
+                },
+              ),
                   const SizedBox(height: 32),
+
+                  // Dynamic Vendor FAQs Section
+                  // _buildFaqSection(),
+                  // const SizedBox(height: 32),
 
                   // System Status Card
                   Container(
@@ -205,10 +235,8 @@ class _HelpPageState extends State<HelpPage> {
                       ],
                     ),
                   ),
-                ],
-              ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );
@@ -666,6 +694,283 @@ class _HelpPageState extends State<HelpPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFaqSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header & Search Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Frequently Asked Questions (FAQ)',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Search or browse quick answers to common vendor questions',
+                    style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+
+              // Search Bar
+              Container(
+                width: 320,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _faqSearch.isNotEmpty ? AppColors.primary : Colors.grey.shade300),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: AppColors.primary, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _faqSearchController,
+                        onChanged: (v) => setState(() => _faqSearch = v.trim()),
+                        decoration: InputDecoration(
+                          hintText: 'Type keywords (e.g. weight, payout)...',
+                          hintStyle: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 13),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    if (_faqSearch.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          _faqSearchController.clear();
+                          setState(() => _faqSearch = '');
+                        },
+                        child: Icon(Icons.close, color: Colors.grey.shade500, size: 16),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          FutureBuilder<List<dynamic>>(
+            future: _faqsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()));
+              }
+
+              final allFaqs = snapshot.data ?? [];
+              if (allFaqs.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Column(
+                      children: [
+                        Icon(Icons.help_outline, size: 44, color: Colors.grey.shade300),
+                        const SizedBox(height: 12),
+                        Text('No FAQs published yet', style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Extract unique categories
+              final categoriesSet = <String>{'All'};
+              for (final f in allFaqs) {
+                final cat = f['category']?.toString().trim();
+                if (cat != null && cat.isNotEmpty) categoriesSet.add(cat);
+              }
+              final categories = categoriesSet.toList();
+
+              // Filter logic by category and search text
+              final filteredFaqs = allFaqs.where((f) {
+                final String q = (f['question'] ?? '').toString().toLowerCase();
+                final String a = (f['answer'] ?? '').toString().toLowerCase();
+                final String cat = (f['category'] ?? 'General').toString();
+
+                final matchesCategory = _selectedCategory == 'All' || cat == _selectedCategory;
+                final matchesSearch = _faqSearch.isEmpty ||
+                    q.contains(_faqSearch.toLowerCase()) ||
+                    a.contains(_faqSearch.toLowerCase()) ||
+                    cat.toLowerCase().contains(_faqSearch.toLowerCase());
+
+                return matchesCategory && matchesSearch;
+              }).toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category Filter Chips
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: categories.map((cat) {
+                      final isSelected = _selectedCategory == cat;
+                      return ChoiceChip(
+                        label: Text(cat, style: GoogleFonts.inter(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary.withOpacity(0.12),
+                        backgroundColor: const Color(0xFFF1F5F9),
+                        labelStyle: TextStyle(color: isSelected ? AppColors.primary : Colors.grey.shade700),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: isSelected ? AppColors.primary : Colors.grey.shade300),
+                        ),
+                        onSelected: (selected) {
+                          if (selected) setState(() => _selectedCategory = cat);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Results count banner when searching
+                  if (_faqSearch.isNotEmpty || _selectedCategory != 'All')
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Showing ${filteredFaqs.length} result(s)',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                          ),
+                          if (_faqSearch.isNotEmpty) ...[
+                            Text(' for "', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600)),
+                            Text(_faqSearch, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                            Text('"', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600)),
+                          ],
+                          const Spacer(),
+                          InkWell(
+                            onTap: () {
+                              _faqSearchController.clear();
+                              setState(() {
+                                _faqSearch = '';
+                                _selectedCategory = 'All';
+                              });
+                            },
+                            child: Text(
+                              'Clear Filters',
+                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  if (filteredFaqs.isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Column(
+                          children: [
+                            Icon(Icons.search_off, size: 44, color: Colors.grey.shade300),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No FAQs found matching "$_faqSearch"',
+                              style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('Try searching with different keywords', style: GoogleFonts.inter(color: Colors.grey.shade400, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredFaqs.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final faq = filteredFaqs[index];
+                        final String id = faq['_id'] ?? index.toString();
+                        final String question = faq['question'] ?? '';
+                        final String answer = faq['answer'] ?? '';
+                        final String category = faq['category'] ?? 'General';
+                        final bool shouldExpand = _faqSearch.isNotEmpty;
+
+                        return Container(
+                          key: ValueKey('faq_${id}_${_faqSearch}_$_selectedCategory'),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: shouldExpand ? AppColors.primary.withOpacity(0.4) : Colors.grey.shade200),
+                          ),
+                          child: Theme(
+                            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                            child: ExpansionTile(
+                              initiallyExpanded: shouldExpand,
+                              iconColor: AppColors.primary,
+                              collapsedIconColor: Colors.grey.shade600,
+                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                              title: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.shade50,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      category.toUpperCase(),
+                                      style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.purple.shade700),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      question,
+                                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                                  child: Text(
+                                    answer,
+                                    style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade700, height: 1.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }

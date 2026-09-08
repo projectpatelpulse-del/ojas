@@ -1,0 +1,295 @@
+/* Header & Nav Styling */
+.header-navigation {
+  background-color: rgba(248, 244, 240, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 8px 24px;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-brand-logo h1 {
+  font-size: 17px;
+  letter-spacing: 1.5px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.reseller-badge {
+  background-color: rgba(198, 146, 72, 0.08);
+  border: 1px solid rgba(198, 146, 72, 0.3);
+  color: var(--accent-gold);
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.dot-pulse {
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  animation: pulse-badge 1.6s infinite;
+}
+
+@keyframes pulse-badge {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+.header-action-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Header & Cart Badge */
+.cart-trigger-btn {
+  background: none;
+  border: none;
+  color: var(--text-h);
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.cart-trigger-btn:hover {
+  background-color: var(--border);
+}
+
+.cart-badge-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: var(--accent-secondary);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(226, 35, 42, 0.3);
+}
+
+/* Auth Profile Dropdown Menu */
+.user-profile-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.user-avatar-trigger {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.user-avatar-trigger:hover {
+  transform: scale(1.05);
+}
+
+.user-initials {
+  width: 38px;
+  height: 38px;
+  background-color: var(--accent);
+  color: #FFFFFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(107, 29, 29, 0.15);
+  border: 2px solid #FFFFFF;
+}
+
+.user-profile-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  width: 220px;
+  box-shadow: 0 10px 30px rgba(107, 29, 29, 0.08);
+  z-index: 1000;
+  text-align: left;
+}
+
+.dropdown-user-info {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 8px;
+}
+
+.dropdown-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.dropdown-user-email {
+  font-size: 11px;
+  color: var(--text-p);
+  margin-top: 2px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border);
+  margin: 10px 0;
+  opacity: 0.6;
+}
+
+.dropdown-item-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item-btn:hover {
+  background-color: var(--accent-bg);
+  color: var(--accent);
+}
+
+.logout-btn-item {
+  color: #DC2626;
+}
+
+.logout-btn-item:hover {
+  background-color: rgba(220, 38, 38, 0.05);
+  color: #DC2626;
+}
+
+.login-trigger-btn {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-p);
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.login-trigger-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+/* Premium Mobile Styles - Single Row Header Layout */
+@media (max-width: 768px) {
+  .header-navigation {
+    padding: 6px 8px;
+  }
+
+  .header-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .header-brand-logo h1 {
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .reseller-badge {
+    padding: 2px 6px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .header-action-links {
+    flex-direction: row;
+    gap: 6px;
+    padding-right: 0px;
+  }
+
+  .user-initials {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .user-profile-dropdown {
+    top: 36px;
+    right: -4px;
+    width: 200px;
+  }
+}
+
+@media (max-width: 520px) {
+  .badge-prefix {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-brand-logo h1 {
+    font-size: 12.5px;
+    letter-spacing: 0.2px;
+  }
+  .reseller-badge {
+    padding: 2px 4px;
+    font-size: 9.5px;
+  }
+  .header-action-links {
+    gap: 4px;
+  }
+}

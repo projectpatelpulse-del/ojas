@@ -2,8 +2,67 @@ import { useState } from "react";
 import { useListResellerProducts, useUpdateResellerProduct, useRemoveResellerProduct, getListResellerProductsQueryKey } from "@/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/utils";
-import { Package, Edit2, Trash2, Check, Copy, TrendingUp, ShoppingCart, MousePointerClick, CheckCircle } from "lucide-react";
+import { Package, Edit2, Trash2, Check, Copy, TrendingUp, ShoppingCart, MousePointerClick, CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
+
+function ProductDetailsModal({ product, onClose }: { product: any; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4 transition-opacity" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white rounded-3xl overflow-hidden w-full max-w-2xl shadow-2xl flex flex-col md:flex-row max-h-[85vh] md:max-h-[70vh]">
+        {/* Left Side: Product Image */}
+        <div className="md:w-1/2 bg-slate-50 flex items-center justify-center p-6 relative">
+          <button onClick={onClose} className="md:hidden absolute top-4 right-4 bg-white/80 backdrop-blur p-1.5 rounded-full text-slate-500 hover:text-slate-700 hover:scale-105 shadow-sm transition-all"><X size={18} /></button>
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.productName} className="max-w-full max-h-[35vh] md:max-h-[55vh] object-contain rounded-xl" />
+          ) : (
+            <Package size={80} className="text-slate-300" />
+          )}
+        </div>
+        
+        {/* Right Side: Product Information */}
+        <div className="md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto">
+          <div>
+            <div className="hidden md:flex justify-between items-start mb-4">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-3 py-1">
+                {product.category}
+              </span>
+              <button onClick={onClose} className="text-slate-400 hover:text-slate-600 hover:scale-105 transition-all"><X size={20} /></button>
+            </div>
+            
+            <h3 className="font-extrabold text-slate-800 text-xl leading-tight mb-2">{product.productName}</h3>
+            
+            <div className="flex items-center gap-4 mb-4 text-xs font-semibold text-slate-500">
+              <span>Stock: <strong className="text-emerald-600">In Stock</strong></span>
+              {(product as any).moq > 1 && <span>MOQ: <strong className="text-amber-600">{(product as any).moq} units</strong></span>}
+            </div>
+
+            <div className="border-t border-slate-100 pt-4 mb-4">
+              <h4 className="font-bold text-slate-700 text-sm mb-2">Description</h4>
+              <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line max-h-[25vh] overflow-y-auto pr-1">
+                {product.description || "No description available for this product."}
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-100 pt-4 space-y-2 mt-auto">
+            <div className="flex justify-between text-xs text-slate-500">
+              <span>Base Price</span>
+              <span>{formatCurrency(product.basePrice)}</span>
+            </div>
+            <div className="flex justify-between text-xs text-slate-500">
+              <span>Your Markup</span>
+              <span className="text-emerald-600 font-semibold">+{formatCurrency(product.markupAmount)}</span>
+            </div>
+            <div className="flex justify-between items-center border-t border-dashed pt-2">
+              <span className="text-sm font-bold text-slate-700">Your Selling Price</span>
+              <span className="font-extrabold text-2xl text-amber-600 tracking-tight">{formatCurrency(product.sellingPrice)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function MarkupEditor({ product }: { product: any }) {
   const [editing, setEditing] = useState(false);
@@ -64,9 +123,13 @@ export default function MyProducts() {
   const qc = useQueryClient();
   const remove = useRemoveResellerProduct();
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [detailsProduct, setDetailsProduct] = useState<any>(null);
 
   const copyLink = (code: string, productId: string, id: number) => {
-    const url = `https://ojasindia.com/product/${productId}?ref=${code}`;
+    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const url = isLocalhost 
+      ? `http://localhost:5173/product/${productId}?ref=${code}` 
+      : `https://mycollectionsforyou.com/product/${productId}?ref=${code}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     toast.success("Referral URL copied to clipboard!");
@@ -121,9 +184,14 @@ export default function MyProducts() {
               {/* Product Header Info */}
               <div className="p-5 flex-1">
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-2.5 py-0.5">
-                    {p.category}
-                  </span>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-2.5 py-0.5">
+                        {p.category}
+                      </span>
+                      {(p as any).moq > 1 && (
+                        <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-full">MOQ: {(p as any).moq}</span>
+                      )}
+                    </div>
                   <button 
                     onClick={() => {
                       if (confirm("Are you sure you want to remove this product from your list?")) {
@@ -137,7 +205,7 @@ export default function MyProducts() {
                   </button>
                 </div>
                 
-                <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2 mb-4 group-hover:text-amber-700 transition-colors">
+                <h3 onClick={() => setDetailsProduct(p)} className="cursor-pointer font-bold text-slate-800 text-base leading-snug line-clamp-2 mb-4 group-hover:text-amber-700 transition-colors">
                   {p.productName}
                 </h3>
 
@@ -204,6 +272,12 @@ export default function MyProducts() {
             </div>
           ))}
         </div>
+      )}
+      {detailsProduct && (
+        <ProductDetailsModal
+          product={detailsProduct}
+          onClose={() => setDetailsProduct(null)}
+        />
       )}
     </div>
   );

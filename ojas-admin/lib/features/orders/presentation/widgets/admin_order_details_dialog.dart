@@ -3,6 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_admin/features/orders/application/order_controller.dart';
 import 'package:ojas_admin/core/services/api_service.dart';
 import 'package:ojas_admin/core/utils/delivery_challan_helper.dart';
+import 'package:ojas_admin/core/services/invoice_service.dart';
+import 'package:ojas_admin/features/orders/presentation/widgets/shipping_label_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:dio/dio.dart' as dio;
+import 'package:flutter/services.dart';
 
 class AdminOrderDetailsDialog extends StatefulWidget {
   final dynamic order;
@@ -15,30 +21,124 @@ class AdminOrderDetailsDialog extends StatefulWidget {
   });
 
   @override
-  State<AdminOrderDetailsDialog> createState() => _AdminOrderDetailsDialogState();
+  State<AdminOrderDetailsDialog> createState() =>
+      _AdminOrderDetailsDialogState();
 }
 
 class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
   String _selectedPickupStatus = 'Pending';
   bool _isUpdating = false;
+  bool _isUploadingChallan = false;
+  String? _delhiveryChallanUrl;
 
   @override
   void initState() {
     super.initState();
     _selectedPickupStatus = widget.order['pickupStatus'] ?? 'Pending';
+    _delhiveryChallanUrl = widget.order['delhiveryChallanUrl'];
   }
 
-  Future<void> _updatePickupStatus(String newStatus, {DateTime? scheduleDate}) async {
+  Future<void> _pickAndUploadChallan() async {
+    try {
+      FilePickerResult? result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: true,
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      setState(() {
+        _isUploadingChallan = true;
+      });
+
+      List<String> uploadedUrls = [];
+
+      for (var file in result.files) {
+        if (file.bytes == null) continue;
+
+        final bytes = file.bytes!;
+        final filename = file.name;
+
+        final formData = dio.FormData.fromMap({
+          'pdf': dio.MultipartFile.fromBytes(bytes, filename: filename),
+        });
+
+        final uploadResponse = await ApiService().dio.post('/upload/pdf', data: formData);
+        if (uploadResponse.statusCode == 200 && uploadResponse.data['success'] == true) {
+          uploadedUrls.add(uploadResponse.data['url']);
+        } else {
+          throw 'Failed to upload PDF "$filename" to server';
+        }
+      }
+
+      if (uploadedUrls.isEmpty) {
+        throw 'No files were uploaded successfully';
+      }
+
+      final String uploadedUrl = uploadedUrls.join(',');
+
+        final updateResponse = await ApiService().dio.put(
+          '/order/delhivery-challan',
+          data: {
+            'orderId': widget.order['_id'],
+            'challanUrl': uploadedUrl,
+          },
+        );
+
+        if (updateResponse.statusCode == 200 && updateResponse.data['success'] == true) {
+          setState(() {
+            _delhiveryChallanUrl = uploadedUrl;
+          });
+          await widget.controller.fetchAllOrders();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Delhivery Challan uploaded successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          throw 'Failed to update order with challan URL';
+        }
+    } catch (e) {
+      debugPrint('Challan upload error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error uploading challan: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isUploadingChallan = false;
+      });
+    }
+  }
+
+  Future<void> _updatePickupStatus(
+    String newStatus, {
+    DateTime? scheduleDate,
+  }) async {
     setState(() {
       _isUpdating = true;
     });
 
     try {
-      final response = await ApiService().dio.put('/order/pickup-status', data: {
-        'orderId': widget.order['_id'],
-        'pickupStatus': newStatus,
-        if (scheduleDate != null) 'pickupScheduleDate': scheduleDate.toUtc().toIso8601String(),
-      });
+      final response = await ApiService().dio.put(
+        '/order/pickup-status',
+        data: {
+          'orderId': widget.order['_id'],
+          'pickupStatus': newStatus,
+          if (scheduleDate != null)
+            'pickupScheduleDate': scheduleDate.toUtc().toIso8601String(),
+        },
+      );
 
       if (response.data['success']) {
         setState(() {
@@ -49,11 +149,16 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
           SnackBar(
             content: Text(
               'Pickup status updated to $newStatus successfully!',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.white),
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       } else {
@@ -112,9 +217,16 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                     decoration: BoxDecoration(
                       color: Colors.indigo.shade500.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.indigo.shade400.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                        color: Colors.indigo.shade400.withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const Icon(Icons.shield_outlined, color: Color(0xFF818CF8), size: 24),
+                    child: const Icon(
+                      Icons.shield_outlined,
+                      color: Color(0xFF818CF8),
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 18),
                   Expanded(
@@ -134,11 +246,18 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                             ),
                             const SizedBox(width: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF6366F1).withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.5)),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF6366F1,
+                                  ).withOpacity(0.5),
+                                ),
                               ),
                               child: Text(
                                 widget.order['orderId'] ?? 'ID',
@@ -163,16 +282,61 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => DeliveryChallanHelper.generateAndDownload(context, Map<String, dynamic>.from(widget.order)),
-                    icon: const Icon(Icons.download, size: 16),
+
+                  // const SizedBox(width: 16),
+                  // ElevatedButton.icon(
+                  //   onPressed: () => InvoiceService.generateAndDownloadInvoice(Map<String, dynamic>.from(widget.order)),
+                  //   icon: const Icon(Icons.download, size: 16),
+                  //   label: const Text('Download Invoice'),
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Colors.indigo.shade600,
+                  //     foregroundColor: Colors.white,
+                  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  //   ),
+                  // ),
+                  if (widget.order['vendorInvoiceUrl'] != null && widget.order['vendorInvoiceUrl'].toString().isNotEmpty) ...[
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final url = Uri.parse(widget.order['vendorInvoiceUrl']);
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        } else {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Could not open vendor invoice URL')),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.receipt, size: 16),
+                      label: const Text('Vendor Invoice'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  OutlinedButton.icon(
+                    onPressed: () => DeliveryChallanHelper.generateAndDownload(
+                      context,
+                      Map<String, dynamic>.from(widget.order),
+                    ),
+                    icon: const Icon(Icons.receipt_long, size: 16),
                     label: const Text('Download Challan'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo.shade600,
+                    style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: const BorderSide(color: Colors.white54),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -258,7 +422,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                           const SizedBox(height: 20),
 
                           if (pd == null) ...[
-                            _buildEmptyPickupState()
+                            _buildEmptyPickupState(),
                           ] else ...[
                             // Pickup Details Card
                             _buildPickupDetailsCard(pd, dimensions),
@@ -280,18 +444,29 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: _buildImageVerification(widget.order['shippingPhoto'], "Package Shipping Photo"),
+                                      child: _buildImageVerification(
+                                        widget.order['shippingPhoto'],
+                                        "Package Shipping Photo",
+                                      ),
                                     ),
-                                    if (widget.order['dispatchPhoto'] != null) ...[
+                                    if (widget.order['dispatchPhoto'] !=
+                                        null) ...[
                                       const SizedBox(width: 12),
                                       Expanded(
-                                        child: _buildImageVerification(widget.order['dispatchPhoto'], "Parcel Sent Verification"),
+                                        child: _buildImageVerification(
+                                          widget.order['dispatchPhoto'],
+                                          "Parcel Sent Verification",
+                                        ),
                                       ),
                                     ],
-                                    if (widget.order['pickedUpPhoto'] != null) ...[
+                                    if (widget.order['pickedUpPhoto'] !=
+                                        null) ...[
                                       const SizedBox(width: 12),
                                       Expanded(
-                                        child: _buildImageVerification(widget.order['pickedUpPhoto'], "Picked Up Proof"),
+                                        child: _buildImageVerification(
+                                          widget.order['pickedUpPhoto'],
+                                          "Picked Up Proof",
+                                        ),
                                       ),
                                     ],
                                   ],
@@ -300,12 +475,27 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                             ),
                             const SizedBox(height: 28),
 
+                            if (status.toUpperCase() != 'DELIVERED' &&
+                                status.toUpperCase() != 'CANCELLED') ...[
+                              const Divider(color: Color(0xFFE2E8F0)),
+                              const SizedBox(height: 20),
+
+                              // Manual Pickup Coordination
+                              Text(
+                                'Arrange Pickup (Status Update)',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildStatusUpdater(),
+                            ],
                             const Divider(color: Color(0xFFE2E8F0)),
                             const SizedBox(height: 20),
-
-                            // Manual Pickup Coordination
                             Text(
-                              'Arrange Pickup (Status Update)',
+                              'Delhivery Challan (PDF)',
                               style: GoogleFonts.outfit(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
@@ -313,8 +503,8 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            _buildStatusUpdater(),
-                          ]
+                            _buildDelhiveryChallanSection(),
+                          ],
                         ],
                       ),
                     ),
@@ -334,13 +524,16 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
       decoration: BoxDecoration(
         color: const Color(0xFFFEF2F2),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFCA5A5).withOpacity(0.5), width: 1.5),
+        border: Border.all(
+          color: const Color(0xFFFCA5A5).withOpacity(0.5),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFEF4444).withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -354,7 +547,11 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                   color: Color(0xFFFEE2E2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 20),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: Color(0xFFEF4444),
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -387,12 +584,18 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
             ),
             child: Column(
               children: [
-                _buildEscalationTimeRow('Delivered At', widget.order['deliveredAt']),
+                _buildEscalationTimeRow(
+                  'Delivered At',
+                  widget.order['deliveredAt'],
+                ),
                 const SizedBox(height: 6),
-                _buildEscalationTimeRow('Escalated At', widget.order['escalatedAt']),
+                _buildEscalationTimeRow(
+                  'Escalated At',
+                  widget.order['escalatedAt'],
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -401,13 +604,28 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
   Widget _buildEscalationTimeRow(String label, dynamic value) {
     String dateStr = '-';
     if (value != null) {
-      dateStr = DateTime.parse(value.toString()).toLocal().toString().split('.')[0];
+      dateStr = DateTime.parse(
+        value.toString(),
+      ).toLocal().toString().split('.')[0];
     }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF991B1B))),
-        Text(dateStr, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF7F1D1D))),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: const Color(0xFF991B1B),
+          ),
+        ),
+        Text(
+          dateStr,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF7F1D1D),
+          ),
+        ),
       ],
     );
   }
@@ -425,7 +643,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
             color: const Color(0xFF0F172A).withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -437,7 +655,11 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                 radius: 20,
                 backgroundColor: const Color(0xFF6366F1).withOpacity(0.1),
                 child: Text(
-                  widget.order['user'] != null ? widget.order['user']['name'].substring(0, 1).toUpperCase() : 'G',
+                  widget.order['user'] != null
+                      ? widget.order['user']['name']
+                            .substring(0, 1)
+                            .toUpperCase()
+                      : 'G',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF6366F1),
@@ -450,7 +672,9 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.order['user'] != null ? widget.order['user']['name'] : 'Guest Customer',
+                      widget.order['user'] != null
+                          ? widget.order['user']['name']
+                          : 'Guest Customer',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
@@ -459,12 +683,17 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.order['user'] != null ? widget.order['user']['email'] : '-',
-                      style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B)),
+                      widget.order['user'] != null
+                          ? widget.order['user']['email']
+                          : '-',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -475,8 +704,14 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
               const Icon(Icons.phone, size: 16, color: Color(0xFF64748B)),
               const SizedBox(width: 10),
               Text(
-                widget.order['user'] != null ? widget.order['user']['mobile'] : '-',
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF334155), fontWeight: FontWeight.w500),
+                widget.order['user'] != null
+                    ? widget.order['user']['mobile']
+                    : '-',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: const Color(0xFF334155),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -486,12 +721,34 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
             children: [
               const Padding(
                 padding: EdgeInsets.only(top: 2.0),
-                child: Icon(Icons.location_on, size: 16, color: Color(0xFF64748B)),
+                child: Icon(
+                  Icons.location_on,
+                  size: 16,
+                  color: Color(0xFF64748B),
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '${widget.order['shippingAddress']?['street'] ?? ""}, ${widget.order['shippingAddress']?['city'] ?? ""}, ${widget.order['shippingAddress']?['state'] ?? ""} - ${widget.order['shippingAddress']?['zipCode'] ?? ""}',
+                  [
+                            widget.order['shippingAddress']?['buildingName'],
+                            widget.order['shippingAddress']?['street'],
+                            widget.order['shippingAddress']?['area'],
+                            widget.order['shippingAddress']?['landmark'],
+                            widget.order['shippingAddress']?['city'],
+                            widget.order['shippingAddress']?['state'],
+                          ]
+                          .where(
+                            (e) => e != null && e.toString().trim().isNotEmpty,
+                          )
+                          .toSet()
+                          .join(', ') +
+                      (widget.order['shippingAddress']?['zipCode'] != null &&
+                              widget.order['shippingAddress']!['zipCode']
+                                  .toString()
+                                  .isNotEmpty
+                          ? ' - ${widget.order['shippingAddress']?['zipCode']}'
+                          : ''),
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: const Color(0xFF334155),
@@ -566,12 +823,19 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
           const SizedBox(height: 12),
           Text(
             'Specs Pending',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF64748B)),
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: const Color(0xFF64748B),
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'The vendor has not submitted parcel details for pickup yet.',
-            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8)),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: const Color(0xFF94A3B8),
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -582,17 +846,23 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
   Widget _buildPickupDetailsCard(dynamic pd, dynamic dimensions) {
     String scheduledDateStr = '-';
     if (widget.order['pickupScheduledAt'] != null) {
-      scheduledDateStr = DateTime.parse(widget.order['pickupScheduledAt'].toString()).toLocal().toString().split('.')[0];
+      scheduledDateStr = DateTime.parse(
+        widget.order['pickupScheduledAt'].toString(),
+      ).toLocal().toString().split('.')[0];
     }
 
     String choiceDateStr = '-';
     if (widget.order['pickupScheduleDate'] != null) {
-      choiceDateStr = DateTime.parse(widget.order['pickupScheduleDate'].toString()).toLocal().toString().split('.')[0];
+      choiceDateStr = DateTime.parse(
+        widget.order['pickupScheduleDate'].toString(),
+      ).toLocal().toString().split('.')[0];
     }
 
     String pickedUpDateStr = '-';
     if (widget.order['pickedUpAt'] != null) {
-      pickedUpDateStr = DateTime.parse(widget.order['pickedUpAt'].toString()).toLocal().toString().split('.')[0];
+      pickedUpDateStr = DateTime.parse(
+        widget.order['pickedUpAt'].toString(),
+      ).toLocal().toString().split('.')[0];
     }
 
     return Container(
@@ -607,45 +877,86 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
             color: const Color(0xFF0F172A).withOpacity(0.015),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
         children: [
-          _buildSpecsRow('Parcel Weight', '${pd['weight'] ?? 0} kg', Icons.scale_outlined),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
-            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+          _buildSpecsRow(
+            'Parcel Weight',
+            '${pd['weight'] ?? 0} kg',
+            Icons.scale_outlined,
           ),
-          _buildSpecsRow('Number of Parcels', '${pd['numberOfParcels'] ?? 1}', Icons.inventory_2_outlined),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10.0),
             child: Divider(height: 1, color: Color(0xFFF1F5F9)),
           ),
           _buildSpecsRow(
-            'Dimensions (L x W x H)',
-            '${dimensions != null ? dimensions['length'] : 0} × ${dimensions != null ? dimensions['width'] : 0} × ${dimensions != null ? dimensions['height'] : 0} cm',
-            Icons.square_foot_outlined,
+            'Number of Parcels',
+            '${pd['numberOfParcels'] ?? 1}',
+            Icons.inventory_2_outlined,
           ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.0),
+            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+          ),
+          if (pd['dimensionsList'] != null &&
+              (pd['dimensionsList'] as List).isNotEmpty) ...[
+            ...(pd['dimensionsList'] as List).asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final d = entry.value;
+              return Column(
+                children: [
+                  _buildSpecsRow(
+                    'Parcel #$idx Dimensions (L x W x H)',
+                    '${d['length'] ?? 0} × ${d['width'] ?? 0} × ${d['height'] ?? 0} cm',
+                    Icons.square_foot_outlined,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                    child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ),
+                ],
+              );
+            }),
+          ] else ...[
+            _buildSpecsRow(
+              'Dimensions (L x W x H)',
+              '${dimensions != null ? dimensions['length'] : 0} × ${dimensions != null ? dimensions['width'] : 0} × ${dimensions != null ? dimensions['height'] : 0} cm',
+              Icons.square_foot_outlined,
+            ),
+          ],
           if (widget.order['pickupScheduleDate'] != null) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0),
               child: Divider(height: 1, color: Color(0xFFF1F5F9)),
             ),
-            _buildSpecsRow('Manual Scheduled Date/Time', choiceDateStr, Icons.calendar_month_outlined),
+            _buildSpecsRow(
+              'Manual Scheduled Date/Time',
+              choiceDateStr,
+              Icons.calendar_month_outlined,
+            ),
           ] else if (widget.order['pickupScheduledAt'] != null) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0),
               child: Divider(height: 1, color: Color(0xFFF1F5F9)),
             ),
-            _buildSpecsRow('Pickup Scheduled At', scheduledDateStr, Icons.calendar_today_outlined),
+            _buildSpecsRow(
+              'Pickup Scheduled At',
+              scheduledDateStr,
+              Icons.calendar_today_outlined,
+            ),
           ],
           if (widget.order['pickedUpAt'] != null) ...[
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 10.0),
               child: Divider(height: 1, color: Color(0xFFF1F5F9)),
             ),
-            _buildSpecsRow('Picked Up At', pickedUpDateStr, Icons.task_alt_outlined),
+            _buildSpecsRow(
+              'Picked Up At',
+              pickedUpDateStr,
+              Icons.task_alt_outlined,
+            ),
           ],
         ],
       ),
@@ -698,11 +1009,18 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.image_not_supported_outlined, size: 28, color: Color(0xFF94A3B8)),
+            const Icon(
+              Icons.image_not_supported_outlined,
+              size: 28,
+              color: Color(0xFF94A3B8),
+            ),
             const SizedBox(height: 8),
             Text(
               'No photo',
-              style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF94A3B8)),
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: const Color(0xFF94A3B8),
+              ),
             ),
           ],
         ),
@@ -717,7 +1035,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
             color: Colors.black.withOpacity(0.08),
             blurRadius: 15,
             offset: const Offset(0, 6),
-          )
+          ),
         ],
       ),
       child: ClipRRect(
@@ -735,7 +1053,10 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.black.withOpacity(0.8), Colors.transparent],
@@ -745,7 +1066,11 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle_outline, color: Colors.greenAccent, size: 12),
+                    const Icon(
+                      Icons.check_circle_outline,
+                      color: Colors.greenAccent,
+                      size: 12,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -761,7 +1086,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -790,22 +1115,33 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                     color: Colors.black.withOpacity(0.02),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ],
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedPickupStatus,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF475569)),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: Color(0xFF475569),
+                  ),
                   isExpanded: true,
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: const Color(0xFF1E293B),
                     fontWeight: FontWeight.w600,
                   ),
-                  items: ['Pending', 'Pickup Requested', 'Pickup Scheduled', 'Picked Up']
-                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                      .toList(),
+                  items:
+                      [
+                            'Pending',
+                            'Pickup Requested',
+                            'Pickup Scheduled',
+                            'Picked Up',
+                          ]
+                          .map(
+                            (s) => DropdownMenuItem(value: s, child: Text(s)),
+                          )
+                          .toList(),
                   onChanged: _isUpdating
                       ? null
                       : (val) async {
@@ -814,26 +1150,27 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                               final DateTime? date = await showDatePicker(
                                 context: context,
                                 initialDate: DateTime.now(),
-                                firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                                lastDate: DateTime.now().add(const Duration(days: 60)),
+                                firstDate: DateTime.now().subtract(
+                                  const Duration(days: 1),
+                                ),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 60),
+                                ),
                               );
                               if (date == null) return;
-                              
-                              final TimeOfDay? time = await showTimePicker(
-                                context: context,
-                                initialTime: TimeOfDay.now(),
-                              );
-                              if (time == null) return;
-                              
+
                               final selectedDateTime = DateTime(
                                 date.year,
                                 date.month,
                                 date.day,
-                                time.hour,
-                                time.minute,
+                                12, // Default to 12:00 PM (midday)
+                                0,
                               );
-                              
-                              _updatePickupStatus(val, scheduleDate: selectedDateTime);
+
+                              _updatePickupStatus(
+                                val,
+                                scheduleDate: selectedDateTime,
+                              );
                             } else {
                               _updatePickupStatus(val);
                             }
@@ -853,7 +1190,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                 color: Color(0xFF6366F1),
               ),
             ),
-          ]
+          ],
         ],
       ),
     );
@@ -873,7 +1210,8 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: items.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFE2E8F0)),
+            separatorBuilder: (_, __) =>
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
             itemBuilder: (context, index) {
               final item = items[index];
               return ListTile(
@@ -892,9 +1230,43 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                     ),
                   ),
                 ),
-                title: Text(item['name'] ?? 'Product', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold)),
-                subtitle: Text('Qty: ${item['quantity']}', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600)),
-                trailing: Text('₹${item['finalPrice'] ?? (item['price'] * item['quantity'])}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold)),
+                title: Text(
+                  item['name'] ?? 'Product',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Builder(
+                  builder: (context) {
+                    final prod = item['product'];
+                    final varObj = item['variation'];
+                    String sku = '-';
+                    if (varObj is Map &&
+                        varObj['sku'] != null &&
+                        varObj['sku'].toString().trim().isNotEmpty) {
+                      sku = varObj['sku'].toString();
+                    } else if (prod is Map &&
+                        prod['sku'] != null &&
+                        prod['sku'].toString().trim().isNotEmpty) {
+                      sku = prod['sku'].toString();
+                    }
+                    return Text(
+                      'Qty: ${item['quantity']} • SKU: $sku',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    );
+                  },
+                ),
+                trailing: Text(
+                  '₹${((item['sellingPrice'] ?? item['price'] ?? 0) * (item['quantity'] ?? 1))}',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               );
             },
           ),
@@ -906,16 +1278,40 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Subtotal', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600)),
-                    Text('₹${widget.order['subtotal'] ?? 0}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Subtotal',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      '₹${widget.order['subtotal'] ?? 0}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total Tax (GST)', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600)),
-                    Text('₹${widget.order['totalGst'] ?? 0}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Total Tax (GST)',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      '₹${widget.order['totalGst'] ?? 0}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -924,12 +1320,139 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Grand Total', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold)),
-                    Text('₹${widget.order['totalAmount'] ?? 0}', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.indigo.shade600)),
+                    Text(
+                      'Grand Total',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '₹${widget.order['totalAmount'] ?? 0}',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
+          ),
+        ],
+      ));
+      }
+  Widget _buildDelhiveryChallanSection() {
+    if (_isUploadingChallan) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.indigo),
+            ),
+            SizedBox(width: 12),
+            Text('Uploading PDF...', style: TextStyle(fontSize: 14, color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    final hasChallan = _delhiveryChallanUrl != null && _delhiveryChallanUrl!.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.picture_as_pdf,
+                color: hasChallan ? Colors.red.shade700 : Colors.grey.shade400,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasChallan ? 'Delhivery Challan PDF' : 'No Challan Uploaded',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasChallan ? 'Available for vendor to download' : 'Upload official challan PDF',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (hasChallan) ...[
+                ..._delhiveryChallanUrl!.split(',').asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final singleUrl = entry.value.trim();
+                  final challanList = _delhiveryChallanUrl!.split(',');
+                  final label = challanList.length == 1 ? 'View' : 'View ${index + 1}';
+                  return TextButton.icon(
+                    onPressed: () async {
+                      final url = Uri.parse(singleUrl);
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Could not open Challan URL')),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.visibility_outlined, size: 16),
+                    label: Text(label),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.indigo.shade600,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  );
+                }),
+              ],
+              ElevatedButton.icon(
+                onPressed: _pickAndUploadChallan,
+                icon: Icon(hasChallan ? Icons.cached : Icons.upload_file, size: 16),
+                label: Text(hasChallan ? 'Change' : 'Upload'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: hasChallan ? Colors.grey.shade200 : Colors.indigo.shade600,
+                  foregroundColor: hasChallan ? Colors.black87 : Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

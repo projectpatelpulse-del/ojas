@@ -30,12 +30,12 @@ module.exports = async (req, res) => {
   let baseHtml = '';
   try {
     // 1. Fetch the original index.html from the production website to get the latest scripts/assets
-    const htmlRes = await fetchUrl('https://ojasindia.com/index.html');
+    const htmlRes = await fetchUrl('https://mycollectionsforyou.com/index.html');
     baseHtml = htmlRes.body;
   } catch (e) {
     console.error('Error fetching base index.html:', e);
     // Fallback basic HTML template if production HTML is unreachable
-    baseHtml = `<!DOCTYPE html><html><head><title>Ojas India</title><meta name="description" content="Ojas India Marketplace"></head><body><div id="loading">Loading...</div></body></html>`;
+    baseHtml = `<!DOCTYPE html><html><head><title>My Collections For You</title><meta name="description" content="My Collections For You Marketplace"></head><body><div id="loading">Loading...</div></body></html>`;
   }
 
   // If there's no product ID, just return the base HTML
@@ -53,29 +53,29 @@ module.exports = async (req, res) => {
       const product = responseBody.data;
 
       if (product) {
-        const title = product.name || 'Ojas Product';
+        const title = product.name || 'Product';
         const price = product.sellingPrice || product.price || 0;
-        const description = product.shortDescription || product.description || 'Check out this amazing product on Ojas India.';
+        const description = product.shortDescription || product.description || 'Check out this amazing product on My Collections For You.';
         const imageUrl = product.imageUrl || product.image || 'https://cdn-icons-png.flaticon.com/512/7590/7590132.png';
         const productUrl =
         // `http://localhost:65457/product/${id}` + (ref ? `?ref=${ref}` : '');
 
-        `https://ojasindia.com/product/${id}` + (ref ? `?ref=${ref}` : '');
+        `https://mycollectionsforyou.com/product/${id}` + (ref ? `?ref=${ref}` : '');
 
         // Format a user-friendly preview description containing the price
         const formattedDescription = `Price: ₹${Math.ceil(price)} | ${description.substring(0, 150)}${description.length > 150 ? '...' : ''}`;
 
         // 3. Inject Open Graph and Twitter card meta tags
         const ogMetaTags = `
-  <title>${title} - Ojas India</title>
+  <title>${title} - My Collections For You</title>
   <meta name="description" content="${formattedDescription}">
-  <meta property="og:title" content="${title} | Ojas India" />
+  <meta property="og:title" content="${title} | My Collections For You" />
   <meta property="og:description" content="${formattedDescription}" />
   <meta property="og:image" content="${imageUrl}" />
   <meta property="og:url" content="${productUrl}" />
   <meta property="og:type" content="product" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${title} | Ojas India" />
+  <meta name="twitter:title" content="${title} | My Collections For You" />
   <meta name="twitter:description" content="${formattedDescription}" />
   <meta name="twitter:image" content="${imageUrl}" />
         `;

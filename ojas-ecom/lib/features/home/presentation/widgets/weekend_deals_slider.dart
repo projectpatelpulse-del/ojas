@@ -181,6 +181,7 @@ class _WeekendDealsSliderState extends State<WeekendDealsSlider> {
                   link: "/shop",
                   tag: "LIMITED OFFER",
                   type: "promo",
+                  bgColor: "#3B82F6",
                 ),
                 BannerModel(
                   id: "default_wd2",
@@ -190,6 +191,7 @@ class _WeekendDealsSliderState extends State<WeekendDealsSlider> {
                   link: "/shop",
                   tag: "LIMITED OFFER",
                   type: "promo",
+                  bgColor: "#10B981",
                 ),
                 BannerModel(
                   id: "default_wd3",
@@ -199,6 +201,7 @@ class _WeekendDealsSliderState extends State<WeekendDealsSlider> {
                   link: "/shop",
                   tag: "LIMITED OFFER",
                   type: "promo",
+                  bgColor: "#F59E0B",
                 ),
               ]
             : homeController.promoBanners;
@@ -258,19 +261,19 @@ class _WeekendDealsSliderState extends State<WeekendDealsSlider> {
                               ),
 
                         /// OVERLAY
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                AppColors.black.withOpacity(0.75),
-                                AppColors.black.withOpacity(0.35),
-                                AppColors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
+                        // Container(
+                        //   decoration: BoxDecoration(
+                        //     gradient: LinearGradient(
+                        //       begin: Alignment.centerLeft,
+                        //       end: Alignment.centerRight,
+                        //       colors: [
+                        //         AppColors.black.withOpacity(0.75),
+                        //         AppColors.black.withOpacity(0.35),
+                        //         AppColors.transparent,
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
 
                         /// CONTENT
                         Padding(

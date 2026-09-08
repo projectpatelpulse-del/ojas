@@ -332,31 +332,107 @@ extension AddProductPricingMedia on _AddProductPageState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _fieldLabel('Weight (Max 5kg)'),
-          const SizedBox(height: 6),
-          _textField(
-              controller: _weightCtrl,
-              hint: '0.5',
-              keyboardType: TextInputType.number),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Weight *'),
+                    const SizedBox(height: 6),
+                    _textField(
+                      controller: _weightCtrl,
+                      hint: _productWeightUnit == 'kg' ? 'e.g. 0.5' : 'e.g. 500',
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _fieldLabel('Unit'),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _productWeightUnit,
+                          isExpanded: true,
+                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                          items: ['kg', 'g'].map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              updateState(() {
+                                _productWeightUnit = val;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 14),
-          _fieldLabel('Dimensions (Max 100 cm)'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _fieldLabel('Dimensions (Max 100 cm equivalent)'),
+              Row(
+                children: [
+                  Text('Unit: ', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
+                  DropdownButton<String>(
+                    value: _productDimensionsUnit,
+                    underline: const SizedBox(),
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                    items: ['cm', 'in'].map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        updateState(() {
+                          _productDimensionsUnit = val;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
-                  child: _textField(
-                      controller: _lengthCtrl,
-                      hint: 'Length')),
+                child: _textField(
+                  controller: _lengthCtrl,
+                  hint: 'Length (${_productDimensionsUnit})',
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: _textField(
-                      controller: _widthCtrl,
-                      hint: 'Width')),
+                child: _textField(
+                  controller: _widthCtrl,
+                  hint: 'Width (${_productDimensionsUnit})',
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: _textField(
-                      controller: _heightCtrl,
-                      hint: 'Height')),
+                child: _textField(
+                  controller: _heightCtrl,
+                  hint: 'Height (${_productDimensionsUnit})',
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),

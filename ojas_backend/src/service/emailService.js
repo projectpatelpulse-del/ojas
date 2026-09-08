@@ -14,11 +14,14 @@ const getTransporter = async () => {
     
     const user = setting?.emailUser || process.env.EMAIL_USER;
     const pass = setting?.emailPass || process.env.EMAIL_PASS;
+    const host = process.env.EMAIL_HOST || "smtp.gmail.com";
+    const port = parseInt(process.env.EMAIL_PORT || 587, 10);
+    const secure = port === 465;
     
     return nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || "smtp.gmail.com",
-        port: process.env.EMAIL_PORT || 587,
-        secure: false, // true for 465, false for other ports
+        host: host,
+        port: port,
+        secure: secure,
         auth: {
             user: user,
             pass: pass,
@@ -428,5 +431,45 @@ exports.sendLowStockAlert = async (product, vendorUser) => {
         console.log(`[EmailService] Low stock email alert sent to vendor: ${vendorUser.email}`);
     } catch (error) {
         console.error("[EmailService] Error sending low stock alert email:", error);
+    }
+};
+
+/**
+ * Send Email OTP for Vendor Registration
+ */
+exports.sendVendorVerificationEmail = async (email, vendorName, otp) => {
+    try {
+        const transporter = await getTransporter();
+        const setting = await Setting.findOne();
+        const emailUser = setting?.emailUser || process.env.EMAIL_USER;
+
+        const emailTemplate = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+                <h2 style="color: #4CAF50; text-align: center;">Ojas Vendor Email Verification</h2>
+                <p>Hello <strong>${vendorName}</strong>,</p>
+                <p>Thank you for registering as a vendor on Ojas. To complete your registration, please verify your email address using the One-Time Password (OTP) below:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; padding: 10px 20px; background-color: #f1f5f9; border-radius: 6px; border: 1px dashed #cbd5e1;">${otp}</span>
+                </div>
+                
+                <p>This OTP is valid for 10 minutes. If you did not request this verification, please ignore this email.</p>
+                
+                <p style="margin-top: 30px; font-size: 12px; color: #888; text-align: center;">
+                    Thank you for choosing Ojas!
+                </p>
+            </div>
+        `;
+
+        await transporter.sendMail({
+            from: `"Ojas Support" <${emailUser}>`,
+            to: email,
+            subject: "Ojas Vendor Registration OTP",
+            html: emailTemplate,
+        });
+        console.log(`[EmailService] Vendor registration verification email sent to ${email}`);
+    } catch (error) {
+        console.error("[EmailService] Error sending vendor verification email:", error);
+        throw error;
     }
 };

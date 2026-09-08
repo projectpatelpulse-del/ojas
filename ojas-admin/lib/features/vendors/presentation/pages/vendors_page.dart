@@ -797,10 +797,17 @@ class _VendorsPageState extends State<VendorsPage> {
   }
 
   Widget _buildDocumentSection(String label, String url) {
+    String resolvedUrl = url;
+    if (url.startsWith('/')) {
+      resolvedUrl = 'http://localhost:5001$url';
+    } else if (!url.startsWith('http')) {
+      resolvedUrl = 'http://localhost:5001/$url';
+    }
+
     final isImage =
-        url.toLowerCase().contains('.jpg') ||
-        url.toLowerCase().contains('.png') ||
-        url.toLowerCase().contains('.jpeg');
+        resolvedUrl.toLowerCase().contains('.jpg') ||
+        resolvedUrl.toLowerCase().contains('.png') ||
+        resolvedUrl.toLowerCase().contains('.jpeg');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -818,24 +825,61 @@ class _VendorsPageState extends State<VendorsPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              url,
+              resolvedUrl,
               width: double.infinity,
               height: 400,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) => Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 color: Colors.grey.shade100,
-                child: const Text('Unable to load document image'),
+                width: double.infinity,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.broken_image_outlined, size: 48, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Unable to load document image directly due to browser CORS policies.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.parse(resolvedUrl);
+                        try {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Could not open document link'),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('Open Document in New Tab'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF1E293B),
+                        elevation: 0,
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           )
         else
           ElevatedButton.icon(
             onPressed: () async {
-              final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
+              final uri = Uri.parse(resolvedUrl);
+              try {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
-              } else {
+              } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

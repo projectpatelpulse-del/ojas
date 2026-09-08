@@ -5,7 +5,10 @@ const {
     payuWebhook,
     getPaymentStatus,
     refundPayment,
-    webCheckout
+    webCheckout,
+    createCashfreeOrder,
+    verifyCashfreePayment,
+    cashfreeVerifyRedirect
 } = require("../controller/PaymentController");
 const auth = require("../middlewere/Auth.js");
 
@@ -13,6 +16,11 @@ const router = express.Router();
 
 // 1. Create PayU Order & Hash
 router.post("/create-order", auth, createPaymentOrder);
+
+// Cashfree Routes
+router.post("/cashfree-create-order", auth, createCashfreeOrder);
+router.post("/cashfree-verify", auth, verifyCashfreePayment);
+router.get("/cashfree-verify-redirect", cashfreeVerifyRedirect);
 
 // 2. Verify Payment (App callback)
 router.post("/verify", auth, verifyPayment);

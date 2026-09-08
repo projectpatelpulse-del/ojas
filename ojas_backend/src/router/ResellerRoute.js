@@ -3,13 +3,13 @@ const controller = require("../controller/ResellerController.js");
 const auth = require("../middlewere/Auth.js");
 
 // Sub-routers
-const authRouter = express.Router();
-const influencerRouter = express.Router();
-const resellerRouter = express.Router();
-const referralRouter = express.Router();
-const walletRouter = express.Router();
-const withdrawalsRouter = express.Router();
-const productsRouter = express.Router();
+const authRouter = express.Router({ caseSensitive: true });
+const ResellerRouter = express.Router({ caseSensitive: true });
+const resellerRouter = express.Router({ caseSensitive: true });
+const referralRouter = express.Router({ caseSensitive: true });
+const walletRouter = express.Router({ caseSensitive: true });
+const withdrawalsRouter = express.Router({ caseSensitive: true });
+const productsRouter = express.Router({ caseSensitive: true });
 
 // Health Check
 const healthRouter = express.Router();
@@ -20,17 +20,18 @@ productsRouter.get("/", auth, controller.listProducts);
 productsRouter.get("/:id", auth, controller.getProduct);
 
 // Auth Routes
-authRouter.post("/register", controller.registerInfluencer);
-authRouter.post("/login", controller.loginInfluencer);
-authRouter.post("/logout", auth, controller.logoutInfluencer);
+authRouter.post("/register", controller.registerReseller);
+authRouter.post("/login", controller.loginReseller);
+authRouter.post("/logout", auth, controller.logoutReseller);
 authRouter.get("/me", auth, controller.getCurrentUser);
 
-// Influencer Routes
-influencerRouter.get("/profile", auth, controller.getInfluencerProfile);
-influencerRouter.patch("/profile", auth, controller.updateInfluencerProfile);
-influencerRouter.get("/dashboard", auth, controller.getInfluencerDashboard);
-influencerRouter.get("/analytics", auth, controller.getInfluencerAnalytics);
-influencerRouter.get("/orders", auth, controller.listInfluencerOrders);
+// Reseller Routes
+ResellerRouter.get("/profile", auth, controller.getResellerProfile);
+ResellerRouter.patch("/profile", auth, controller.updateResellerProfile);
+ResellerRouter.get("/dashboard", auth, controller.getResellerDashboard);
+ResellerRouter.get("/analytics", auth, controller.getResellerAnalytics);
+ResellerRouter.get("/orders", auth, controller.listResellerOrders);
+ResellerRouter.get("/orders/:id", auth, controller.getResellerOrderDetail);
 
 const resellerApp = require("../controller/ResellerAppController.js");
 
@@ -39,6 +40,14 @@ resellerRouter.get("/products", auth, controller.listResellerProducts);
 resellerRouter.post("/products", auth, controller.addResellerProduct);
 resellerRouter.patch("/products/:id", auth, controller.updateResellerProduct);
 resellerRouter.delete("/products/:id", auth, controller.removeResellerProduct);
+
+// Collections Endpoints
+resellerRouter.get("/collections", auth, controller.listCollections);
+resellerRouter.post("/collections", auth, controller.createCollection);
+resellerRouter.get("/collections/:id", auth, controller.getCollection);
+resellerRouter.put("/collections/:id", auth, controller.updateCollection);
+resellerRouter.delete("/collections/:id", auth, controller.deleteCollection);
+resellerRouter.get("/shared-collections/:shareCode", controller.getSharedCollection);
 
 // New Reseller App Endpoints
 resellerRouter.post("/apply", auth, resellerApp.applyReseller);
@@ -64,7 +73,7 @@ withdrawalsRouter.get("/history", auth, resellerApp.getWithdrawalHistory);
 
 module.exports = {
     auth: authRouter,
-    influencer: influencerRouter,
+    Reseller: ResellerRouter,
     reseller: resellerRouter,
     referral: referralRouter,
     wallet: walletRouter,
