@@ -47,6 +47,4 @@ app.*.map.json
 
 # FVM Version Cache
 
-# Build output (do not commit)
-/build/
-build_log*.txt
+/build/reports/

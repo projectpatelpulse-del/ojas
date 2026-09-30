@@ -1,7 +1,7 @@
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ojas_user/features/auth/application/auth_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
@@ -147,7 +147,7 @@ class _LoginFormState extends State<LoginForm> {
           
           // Full-width Social Login Buttons using Outline Layout
           _SocialLoginButton(
-            icon: Ionicons.logo_google,
+            icon: FontAwesomeIcons.google,
             text: 'Sign in with Google',
             color: Colors.redAccent,
             onPressed: () async {
@@ -243,7 +243,7 @@ class _LoginFormState extends State<LoginForm> {
 }
 
 class _SocialLoginButton extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String text;
   final Color color;
   final VoidCallback onPressed;
@@ -270,7 +270,9 @@ class _SocialLoginButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 20),
+            icon is IconData
+                ? Icon(icon as IconData, color: color, size: 20)
+                : FaIcon(icon as FaIconData, color: color, size: 20),
             const SizedBox(width: 15),
             Text(
               text,

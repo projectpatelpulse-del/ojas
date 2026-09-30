@@ -5,7 +5,7 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../auth/domain/models/user_model.dart';
 
@@ -52,27 +52,27 @@ class OjasFooter extends StatelessWidget {
                         children: [
                           if (settings.facebookLink.isNotEmpty)
                             _socialIcon(
-                              Ionicons.logo_facebook, 
+                              FontAwesomeIcons.facebook, 
                               onTap: () => _launchURL(settings.facebookLink),
                             ),
                           if (settings.instagramLink.isNotEmpty)
                             _socialIcon(
-                              Ionicons.logo_instagram, 
+                              FontAwesomeIcons.instagram, 
                               onTap: () => _launchURL(settings.instagramLink),
                             ),
                           if (settings.twitterLink.isNotEmpty)
                             _socialIcon(
-                              Ionicons.logo_twitter, 
+                              FontAwesomeIcons.xTwitter, 
                               onTap: () => _launchURL(settings.twitterLink),
                             ),
                           if (settings.youtubeLink.isNotEmpty)
                             _socialIcon(
-                              Ionicons.logo_youtube, 
+                              FontAwesomeIcons.youtube, 
                               onTap: () => _launchURL(settings.youtubeLink),
                             ),
                           if (settings.linkedinLink.isNotEmpty)
                             _socialIcon(
-                              Ionicons.logo_linkedin, 
+                              FontAwesomeIcons.linkedin, 
                               onTap: () => _launchURL(settings.linkedinLink),
                             ),
                         ],
@@ -348,7 +348,7 @@ class OjasFooter extends StatelessWidget {
     );
   }
 
-  Widget _socialIcon(IconData icon, {VoidCallback? onTap}) {
+  Widget _socialIcon(dynamic icon, {VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
       onHover: (hovering) {}, // Optional: Add hover effect if needed
@@ -359,7 +359,9 @@ class OjasFooter extends StatelessWidget {
           color: AppColors.black.withOpacity(0.05),
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: AppColors.black87, size: 18),
+        child: icon is IconData
+            ? Icon(icon as IconData, color: AppColors.black87, size: 18)
+            : FaIcon(icon as FaIconData, color: AppColors.black87, size: 18),
       ),
     );
   }
