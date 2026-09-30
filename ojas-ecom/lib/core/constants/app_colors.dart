@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Website Color Palette (Exact mapping from requested colors)
   static const Color creamBg = Color(0xFFF8F4F0);        // Cream (Main Background)
   static const Color maroonFestive = Color(0xFF6B1D1D);   // Maroon (Festive Sale Banner)
   static const Color brightRedAccent = Color(0xFFE2232A); // Bright Red (Accent Strip)
@@ -10,8 +9,8 @@ class AppColors {
   static const Color charcoal = Color(0xFF2E3133);        // Charcoal (Text & Nav)
   static const Color cardBgBeige = Color(0xFFECDCD0);     // Card Background (Soft Beige)
   static const Color cardBorderTint = Color(0xFFD1BBAA);  // Card Border/Shadow Tint
+  static const Color headerFooterBg = cardBgBeige;        // Header & Footer Background (Soft Beige)
 
-  // Role Mappings to existing variables for seamless integration
   static const Color primaryIndigo1 = maroonFestive; 
 
   static const Color primaryIndigo = Color(0xFF0F172A);   // Dark Slate for high-contrast text and prices
@@ -85,7 +84,6 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  // Basic Utility Colors
   static const Color white = Colors.white;
   static const Color black = Colors.black;
   static const Color transparent = Colors.transparent;

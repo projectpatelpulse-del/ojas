@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/features/home/presentation/widgets/hero_section.dart';
 import 'package:ojas_user/features/home/presentation/widgets/categories_section.dart';
-
 import 'package:ojas_user/features/home/presentation/widgets/daily_deals_section.dart';
 import 'package:ojas_user/features/home/presentation/widgets/summer_sale_banner.dart';
 import 'package:ojas_user/features/home/presentation/widgets/trending_items_section.dart';
@@ -11,7 +10,6 @@ import 'package:ojas_user/features/home/presentation/widgets/become_vendor_banne
 import 'package:ojas_user/features/home/presentation/widgets/just_for_you_section.dart';
 import 'package:ojas_user/features/home/presentation/widgets/latest_products_section.dart';
 import 'package:ojas_user/features/home/presentation/widgets/ads_and_subscribe_section.dart';
-
 import '../../../../core/controllers/settings_controller.dart';
 
 class HomePage extends StatelessWidget {

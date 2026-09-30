@@ -60,6 +60,17 @@ class CartController extends ChangeNotifier {
   final CartService _cartService = CartService();
   List<dynamic> _items = [];
   bool _isLoading = false;
+
+  final Set<String> _updatingItemKeys = {};
+  final Set<String> _removingItemKeys = {};
+
+  bool isItemUpdating(String productId, {String? variationId}) {
+    return _updatingItemKeys.contains('${productId}_${variationId ?? ""}');
+  }
+
+  bool isItemRemoving(String productId, {String? variationId}) {
+    return _removingItemKeys.contains('${productId}_${variationId ?? ""}');
+  }
   
   // Pending cart item logic
   String? _pendingProductId;
@@ -171,9 +182,22 @@ class CartController extends ChangeNotifier {
 
   double get totalAmount => subtotal + tax;
 
-  Future<void> loadCart() async {
-    _isLoading = true;
-    notifyListeners();
+  // Future<void> loadCart() async {
+  //   _isLoading = true;
+  //   notifyListeners();
+  //   try {
+  //     final apiItems = await _cartService.getCart();
+  //     _items = apiItems;
+  //     _saveLocalCart(_items);
+  //   } catch(e) {}
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
+  Future<void> loadCart({bool silent = false}) async {
+    if (!silent) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       final apiItems = await _cartService.getCart();
@@ -184,63 +208,96 @@ class CartController extends ChangeNotifier {
       // Fallback to local items if API utterly fails or is completely unauthorized
     }
     
-    _isLoading = false;
+    if (!silent) {
+      _isLoading = false;
+    }
     notifyListeners();
   }
 
+  // Future<bool> addToCart(String productId, {int quantity = 1, int? moq, String? variationId}) async {
+  //   ...
+  // }
   Future<bool> addToCart(String productId, {int quantity = 1, int? moq, String? variationId}) async {
     final token = await _getToken();
     if (token == null) return false;
     
-    int qtyToAdd = quantity;
-    if (quantity < 0) {
-      final existingItemIndex = _items.indexWhere((item) {
-        final p = item['product'];
-        final String? varId = item['variationId'] ?? (item['variation'] != null ? (item['variation']['_id'] ?? item['variation']['id'])?.toString() : null);
-        return p != null && (p['_id'] == productId || p['id'] == productId) && (varId == variationId);
-      });
-      if (existingItemIndex > -1) {
-        final item = _items[existingItemIndex];
-        final currentQty = item['quantity'] ?? 1;
-        final product = item['product'];
-        final int minQty = product != null && product['moq'] != null ? (product['moq'] as num).toInt() : (moq ?? 1);
-        if (currentQty + quantity < minQty) {
-          return false;
+    final itemKey = '${productId}_${variationId ?? ""}';
+    _updatingItemKeys.add(itemKey);
+    notifyListeners();
+
+    try {
+      int qtyToAdd = quantity;
+      if (quantity < 0) {
+        final existingItemIndex = _items.indexWhere((item) {
+          final p = item['product'];
+          final String? varId = item['variationId'] ?? (item['variation'] != null ? (item['variation']['_id'] ?? item['variation']['id'])?.toString() : null);
+          return p != null && (p['_id'] == productId || p['id'] == productId) && (varId == variationId);
+        });
+        if (existingItemIndex > -1) {
+          final item = _items[existingItemIndex];
+          final currentQty = item['quantity'] ?? 1;
+          final product = item['product'];
+          final int minQty = product != null && product['moq'] != null ? (product['moq'] as num).toInt() : (moq ?? 1);
+          if (currentQty + quantity < minQty) {
+            return false;
+          }
+        }
+      } else if (moq != null && moq > 1 && quantity == 1) {
+        bool exists = _items.any((item) {
+          final p = item['product'];
+          final String? varId = item['variationId'] ?? (item['variation'] != null ? (item['variation']['_id'] ?? item['variation']['id'])?.toString() : null);
+          return p != null && (p['_id'] == productId || p['id'] == productId) && (varId == variationId);
+        });
+        if (!exists) {
+          qtyToAdd = moq;
         }
       }
-    } else if (moq != null && moq > 1 && quantity == 1) {
-      bool exists = _items.any((item) {
-        final p = item['product'];
-        final String? varId = item['variationId'] ?? (item['variation'] != null ? (item['variation']['_id'] ?? item['variation']['id'])?.toString() : null);
-        return p != null && (p['_id'] == productId || p['id'] == productId) && (varId == variationId);
-      });
-      if (!exists) {
-        qtyToAdd = moq;
+
+      final refCode = (SessionService.instance.referredProductId == productId)
+          ? SessionService.instance.refCode
+          : null;
+
+      final success = await _cartService.addToCart(productId, quantity: qtyToAdd, referralCode: refCode, variationId: variationId);
+      if (success) {
+        await loadCart(silent: true);
+        return true;
       }
+      return false;
+    } finally {
+      _updatingItemKeys.remove(itemKey);
+      notifyListeners();
     }
-
-    final refCode = (SessionService.instance.referredProductId == productId)
-        ? SessionService.instance.refCode
-        : null;
-
-    final success = await _cartService.addToCart(productId, quantity: qtyToAdd, referralCode: refCode, variationId: variationId);
-    if (success) {
-      await loadCart();
-      return true;
-    }
-    return false;
   }
 
+  // Future<bool> removeFromCart(String productId, {String? variationId}) async {
+  //   final token = await _getToken();
+  //   if (token == null) return false;
+  //   final success = await _cartService.removeFromCart(productId, variationId: variationId);
+  //   if (success) {
+  //     await loadCart();
+  //     return true;
+  //   }
+  //   return false;
+  // }
   Future<bool> removeFromCart(String productId, {String? variationId}) async {
     final token = await _getToken();
     if (token == null) return false;
 
-    final success = await _cartService.removeFromCart(productId, variationId: variationId);
-    if (success) {
-      await loadCart();
-      return true;
+    final itemKey = '${productId}_${variationId ?? ""}';
+    _removingItemKeys.add(itemKey);
+    notifyListeners();
+
+    try {
+      final success = await _cartService.removeFromCart(productId, variationId: variationId);
+      if (success) {
+        await loadCart(silent: true);
+        return true;
+      }
+      return false;
+    } finally {
+      _removingItemKeys.remove(itemKey);
+      notifyListeners();
     }
-    return false;
   }
 
   void clear() {

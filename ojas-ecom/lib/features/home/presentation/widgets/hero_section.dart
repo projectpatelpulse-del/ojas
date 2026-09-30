@@ -61,9 +61,13 @@ class _HeroSectionState extends State<HeroSection> {
         return CenteredContent(
           horizontalPadding: isMobile ? 16 : 40,
           child: Padding(
+            // padding: EdgeInsets.only(
+            //   top: isMobile ? 24 : 40,
+            //   bottom: isMobile ? 24 : 48,
+            // ),
             padding: EdgeInsets.only(
               top: isMobile ? 24 : 40,
-              bottom: isMobile ? 24 : 48,
+              bottom: isMobile ? 8 : 12,
             ),
             child: Column(
               children: [

@@ -8,7 +8,6 @@ import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
-import 'package:ojas_user/features/home/presentation/pages/shop_page.dart';
 import 'package:ojas_user/features/home/presentation/widgets/smart_search_bar.dart';
 
 class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -31,47 +30,84 @@ class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
     }
 
     if (SessionService.instance.refCode != null) {
-      return Column(
-        children: [
-          // 1. Top Info Bar
-          // Container(
-          //   height: 40,
-          //   color: AppColors.primaryIndigo.withOpacity(0.95),
-          //   child: const CenteredContent(
-          //     horizontalPadding: 40,
-          //     child: _TopInfoBarContent(),
-          //   ),
-          // ),
-          
-          // 2. Main Navigation Bar
-          Container(
-            height: 70,
-            color: AppColors.primaryIndigo,
-            child: CenteredContent(
-              horizontalPadding: 40,
-              child: _MainNavBarContent(activeTitle: activeTitle),
+      // return Column(
+      //   children: [
+      //     Container(
+      //       height: 70,
+      //       color: AppColors.primaryIndigo,
+      //       child: CenteredContent(
+      //         horizontalPadding: 40,
+      //         child: _MainNavBarContent(activeTitle: activeTitle),
+      //       ),
+      //     ),
+      //   ],
+      // );
+      return Container(
+        decoration: BoxDecoration(
+          color: AppColors.headerFooterBg,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          children: [
+            // 2. Main Navigation Bar
+            Container(
+              height: 70,
+              // color: AppColors.primaryIndigo,
+              color: AppColors.headerFooterBg,
+              child: CenteredContent(
+                horizontalPadding: 40,
+                child: _MainNavBarContent(activeTitle: activeTitle),
+              ),
+            ),
+          ],
+        ),
       );
     }
 
-    return Column(
+    // return Column(
+    //     children: [
+    //       Container(
+    //         height: 70,
+    //         color: AppColors.primaryIndigo,
+    //         child: CenteredContent(
+    //           horizontalPadding: 40,
+    //           child: _MainNavBarContent(activeTitle: activeTitle),
+    //         ),
+    //       ),
+    //       Container(
+    //         height: 70,
+    //         color: AppColors.primaryIndigo.withOpacity(0.98),
+    //         child: const CenteredContent(
+    //           horizontalPadding: 40,
+    //           child: _SearchBarRowContent(),
+    //         ),
+    //       ),
+    //     ],
+    // );
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.headerFooterBg,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         children: [
-          // 1. Top Info Bar
-          // Container(
-          //   height: 40,
-          //   color: AppColors.primaryIndigo.withOpacity(0.95),
-          //   child: const CenteredContent(
-          //     horizontalPadding: 40,
-          //     child: _TopInfoBarContent(),
-          //   ),
-          // ),
-          
           // 2. Main Navigation Bar
           Container(
             height: 70,
-            color: AppColors.primaryIndigo,
+            // color: AppColors.primaryIndigo,
+            color: AppColors.headerFooterBg,
             child: CenteredContent(
               horizontalPadding: 40,
               child: _MainNavBarContent(activeTitle: activeTitle),
@@ -81,13 +117,15 @@ class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
           // 3. Search & Vendor Bar
           Container(
             height: 70,
-            color: AppColors.primaryIndigo.withOpacity(0.98),
+            // color: AppColors.primaryIndigo.withOpacity(0.98),
+            color: AppColors.headerFooterBg,
             child: const CenteredContent(
               horizontalPadding: 40,
               child: _SearchBarRowContent(),
             ),
           ),
         ],
+      ),
     );
   }
 }
@@ -126,10 +164,18 @@ class _MobileNavbarState extends State<_MobileNavbar> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primaryIndigo,
+        // color: AppColors.primaryIndigo,
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: AppColors.black.withOpacity(0.1),
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
+        color: AppColors.headerFooterBg,
         boxShadow: [
           BoxShadow(
-            color: AppColors.black.withOpacity(0.1),
+            color: AppColors.black.withOpacity(0.06),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -147,7 +193,8 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                 SessionService.instance.refCode != null
                     ? const SizedBox(width: 48)
                     : IconButton(
-                        icon: const Icon(Icons.menu, color: AppColors.black),
+                        // icon: const Icon(Icons.menu, color: AppColors.black),
+                        icon: const Icon(Icons.menu, color: AppColors.charcoal),
                         onPressed: () => Scaffold.of(context).openDrawer(),
                       ),
                 Expanded(
@@ -174,7 +221,8 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                                 style: GoogleFonts.outfit(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.white,
+                                  // color: AppColors.white,
+                                  color: AppColors.charcoal,
                                   letterSpacing: 1.5,
                                 ),
                               ),
@@ -184,7 +232,8 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                               style: GoogleFonts.outfit(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.white,
+                                // color: AppColors.white,
+                                color: AppColors.charcoal,
                                 letterSpacing: 1.5,
                               ),
                             ),
@@ -334,7 +383,8 @@ class _MainNavBarContent extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.white,
+                      // color: AppColors.white,
+                      color: AppColors.charcoal,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -344,7 +394,8 @@ class _MainNavBarContent extends StatelessWidget {
                   style: GoogleFonts.outfit(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.white,
+                    // color: AppColors.white,
+                    color: AppColors.charcoal,
                     letterSpacing: 1.5,
                   ),
                 ),
@@ -414,18 +465,31 @@ class _MainNavBarContent extends StatelessWidget {
           builder: (context, _) {
             return ElevatedButton.icon(
               onPressed: () => Scaffold.of(context).openEndDrawer(),
+              // style: ElevatedButton.styleFrom(
+              //   backgroundColor: AppColors.primaryBlue,
+              //   foregroundColor: AppColors.black,
+              //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              // ),
+              // icon: Badge(
+              //   label: Text(CartController.instance.itemCount.toString()),
+              //   isLabelVisible: CartController.instance.itemCount > 0,
+              //   child: const Icon(Icons.shopping_cart_outlined, size: 18),
+              // ),
+              // label: const Text('My Cart', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryBlue,
-                foregroundColor: AppColors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                backgroundColor: AppColors.goldAccent,
+                foregroundColor: AppColors.charcoal,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               icon: Badge(
                 label: Text(CartController.instance.itemCount.toString()),
                 isLabelVisible: CartController.instance.itemCount > 0,
-                child: const Icon(Icons.shopping_cart_outlined, size: 18),
+                child: const Icon(Icons.shopping_cart_outlined, size: 18, color: AppColors.charcoal),
               ),
-              label: const Text('My Cart', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              label: const Text('My Cart', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.charcoal)),
             );
           },
         ),
@@ -558,14 +622,23 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
           flex: 2,
           child: ElevatedButton.icon(
             onPressed: () => Navigator.pushNamed(context, '/become-vendor'),
+            // style: ElevatedButton.styleFrom(
+            //   backgroundColor: AppColors.accentOrange,
+            //   foregroundColor: AppColors.black,
+            //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            // ),
+            // icon: const Icon(Icons.storefront_outlined, size: 18),
+            // label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accentOrange,
-              foregroundColor: AppColors.black,
+              backgroundColor: AppColors.goldAccent,
+              foregroundColor: AppColors.charcoal,
+              elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            icon: const Icon(Icons.storefront_outlined, size: 18),
-            label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+            icon: const Icon(Icons.storefront_outlined, size: 18, color: AppColors.charcoal),
+            label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.charcoal))),
           ),
         ),
         
@@ -582,14 +655,23 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
               flex: 2,
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pushNamed(context, '/become-reseller'),
+                // style: ElevatedButton.styleFrom(
+                //   backgroundColor: AppColors.primaryBlue,
+                //   foregroundColor: AppColors.black,
+                //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                // ),
+                // icon: const Icon(Icons.people_outline, size: 18),
+                // label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: AppColors.black,
+                  backgroundColor: AppColors.goldAccent,
+                  foregroundColor: AppColors.charcoal,
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                icon: const Icon(Icons.people_outline, size: 18),
-                label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                icon: const Icon(Icons.people_outline, size: 18, color: AppColors.charcoal),
+                label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.charcoal))),
               ),
             );
           },
@@ -675,8 +757,10 @@ class _NavItem extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isActive ? AppColors.accentOrange : AppColors.transparent,
-                width: 2.0,
+                // color: isActive ? AppColors.accentOrange : AppColors.transparent,
+                // width: 2.0,
+                color: isActive ? AppColors.goldAccent : AppColors.transparent,
+                width: 2.5,
               ),
             ),
           ),
@@ -685,8 +769,10 @@ class _NavItem extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              color: isActive ? AppColors.accentOrange : AppColors.black,
-              fontSize: 13,
+              // color: isActive ? AppColors.accentOrange : AppColors.black,
+              // fontSize: 13,
+              color: isActive ? AppColors.goldAccent : AppColors.charcoal,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
@@ -721,14 +807,16 @@ class _IconAction extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: AppColors.black, size: 20),
+            // Icon(icon, color: AppColors.black, size: 20),
+            Icon(icon, color: AppColors.charcoal, size: 20),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
                 '$label $count',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(color: AppColors.black, fontSize: 13, fontWeight: FontWeight.w500),
+                // style: GoogleFonts.inter(color: AppColors.black, fontSize: 13, fontWeight: FontWeight.w500),
+                style: GoogleFonts.inter(color: AppColors.charcoal, fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -748,10 +836,12 @@ class _AuthLink extends StatelessWidget {
       onTap: () => Navigator.pushNamed(context, '/login'),
       borderRadius: BorderRadius.circular(4),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        // padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Text(
           title,
-          style: GoogleFonts.inter(color: AppColors.black, fontSize: 14, fontWeight: FontWeight.w600),
+          // style: GoogleFonts.inter(color: AppColors.black, fontSize: 14, fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(color: AppColors.charcoal, fontSize: 14, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -764,12 +854,24 @@ class _RegisterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => Navigator.pushNamed(context, '/register'),
-      borderRadius: BorderRadius.circular(4),
+      // borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // decoration: BoxDecoration(
+        //   color: AppColors.white,
+        //   borderRadius: BorderRadius.circular(4),
+        // ),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Text(
           'Register',

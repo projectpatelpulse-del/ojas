@@ -177,12 +177,14 @@ class _MobileDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       width: MediaQuery.of(context).size.width * 2 / 3,
-      backgroundColor: AppColors.primaryIndigo,
+      // backgroundColor: AppColors.primaryIndigo,
+      backgroundColor: AppColors.headerFooterBg,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: AppColors.primaryIndigo),
+            // decoration: const BoxDecoration(color: AppColors.primaryIndigo),
+            decoration: const BoxDecoration(color: AppColors.headerFooterBg),
             child: Center(
               child: SettingsController.instance.settings.logo.isNotEmpty
                   ? Image.network(
@@ -195,7 +197,8 @@ class _MobileDrawer extends StatelessWidget {
                       style: GoogleFonts.outfit(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.white,
+                        // color: AppColors.white,
+                        color: AppColors.charcoal,
                         letterSpacing: 2,
                       ),
                     ),
@@ -242,7 +245,8 @@ class _MobileDrawer extends StatelessWidget {
               );
             },
           ),
-          const Divider(color: AppColors.white24, indent: 20, endIndent: 20),
+          // const Divider(color: AppColors.white24, indent: 20, endIndent: 20),
+          const Divider(color: AppColors.cardBorderTint, indent: 20, endIndent: 20),
           _DrawerItem(title: 'BECOME VENDOR', icon: Icons.storefront_outlined, onTap: () => Navigator.pushNamed(context, '/become-vendor')),
           ValueListenableBuilder<UserModel?>(
             valueListenable: SessionService.instance.userNotifier,
@@ -281,10 +285,12 @@ class _DrawerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.white70),
+      // leading: Icon(icon, color: AppColors.white70),
+      leading: Icon(icon, color: AppColors.charcoal),
       title: Text(
         title,
-        style: GoogleFonts.inter(color: AppColors.white, fontWeight: FontWeight.w500),
+        // style: GoogleFonts.inter(color: AppColors.white, fontWeight: FontWeight.w500),
+        style: GoogleFonts.inter(color: AppColors.charcoal, fontWeight: FontWeight.w600),
       ),
       onTap: () {
         Navigator.pop(context);

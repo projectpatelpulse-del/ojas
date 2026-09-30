@@ -365,10 +365,12 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
       child: Container(
         height: 45,
         decoration: BoxDecoration(
-          color: widget.isMobile ? AppColors.white : AppColors.grey[300],
+          // color: widget.isMobile ? AppColors.white : AppColors.grey[300],
+          color: widget.isMobile ? AppColors.white : const Color(0xFFE2DFD8),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppColors.primaryBlue,
+            // color: AppColors.primaryBlue,
+            color: AppColors.goldAccent,
             width: 1.2,
           ),
         ),
@@ -389,7 +391,8 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     hintStyle: const TextStyle(
-                      color: AppColors.grey,
+                      // color: AppColors.grey,
+                      color: AppColors.grey600,
                       fontSize: 13,
                     ),
                   ),
@@ -412,7 +415,8 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
                 width: 45,
                 height: 45,
                 decoration: const BoxDecoration(
-                  color: AppColors.primaryBlue,
+                  // color: AppColors.primaryBlue,
+                  color: AppColors.goldAccent,
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(6),
                     bottomRight: Radius.circular(6),

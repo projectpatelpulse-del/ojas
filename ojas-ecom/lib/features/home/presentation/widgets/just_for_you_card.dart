@@ -128,7 +128,8 @@ class _JustForYouCardState extends State<JustForYouCard> {
                     children: [
                       Text(
                         '₹${widget.price.ceil()}',
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87),
+                        // style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black87),
+                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryPink),
                       ),
                       const SizedBox(width: 6),
                       Text(

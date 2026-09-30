@@ -18,7 +18,16 @@ class OjasFooter extends StatelessWidget {
     final settings = SettingsController.instance.settings;
 
     return Container(
-      color: AppColors.primaryIndigo, // Premium Dark Indigo matching navbar
+      // color: AppColors.primaryIndigo, // Premium Dark Indigo matching navbar
+      decoration: const BoxDecoration(
+        color: AppColors.headerFooterBg,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.cardBorderTint,
+            width: 1,
+          ),
+        ),
+      ),
       padding: EdgeInsets.only(top: isMobile ? 40 : 80, bottom: 40),
       child: CenteredContent(
         horizontalPadding: isMobile ? 16 : 40,
@@ -42,7 +51,8 @@ class OjasFooter extends StatelessWidget {
                           ? settings.tagline 
                           : 'Your trusted marketplace for quality products from verified vendors worldwide. Discover amazing deals and exceptional service.',
                         style: GoogleFonts.inter(
-                          color: AppColors.black87,
+                          // color: AppColors.black87,
+                          color: AppColors.charcoal.withOpacity(0.85),
                           height: 1.6,
                           fontSize: 13,
                         ),
@@ -80,7 +90,8 @@ class OjasFooter extends StatelessWidget {
                       const SizedBox(height: 24),
                       Text(
                         settings.footerMessage,
-                        style: GoogleFonts.inter(color: AppColors.black38, fontSize: 11),
+                        // style: GoogleFonts.inter(color: AppColors.black38, fontSize: 11),
+                        style: GoogleFonts.inter(color: AppColors.charcoal.withOpacity(0.6), fontSize: 11),
                       ),
                     ],
                   ),
@@ -211,10 +222,11 @@ class OjasFooter extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primaryPink,
+            // color: AppColors.primaryPink,
+            color: AppColors.goldAccent,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(name.isNotEmpty ? name[0] : 'O', style: const TextStyle(color: AppColors.black, fontWeight: FontWeight.bold, fontSize: 18)),
+          child: Text(name.isNotEmpty ? name[0] : 'O', style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         const SizedBox(width: 8),
         Text(
@@ -222,7 +234,8 @@ class OjasFooter extends StatelessWidget {
           style: GoogleFonts.outfit(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.black,
+            // color: AppColors.black,
+            color: AppColors.charcoal,
           ),
         ),
       ],
@@ -232,12 +245,14 @@ class OjasFooter extends StatelessWidget {
   Widget _vendorBadge() {
     return Row(
       children: [
-        const Icon(Icons.storefront, color: Colors.deepOrange, size: 16),
+        // const Icon(Icons.storefront, color: Colors.deepOrange, size: 16),
+        const Icon(Icons.storefront, color: AppColors.goldAccent, size: 16),
         const SizedBox(width: 8),
         Text(
           'Become Vendor',
           style: GoogleFonts.inter(
-            color: Colors.deepOrange,
+            // color: Colors.deepOrange,
+            color: AppColors.charcoal,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -249,12 +264,14 @@ class OjasFooter extends StatelessWidget {
   Widget _resellerBadge() {
     return Row(
       children: [
-        const Icon(Icons.people, color: Colors.blueAccent, size: 16),
+        // const Icon(Icons.people, color: Colors.blueAccent, size: 16),
+        const Icon(Icons.people, color: AppColors.goldAccent, size: 16),
         const SizedBox(width: 8),
         Text(
           'Become Reseller',
           style: GoogleFonts.inter(
-            color: Colors.blueAccent,
+            // color: Colors.blueAccent,
+            color: AppColors.charcoal,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -268,17 +285,20 @@ class OjasFooter extends StatelessWidget {
       width: 140,
       height: 80,
       decoration: BoxDecoration(
-        color: AppColors.black,
+        // color: AppColors.black,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
-          BoxShadow(color: AppColors.black.withOpacity(0.02), blurRadius: 4),
+          // BoxShadow(color: AppColors.black.withOpacity(0.02), blurRadius: 4),
+          BoxShadow(color: AppColors.black.withOpacity(0.04), blurRadius: 4),
         ],
       ),
       child: Center(
         child: isBoat
             ? RichText(
                 text: TextSpan(
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.normal, color: AppColors.black87),
+                  // style: const TextStyle(fontSize: 24, fontWeight: FontWeight.normal, color: AppColors.black87),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.normal, color: AppColors.charcoal),
                   children: [
                     const TextSpan(text: 'bo'),
                     TextSpan(text: 'A', style: TextStyle(color: AppColors.errorRed[600], fontWeight: FontWeight.bold)),
@@ -289,8 +309,10 @@ class OjasFooter extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.shopping_cart, color: AppColors.black87, size: 20),
-                  Text('SHOP SMART', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.pink, fontSize: 11)),
+                  // const Icon(Icons.shopping_cart, color: AppColors.black87, size: 20),
+                  const Icon(Icons.shopping_cart, color: AppColors.charcoal, size: 20),
+                  // Text('SHOP SMART', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.pink, fontSize: 11)),
+                  Text('SHOP SMART', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: AppColors.goldAccent, fontSize: 11)),
                 ],
               ),
       ),
@@ -304,8 +326,10 @@ class OjasFooter extends StatelessWidget {
         title,
         style: GoogleFonts.inter(
           fontWeight: FontWeight.bold,
-          fontSize: 12,
-          color: AppColors.black,
+          // fontSize: 12,
+          // color: AppColors.black,
+          fontSize: 13,
+          color: AppColors.charcoal,
           letterSpacing: 1.0,
         ),
       ),
@@ -332,13 +356,15 @@ class OjasFooter extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: AppColors.black54),
+          // Icon(icon, size: 16, color: AppColors.black54),
+          Icon(icon, size: 16, color: AppColors.goldAccent),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
               style: GoogleFonts.inter(
-                color: AppColors.black87,
+                // color: AppColors.black87,
+                color: AppColors.charcoal.withOpacity(0.85),
                 fontSize: 13,
               ),
             ),
@@ -356,12 +382,15 @@ class OjasFooter extends StatelessWidget {
         margin: const EdgeInsets.only(right: 16),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.black.withOpacity(0.05),
+          // color: AppColors.black.withOpacity(0.05),
+          color: AppColors.charcoal.withOpacity(0.08),
           shape: BoxShape.circle,
         ),
         child: icon is IconData
-            ? Icon(icon as IconData, color: AppColors.black87, size: 18)
-            : FaIcon(icon as FaIconData, color: AppColors.black87, size: 18),
+            // ? Icon(icon as IconData, color: AppColors.black87, size: 18)
+            // : FaIcon(icon as FaIconData, color: AppColors.black87, size: 18),
+            ? Icon(icon as IconData, color: AppColors.charcoal, size: 18)
+            : FaIcon(icon as FaIconData, color: AppColors.charcoal, size: 18),
       ),
     );
   }
@@ -396,10 +425,12 @@ class _FooterLinkItemState extends State<_FooterLinkItem> {
 
   @override
   Widget build(BuildContext context) {
-    // Primary pink color from branding, matches navbar hover
-    const Color activeColor = AppColors.primaryPink;
-    const Color normalColor = AppColors.black87;
-    const Color hoverColor = AppColors.black;
+    // const Color activeColor = AppColors.primaryPink;
+    // const Color normalColor = AppColors.black87;
+    // const Color hoverColor = AppColors.black;
+    const Color activeColor = AppColors.goldAccent;
+    final Color normalColor = AppColors.charcoal.withOpacity(0.85);
+    const Color hoverColor = AppColors.goldAccent;
 
     return InkWell(
       onTap: widget.onTap,
@@ -413,14 +444,17 @@ class _FooterLinkItemState extends State<_FooterLinkItem> {
             style: GoogleFonts.inter(
               color: widget.isActive ? activeColor : (_isHovered ? hoverColor : normalColor),
               fontSize: 13,
-              fontWeight: widget.isActive ? FontWeight.bold : FontWeight.normal,
+              // fontWeight: widget.isActive ? FontWeight.bold : FontWeight.normal,
+              fontWeight: widget.isActive ? FontWeight.bold : FontWeight.w500,
             ),
           ),
           if (widget.isActive)
             Container(
               margin: const EdgeInsets.only(top: 2),
-              height: 1.5,
-              width: 15,
+              // height: 1.5,
+              // width: 15,
+              height: 2,
+              width: 16,
               color: activeColor,
             ),
         ],

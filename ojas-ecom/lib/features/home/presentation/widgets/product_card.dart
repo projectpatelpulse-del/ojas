@@ -155,7 +155,8 @@ class _ProductCardState extends State<ProductCard> {
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
-                                color: AppColors.primaryIndigo,
+                                // color: AppColors.primaryIndigo,
+                                color: AppColors.primaryPink,
                               ),
                             ),
                             if (widget.product.oldPrice != null) ...[

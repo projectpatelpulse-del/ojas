@@ -1046,27 +1046,70 @@ class _ShopProductCard extends StatelessWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Row(
+                    // Row(
+                    //   children: [
+                    //     Icon(
+                    //       Icons.inventory_2_outlined,
+                    //       size: 13,
+                    //       color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
+                    //     ),
+                    //     const SizedBox(width: 4),
+                    //     Text(
+                    //       (product['stock'] ?? 0) > 0 ? 'In Stock': 'Out of Stock',
+                    //       style: GoogleFonts.inter(
+                    //         fontSize: 11,
+                    //         fontWeight: FontWeight.w600,
+                    //         color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
+                    //       ),
+                    //     ),
+                    //     if ((product['moq'] ?? 1) > 1) ...[
+                    //       const SizedBox(width: 8),
+                    //       Container(
+                    //         // padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    //         decoration: BoxDecoration(
+                    //           color: AppColors.blue50,
+                    //           borderRadius: BorderRadius.circular(4),
+                    //           border: Border.all(color: AppColors.blue200),
+                    //         ),
+                    //         child: Text(
+                    //           'MOQ: ${product['moq']}',
+                    //           style: GoogleFonts.inter(
+                    //             fontSize: 9,
+                    //             fontWeight: FontWeight.bold,
+                    //             color: AppColors.blue700,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ],
+                    // ),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: 13,
-                          color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 13,
+                              color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              (product['stock'] ?? 0) > 0 ? 'In Stock': 'Out of Stock',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          (product['stock'] ?? 0) > 0 ? 'In Stock': 'Out of Stock',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: (product['stock'] ?? 0) > 0 ? AppColors.green600 : AppColors.red600,
-                          ),
-                        ),
-                        if ((product['moq'] ?? 1) > 1) ...[
-                          const SizedBox(width: 8),
+                        if ((product['moq'] ?? 1) > 1)
                           Container(
-                            // padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                             decoration: BoxDecoration(
                               color: AppColors.blue50,
                               borderRadius: BorderRadius.circular(4),
@@ -1081,8 +1124,6 @@ class _ShopProductCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        ],
-                  
                       ],
                     ),
                     SizedBox(height: isMobile ? 8 : 12),

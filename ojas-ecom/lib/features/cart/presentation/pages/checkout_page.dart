@@ -346,6 +346,9 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
     final String productId = (product['_id'] ?? product['id'])?.toString() ?? '';
     final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
 
+    final bool isUpdating = _cartController.isItemUpdating(productId, variationId: variationId);
+    final bool isRemoving = _cartController.isItemRemoving(productId, variationId: variationId);
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -417,6 +420,46 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              // Container(
+              //   decoration: BoxDecoration(
+              //     border: Border.all(color: const Color(0xFFCBD5E1)),
+              //     borderRadius: BorderRadius.circular(6),
+              //   ),
+              //   child: Row(
+              //     mainAxisSize: MainAxisSize.min,
+              //     children: [
+              //       InkWell(
+              //         onTap: () {
+              //           if (quantity > 1) {
+              //             _cartController.addToCart(productId, quantity: -1, variationId: variationId);
+              //           } else {
+              //             _cartController.removeFromCart(productId, variationId: variationId);
+              //           }
+              //         },
+              //         child: const Padding(
+              //           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              //           child: Icon(Icons.remove, size: 14, color: Color(0xFF475569)),
+              //         ),
+              //       ),
+              //       Padding(
+              //         padding: const EdgeInsets.symmetric(horizontal: 6),
+              //         child: Text(
+              //           '$quantity',
+              //           style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+              //         ),
+              //       ),
+              //       InkWell(
+              //         onTap: () {
+              //           _cartController.addToCart(productId, quantity: 1, variationId: variationId);
+              //         },
+              //         child: const Padding(
+              //           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              //           child: Icon(Icons.add, size: 14, color: Color(0xFF475569)),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xFFCBD5E1)),
@@ -426,57 +469,127 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     InkWell(
-                      onTap: () {
-                        if (quantity > 1) {
-                          _cartController.addToCart(productId, quantity: -1, variationId: variationId);
-                        } else {
-                          _cartController.removeFromCart(productId, variationId: variationId);
-                        }
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Icon(Icons.remove, size: 14, color: Color(0xFF475569)),
+                      onTap: (isUpdating || isRemoving)
+                          ? null
+                          : () {
+                              if (quantity > 1) {
+                                _cartController.addToCart(productId, quantity: -1, variationId: variationId);
+                              } else {
+                                _cartController.removeFromCart(productId, variationId: variationId);
+                              }
+                            },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Icon(
+                          Icons.remove,
+                          size: 14,
+                          color: (isUpdating || isRemoving) ? AppColors.grey[400] : const Color(0xFF475569),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Text(
-                        '$quantity',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
+                      child: isUpdating
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryPink),
+                              ),
+                            )
+                          : Text(
+                              '$quantity',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: AppColors.primaryPink,
+                              ),
+                            ),
                     ),
                     InkWell(
-                      onTap: () {
-                        _cartController.addToCart(productId, quantity: 1, variationId: variationId);
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Icon(Icons.add, size: 14, color: Color(0xFF475569)),
+                      onTap: (isUpdating || isRemoving)
+                          ? null
+                          : () {
+                              _cartController.addToCart(productId, quantity: 1, variationId: variationId);
+                            },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Icon(
+                          Icons.add,
+                          size: 14,
+                          color: (isUpdating || isRemoving) ? AppColors.grey[400] : const Color(0xFF475569),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 8),
+              // InkWell(
+              //   onTap: () {
+              //     _cartController.removeFromCart(productId, variationId: variationId);
+              //   },
+              //   child: Row(
+              //     mainAxisSize: MainAxisSize.min,
+              //     children: [
+              //       const Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
+              //       const SizedBox(width: 4),
+              //       Text(
+              //         'Remove',
+              //         style: GoogleFonts.inter(
+              //           fontSize: 12,
+              //           color: const Color(0xFFEF4444),
+              //           fontWeight: FontWeight.w500,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               InkWell(
-                onTap: () {
-                  _cartController.removeFromCart(productId, variationId: variationId);
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Remove',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: const Color(0xFFEF4444),
-                        fontWeight: FontWeight.w500,
+                onTap: (isUpdating || isRemoving)
+                    ? null
+                    : () {
+                        _cartController.removeFromCart(productId, variationId: variationId);
+                      },
+                child: isRemoving
+                    ? const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFEF4444)),
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Removing...',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFEF4444),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Remove',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: const Color(0xFFEF4444),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),

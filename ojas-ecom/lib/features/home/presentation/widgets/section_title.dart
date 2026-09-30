@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -13,8 +15,10 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isMobile = Responsive.isMobile(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      // padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 4.0 : 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -23,9 +27,15 @@ class SectionTitle extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              // style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              //   fontSize: 24,
+              //   fontWeight: FontWeight.bold,
+              //   color: AppColors.accentPink
+              // ),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 24,
+                fontSize: isMobile ? 18 : 24,
                 fontWeight: FontWeight.bold,
+                color: AppColors.accentPink,
               ),
             ),
           ),
@@ -38,6 +48,7 @@ class SectionTitle extends StatelessWidget {
                     'See All',
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
+                      fontSize: isMobile ? 13 : 14,
                     ),
                   ),
                   const SizedBox(width: 4),

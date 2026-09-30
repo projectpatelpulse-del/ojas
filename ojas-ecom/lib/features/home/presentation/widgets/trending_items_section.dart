@@ -6,12 +6,9 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
-import 'package:ojas_user/features/home/presentation/widgets/service_card.dart';
 import 'package:ojas_user/features/home/presentation/widgets/category_filter.dart';
-import 'package:ojas_user/features/home/presentation/widgets/trending_promo_banner.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
-
 import '../../../../core/services/session_service.dart';
 
 class TrendingItemsSection extends StatefulWidget {
@@ -75,7 +72,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
+                        color: AppColors.accentPink,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -109,7 +106,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
+                        color: AppColors.accentPink,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
