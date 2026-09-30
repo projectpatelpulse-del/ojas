@@ -107,6 +107,45 @@ class _CategoriesPageState extends State<CategoriesPage> with SingleTickerProvid
     }
   }
 
+  Future<void> _moveCategory(int index, int delta) async {
+    final newIndex = index + delta;
+    if (newIndex < 0 || newIndex >= _filteredCategories.length) return;
+    final item = _filteredCategories[index];
+    final otherItem = _filteredCategories[newIndex];
+
+    final updatedCategories = [
+      {'id': item.id, 'sequence': otherItem.sequence},
+      {'id': otherItem.id, 'sequence': item.sequence == otherItem.sequence ? (delta > 0 ? otherItem.sequence - 1 : otherItem.sequence + 1) : item.sequence},
+    ];
+
+    try {
+      await _categoryService.reorderCategories(updatedCategories);
+      _fetchCategories();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to reorder: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleBestSelling(CategoryModel cat) async {
+    try {
+      await _categoryService.updateCategory(cat.id, {
+        'name': cat.name,
+        'isBestSelling': !cat.isBestSelling,
+      });
+      _fetchCategories();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   void _showAddEditModal({CategoryModel? category}) {
     showDialog(
       context: context,
@@ -320,7 +359,9 @@ class _CategoriesPageState extends State<CategoriesPage> with SingleTickerProvid
             ),
             child: Row(
               children: [
-                Expanded(flex: 2, child: Text('NAME', style: _tableHeaderStyle())),
+                Expanded(flex: 3, child: Text('NAME', style: _tableHeaderStyle())),
+                const SizedBox(width: 110, child: Text('SEQUENCE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey))),
+                const SizedBox(width: 120, child: Text('BEST-SELLING', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey))),
                 Expanded(flex: 3, child: Text('DESCRIPTION', style: _tableHeaderStyle())),
                 Expanded(flex: 2, child: Text('PARENT', style: _tableHeaderStyle())),
                 const SizedBox(width: 100, child: Text('ACTIONS', style: TextStyle(
@@ -338,11 +379,11 @@ class _CategoriesPageState extends State<CategoriesPage> with SingleTickerProvid
             itemBuilder: (context, index) {
               final cat = _filteredCategories[index];
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 child: Row(
                   children: [
                     Expanded(
-                      flex: 2,
+                      flex: 3,
                       child: Row(
                         children: [
                           Container(
@@ -355,8 +396,82 @@ class _CategoriesPageState extends State<CategoriesPage> with SingleTickerProvid
                             child: const Icon(Icons.category, size: 16, color: Color(0xFF6B21A8)),
                           ),
                           const SizedBox(width: 12),
-                          Text(cat.name, style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: const Color(0xFF1E293B))),
+                          Expanded(
+                            child: Text(
+                              cat.name, 
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
+                      ),
+                    ),
+                    // Sequence Reorder Column
+                    SizedBox(
+                      width: 110,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_upward, size: 16, color: Color(0xFF475569)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                            onPressed: index > 0 ? () => _moveCategory(index, -1) : null,
+                            tooltip: 'Move Up',
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.shade50,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.purple.shade200),
+                            ),
+                            child: Text(
+                              '${cat.sequence}',
+                              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF6B21A8)),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_downward, size: 16, color: Color(0xFF475569)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                            onPressed: index < _filteredCategories.length - 1 ? () => _moveCategory(index, 1) : null,
+                            tooltip: 'Move Down',
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Best Selling Toggle
+                    SizedBox(
+                      width: 120,
+                      child: InkWell(
+                        onTap: () => _toggleBestSelling(cat),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: cat.isBestSelling ? Colors.amber.shade50 : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: cat.isBestSelling ? Colors.amber.shade400 : Colors.grey.shade300),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                cat.isBestSelling ? Icons.star : Icons.star_border,
+                                size: 14,
+                                color: cat.isBestSelling ? Colors.amber.shade800 : Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                cat.isBestSelling ? 'Top Star' : 'Normal',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: cat.isBestSelling ? Colors.amber.shade900 : Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     Expanded(
@@ -565,6 +680,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
+  late TextEditingController _sequenceController;
+  bool _isBestSelling = false;
   String _selectedParent = 'No parent (Main Category)';
   bool _isSubmitting = false;
   List<CategoryModel> _availableCategories = [];
@@ -575,6 +692,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
     super.initState();
     _nameController = TextEditingController(text: widget.category?.name);
     _descriptionController = TextEditingController(text: widget.category?.description);
+    _sequenceController = TextEditingController(text: (widget.category?.sequence ?? 0).toString());
+    _isBestSelling = widget.category?.isBestSelling ?? false;
     if (widget.category?.parent != null) {
       _selectedParent = widget.category!.parent!;
     }
@@ -601,6 +720,7 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _sequenceController.dispose();
     super.dispose();
   }
 
@@ -619,6 +739,8 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
         'parent': ?parentValue,
+        'sequence': int.tryParse(_sequenceController.text.trim()) ?? 0,
+        'isBestSelling': _isBestSelling,
       };
 
       if (widget.category == null) {
@@ -708,6 +830,36 @@ class _CategoryFormModalState extends State<CategoryFormModal> {
                       ),
                     ),
                   ),
+              const SizedBox(height: 20),
+              Text('Display Sequence / Order', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _sequenceController,
+                keyboardType: TextInputType.number,
+                decoration: _inputDecoration('Enter sequence number (e.g. 1, 2, 3...)'),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50.withValues(alpha: 0.5),
+                  border: Border.all(color: Colors.amber.shade200),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SwitchListTile(
+                  title: Text(
+                    'Mark as Best-Selling Category',
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                  ),
+                  subtitle: Text(
+                    'Pin to the top of homepage and showcase prominently in best-selling sections',
+                    style: GoogleFonts.inter(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+                  value: _isBestSelling,
+                  activeTrackColor: Colors.amber.shade700,
+                  onChanged: (val) => setState(() => _isBestSelling = val),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+              ),
               const SizedBox(height: 32),
               Row(
                 children: [

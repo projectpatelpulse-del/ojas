@@ -11,6 +11,7 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const WhatsAppService = require("../service/WhatsAppService");
 const emailService = require("../service/emailService");
+const { compressImageBuffer } = require("../utils/imageCompressor");
 
 // Create Product (Vendor)
 const createVendorProduct = async (req, res) => {
@@ -31,9 +32,10 @@ const createVendorProduct = async (req, res) => {
 
         if (req.files) {
             if (req.files.image && req.files.image[0]) {
+                const compressed = await compressImageBuffer(req.files.image[0].buffer, req.files.image[0].mimetype);
                 const uploadResponse = await imagekit.files.upload({
-                    file: req.files.image[0].buffer.toString('base64'),
-                    fileName: `product_${Date.now()}.png`,
+                    file: compressed.buffer.toString('base64'),
+                    fileName: `product_${Date.now()}.${compressed.extension}`,
                     folder: "/ojas/products",
                 });
                 imageUrl = uploadResponse.url;
@@ -41,9 +43,10 @@ const createVendorProduct = async (req, res) => {
 
             if (req.files.gallery) {
                 for (const file of req.files.gallery) {
+                    const compressed = await compressImageBuffer(file.buffer, file.mimetype);
                     const uploadResponse = await imagekit.files.upload({
-                        file: file.buffer.toString('base64'),
-                        fileName: `gallery_${Date.now()}.png`,
+                        file: compressed.buffer.toString('base64'),
+                        fileName: `gallery_${Date.now()}.${compressed.extension}`,
                         folder: "/ojas/products",
                     });
                     galleryUrls.push(uploadResponse.url);
@@ -229,9 +232,10 @@ const updateVendorProduct = async (req, res) => {
 
         if (req.files) {
             if (req.files.image && req.files.image[0]) {
+                const compressed = await compressImageBuffer(req.files.image[0].buffer, req.files.image[0].mimetype);
                 const uploadResponse = await imagekit.files.upload({
-                    file: req.files.image[0].buffer.toString('base64'),
-                    fileName: `product_${Date.now()}.png`,
+                    file: compressed.buffer.toString('base64'),
+                    fileName: `product_${Date.now()}.${compressed.extension}`,
                     folder: "/ojas/products",
                 });
                 updateData.image = uploadResponse.url;
@@ -240,9 +244,10 @@ const updateVendorProduct = async (req, res) => {
             if (req.files.gallery) {
                 let newGalleryUrls = [];
                 for (const file of req.files.gallery) {
+                    const compressed = await compressImageBuffer(file.buffer, file.mimetype);
                     const uploadResponse = await imagekit.files.upload({
-                        file: file.buffer.toString('base64'),
-                        fileName: `gallery_${Date.now()}.png`,
+                        file: compressed.buffer.toString('base64'),
+                        fileName: `gallery_${Date.now()}.${compressed.extension}`,
                         folder: "/ojas/products",
                     });
                     newGalleryUrls.push(uploadResponse.url);

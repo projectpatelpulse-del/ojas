@@ -114,4 +114,23 @@ class CategoryService {
       throw Exception('Error deleting category');
     }
   }
+
+  Future<void> reorderCategories(List<Map<String, dynamic>> categories) async {
+    try {
+      log('Reordering categories: $categories');
+      final response = await _apiService.dio.put(
+        '/admin/category-reorder',
+        data: {'categories': categories},
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Failed to reorder categories');
+      }
+    } on DioException catch (e) {
+      log('DioError reordering categories: ${e.response?.data}');
+      throw Exception(_extractErrorMessage(e));
+    } catch (e) {
+      log('Error reordering categories: $e');
+      throw Exception('Error reordering categories');
+    }
+  }
 }

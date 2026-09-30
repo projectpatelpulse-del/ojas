@@ -9,6 +9,7 @@ import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 import 'package:ojas_user/core/widgets/youtube_embed_widget.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -1014,7 +1015,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       '₹${effectiveOldPrice.ceil()}',
                       style: GoogleFonts.inter(
                         fontSize: 18,
-                        color: AppColors.grey,
+                        color: AppColors.mrpBrown,
+                        fontWeight: FontWeight.w600,
                         decoration: TextDecoration.lineThrough,
                       ),
                     ),
@@ -1888,6 +1890,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       final String? variationId = selectedVar?.id;
       final int effMoq = p.getEffectiveMoq(selectedVar);
 
+    if (!SessionService.instance.isLoggedIn) {
+      CartController.instance.setPendingItem(p.id, effMoq);
+      Navigator.pushNamed(context, '/login');
+      return;
+    }
+
     final success = await CartController.instance.addToCart(
       p.id,
       quantity: effMoq,
@@ -1895,19 +1903,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       variationId: variationId != null && variationId.isNotEmpty ? variationId : null,
     );
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? '${p.name} added to cart'
-                : 'Failed to add. Please login.',
-          ),
-          backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(20),
-        ),
-      );
+    if (context.mounted && success) {
+      CartDrawer.showSlider(context, addedProductName: p.name);
     }
   }
 

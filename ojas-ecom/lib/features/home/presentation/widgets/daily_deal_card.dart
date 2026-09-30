@@ -4,6 +4,8 @@ import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 class DailyDealCard extends StatelessWidget {
   final ProductModel product;
@@ -79,10 +81,10 @@ class DailyDealCard extends StatelessWidget {
                   Text(
                     '₹${product.oldPrice!.ceil()}',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF94A3B8),
+                      color: AppColors.mrpBrown,
                       decoration: TextDecoration.lineThrough,
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -105,15 +107,14 @@ class DailyDealCard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () async {
+                  if (!SessionService.instance.isLoggedIn) {
+                    CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
+                    Navigator.pushNamed(context, '/login');
+                    return;
+                  }
                   final success = await CartController.instance.addToCart(product.id);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(success ? '${product.name} added to cart' : 'Failed to add to cart. Please login first.'),
-                        backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                  if (context.mounted && success) {
+                    CartDrawer.showSlider(context, addedProductName: product.name);
                   }
                 },
                 icon: const Icon(Icons.shopping_bag_outlined, size: 14, color: AppColors.white),

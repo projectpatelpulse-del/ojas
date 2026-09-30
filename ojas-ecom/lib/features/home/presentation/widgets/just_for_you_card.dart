@@ -135,7 +135,8 @@ class _JustForYouCardState extends State<JustForYouCard> {
                         '₹${widget.oldPrice.ceil()}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: AppColors.grey500,
+                          color: AppColors.mrpBrown,
+                          fontWeight: FontWeight.w600,
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),

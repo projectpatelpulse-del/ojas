@@ -3,7 +3,7 @@ const SubCategory = require("../model/SubCategory.js");
 
 const postCategories = async (req, res) => {
     try {
-        const { name, description, parent } = req.body;
+        const { name, description, parent, sequence, isBestSelling } = req.body;
         if (!name) {
             return res.status(400).json({ message: "Category name is required" });
         }
@@ -12,6 +12,8 @@ const postCategories = async (req, res) => {
             name, 
             description, 
             parent,
+            sequence: sequence !== undefined ? Number(sequence) : 0,
+            isBestSelling: isBestSelling !== undefined ? Boolean(isBestSelling) : false,
             isGlobal: true,
             status: 'approved',
             user: req.admin ? (req.admin._id || req.admin.id) : (req.user ? (req.user._id || req.user.id) : null)
@@ -55,7 +57,7 @@ const getCategories = async (req, res) => {
             query = { status: 'approved' };
         }
 
-        let categories = await Category.find(query).populate("user").sort({ createdAt: -1 });
+        let categories = await Category.find(query).populate("user").sort({ sequence: 1, isBestSelling: -1, createdAt: -1 });
 
         if (tree === 'true') {
             // Fetch all active subcategories
@@ -102,7 +104,7 @@ const deleteCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, parent, status, isGlobal } = req.body;
+        const { name, description, parent, status, isGlobal, sequence, isBestSelling } = req.body;
         
         let updateData = {};
         if (name) updateData.name = name;
@@ -110,6 +112,8 @@ const updateCategory = async (req, res) => {
         if (parent !== undefined) updateData.parent = parent;
         if (status !== undefined) updateData.status = status;
         if (isGlobal !== undefined) updateData.isGlobal = isGlobal;
+        if (sequence !== undefined) updateData.sequence = Number(sequence);
+        if (isBestSelling !== undefined) updateData.isBestSelling = Boolean(isBestSelling);
 
         const category = await Category.findByIdAndUpdate(id, updateData, { new: true }).populate("user");
         
@@ -165,10 +169,44 @@ const handleCategoryRequest = async (req, res) => {
     }
 };
 
+const reorderCategories = async (req, res) => {
+    try {
+        const { categories } = req.body; // array of { id, sequence, isBestSelling }
+        if (Array.isArray(categories)) {
+            const bulkOps = categories.map((cat, idx) => ({
+                updateOne: {
+                    filter: { _id: cat.id || cat._id },
+                    update: {
+                        $set: {
+                            sequence: cat.sequence !== undefined ? Number(cat.sequence) : idx,
+                            ...(cat.isBestSelling !== undefined ? { isBestSelling: Boolean(cat.isBestSelling) } : {})
+                        }
+                    }
+                }
+            }));
+            if (bulkOps.length > 0) {
+                await Category.bulkWrite(bulkOps);
+            }
+        }
+
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("admin_data_updated", { type: "category", action: "reorder" });
+        }
+
+        res.status(200).json({ success: true, message: "Categories reordered successfully" });
+    } catch (error) {
+        console.error("Reorder categories error:", error.message);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = { 
     postCategories, 
     getCategories, 
     deleteCategory, 
     updateCategory,
-    handleCategoryRequest
+    handleCategoryRequest,
+    reorderCategories
 };
+

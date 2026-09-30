@@ -275,7 +275,8 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                               '₹${widget.oldPrice!.ceil()}',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
-                                color: AppColors.grey[400],
+                                color: AppColors.mrpBrown,
+                                fontWeight: FontWeight.w600,
                                 decoration: TextDecoration.lineThrough,
                               ),
                             ),

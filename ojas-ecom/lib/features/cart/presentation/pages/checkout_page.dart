@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/constants/app_colors.dart';
+import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/auth/application/address_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
@@ -34,9 +35,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgSecondaryLight,
-      body: LayoutBuilder(
+    return OjasLayout(
+      activeTitle: 'CHECKOUT',
+      child: Container(
+        color: AppColors.bgSecondaryLight,
+        constraints: const BoxConstraints(minHeight: 700),
+        child: LayoutBuilder(
         builder: (context, constraints) {
           bool isMobile = constraints.maxWidth < 900;
           
@@ -97,8 +101,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildAddressStep() {
     return ListenableBuilder(
@@ -216,40 +221,77 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
   }
 
   Widget _buildOrderSummaryStep() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          ..._cartController.items.map((item) => _buildSummaryItem(item)),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: Text(
-                    'Order confirmation email will be sent to ${SessionService.instance.currentUser?.email ?? 'your email'}',
-                    style: TextStyle(color: AppColors.grey[600], fontSize: 12),
+    return ListenableBuilder(
+      listenable: _cartController,
+      builder: (context, _) {
+        if (_cartController.items.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              children: [
+                const Icon(Icons.remove_shopping_cart_outlined, size: 48, color: Color(0xFF94A3B8)),
+                const SizedBox(height: 12),
+                Text('Your cart is empty', style: GoogleFonts.outfit(fontSize: 18, color: const Color(0xFF64748B))),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/shop'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F172A),
+                    foregroundColor: AppColors.white,
                   ),
+                  child: const Text('Shop Products'),
                 ),
+              ],
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              ..._cartController.items.map((item) => _buildSummaryItem(item)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/shop'),
+                    icon: const Icon(Icons.add_shopping_cart, size: 16),
+                    label: const Text('Add More Products'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF0F172A),
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => setState(() => _activeStep = 2),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentOrange,
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text(
+                      'CONTINUE',
+                      style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () => setState(() => _activeStep = 2),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentOrange,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text(
-                  'CONTINUE',
-                  style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Order confirmation email will be sent to ${SessionService.instance.currentUser?.email ?? 'your email'}',
+                  style: TextStyle(color: AppColors.grey[600], fontSize: 12),
                 ),
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -300,6 +342,9 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
     if (variation != null && variation['title'] != null && variation['title'].toString().trim().isNotEmpty) {
       name = "$name - ${variation['title']}";
     }
+
+    final String productId = (product['_id'] ?? product['id'])?.toString() ?? '';
+    final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -357,8 +402,9 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
                       Text(
                         '\u20b9${oldPrice.ceil()}',
                         style: GoogleFonts.hind(
-                          color: const Color(0xFF94A3B8),
+                          color: AppColors.mrpBrown,
                           fontSize: 12,
+                          fontWeight: FontWeight.w600,
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -367,12 +413,72 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
               ],
             ),
           ),
-          Text(
-            'Qty: $quantity',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF0F172A),
-              fontWeight: FontWeight.w600,
-            ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        if (quantity > 1) {
+                          _cartController.addToCart(productId, quantity: -1, variationId: variationId);
+                        } else {
+                          _cartController.removeFromCart(productId, variationId: variationId);
+                        }
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Icon(Icons.remove, size: 14, color: Color(0xFF475569)),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        '$quantity',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        _cartController.addToCart(productId, quantity: 1, variationId: variationId);
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Icon(Icons.add, size: 14, color: Color(0xFF475569)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () {
+                  _cartController.removeFromCart(productId, variationId: variationId);
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.delete_outline, size: 16, color: Color(0xFFEF4444)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Remove',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFFEF4444),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

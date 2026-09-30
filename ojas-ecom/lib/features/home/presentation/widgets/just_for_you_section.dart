@@ -7,6 +7,8 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/just_for_you_card.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 class JustForYouSection extends StatelessWidget {
   const JustForYouSection({super.key});
@@ -102,14 +104,14 @@ class JustForYouSection extends StatelessWidget {
                         discount: product.discount,
                         hasBestSellerBadge: product.discount > 50,
                         onAddToCart: () async {
+                          if (!SessionService.instance.isLoggedIn) {
+                            CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
+                            Navigator.pushNamed(context, '/login');
+                            return;
+                          }
                           final success = await CartController.instance.addToCart(product.id);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(success ? 'Added to cart!' : 'Failed to add to cart'),
-                                duration: const Duration(seconds: 1),
-                              ),
-                            );
+                          if (context.mounted && success) {
+                            CartDrawer.showSlider(context, addedProductName: product.name);
                           }
                         },
                       );

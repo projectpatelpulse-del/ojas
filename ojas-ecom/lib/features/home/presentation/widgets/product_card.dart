@@ -3,6 +3,9 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 class ProductCard extends StatefulWidget {
   final ProductModel product;
@@ -161,7 +164,8 @@ class _ProductCardState extends State<ProductCard> {
                                 '₹${widget.product.oldPrice!.ceil()}',
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
-                                  color: AppColors.textSecondary,
+                                  color: AppColors.mrpBrown,
+                                  fontWeight: FontWeight.w600,
                                   decoration: TextDecoration.lineThrough,
                                 ),
                               ),
@@ -216,7 +220,25 @@ class _ProductCardState extends State<ProductCard> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: widget.onAddToCart,
+                            onPressed: () async {
+                              if (!SessionService.instance.isLoggedIn) {
+                                CartController.instance.setPendingItem(widget.product.id, widget.product.getEffectiveMoq());
+                                Navigator.pushNamed(context, '/login');
+                                return;
+                              }
+                              if (widget.onAddToCart != null) {
+                                widget.onAddToCart!();
+                              } else {
+                                final success = await CartController.instance.addToCart(
+                                  widget.product.id,
+                                  quantity: widget.product.getEffectiveMoq(),
+                                  moq: widget.product.getEffectiveMoq(),
+                                );
+                                if (context.mounted && success) {
+                                  CartDrawer.showSlider(context, addedProductName: widget.product.name);
+                                }
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryBlue,
                               foregroundColor: AppColors.white,

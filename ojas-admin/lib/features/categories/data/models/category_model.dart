@@ -6,6 +6,8 @@ class CategoryModel {
   final String? parent;
   final String? status;
   final bool isGlobal;
+  final int sequence;
+  final bool isBestSelling;
   final Map<String, dynamic>? user;
   final DateTime? createdAt;
 
@@ -17,6 +19,8 @@ class CategoryModel {
     this.parent,
     this.status,
     this.isGlobal = true,
+    this.sequence = 0,
+    this.isBestSelling = false,
     this.user,
     this.createdAt,
   });
@@ -30,6 +34,8 @@ class CategoryModel {
       parent: json['parent'],
       status: json['status'],
       isGlobal: json['isGlobal'] ?? true,
+      sequence: (json['sequence'] is num) ? (json['sequence'] as num).toInt() : 0,
+      isBestSelling: json['isBestSelling'] ?? false,
       user: json['user'],
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
@@ -43,6 +49,8 @@ class CategoryModel {
       'parent': parent,
       'status': status,
       'isGlobal': isGlobal,
+      'sequence': sequence,
+      'isBestSelling': isBestSelling,
     };
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/features/home/presentation/widgets/hero_section.dart';
+import 'package:ojas_user/features/home/presentation/widgets/categories_section.dart';
 
 import 'package:ojas_user/features/home/presentation/widgets/daily_deals_section.dart';
 import 'package:ojas_user/features/home/presentation/widgets/summer_sale_banner.dart';
@@ -37,6 +38,9 @@ class HomePage extends StatelessWidget {
             children: [
               // 2. Hero Section (includes Gift Strip)
               if (activeSections.contains('HERO')) const HeroSection(),
+              
+              // Best-Selling Categories Section
+              const CategoriesSection(),
               
               // 2a. Daily Deals Section
               if (activeSections.contains('DAILY_DEALS')) const DailyDealsSection(),

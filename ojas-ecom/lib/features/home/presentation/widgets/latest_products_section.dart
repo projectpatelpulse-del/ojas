@@ -7,6 +7,8 @@ import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 class LatestProductsSection extends StatelessWidget {
   const LatestProductsSection({super.key});
@@ -100,14 +102,14 @@ class LatestProductsSection extends StatelessWidget {
                       product: productModel,
                       rating: 4.0,
                       onAddToCart: () async {
+                        if (!SessionService.instance.isLoggedIn) {
+                          CartController.instance.setPendingItem(id, productModel.moq);
+                          Navigator.pushNamed(context, '/login');
+                          return;
+                        }
                         final success = await CartController.instance.addToCart(id, moq: productModel.moq);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(success ? 'Added to cart!' : 'Failed. Please login.'),
-                            backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 2),
-                          ));
+                        if (context.mounted && success) {
+                          CartDrawer.showSlider(context, addedProductName: productModel.name);
                         }
                       },
                     );

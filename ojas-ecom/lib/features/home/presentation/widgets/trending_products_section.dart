@@ -1,6 +1,8 @@
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
 import 'package:ojas_user/features/home/presentation/widgets/section_title.dart';
@@ -61,14 +63,14 @@ class TrendingProductsSection extends StatelessWidget {
                   return ProductCard(
                     product: product,
                     onAddToCart: () async {
+                      if (!SessionService.instance.isLoggedIn) {
+                        CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
+                        Navigator.pushNamed(context, '/login');
+                        return;
+                      }
                       final success = await CartController.instance.addToCart(product.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(success ? '${product.name} added to cart!' : 'Failed. Please login.'),
-                          backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                          behavior: SnackBarBehavior.floating,
-                          duration: const Duration(seconds: 2),
-                        ));
+                      if (context.mounted && success) {
+                        CartDrawer.showSlider(context, addedProductName: product.name);
                       }
                     },
                   );

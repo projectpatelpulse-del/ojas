@@ -14,8 +14,9 @@ class AppColors {
   // Role Mappings to existing variables for seamless integration
   static const Color primaryIndigo1 = maroonFestive; 
 
-  static const Color primaryIndigo = cardBgBeige;         // Card Background (Soft Beige)
+  static const Color primaryIndigo = Color(0xFF0F172A);   // Dark Slate for high-contrast text and prices
   static const Color primaryBlue = goldAccent;            // Gold (Buttons & Accents)
+  static const Color mrpBrown = Color(0xFF8B4513);        // Brown for MRP strikethrough
   static const Color accentOrange = goldAccent;           // Gold
   static const Color accentOrangeHover = Color(0xFFB07F37); // Darker Gold for hover
   static const Color primaryPink = maroonFestive;

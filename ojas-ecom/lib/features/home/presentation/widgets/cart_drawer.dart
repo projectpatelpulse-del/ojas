@@ -5,7 +5,43 @@ import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/cart/presentation/pages/checkout_page.dart';
 
 class CartDrawer extends StatefulWidget {
-  const CartDrawer({super.key});
+  final String? addedProductName;
+  const CartDrawer({super.key, this.addedProductName});
+
+  /// Opens the cart as a left-sliding panel confirming added product
+  static void showSlider(BuildContext context, {String? addedProductName}) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cart',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (ctx, anim1, anim2) {
+        final double screenWidth = MediaQuery.of(ctx).size.width;
+        final bool isMobile = screenWidth < 768;
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: Material(
+            color: Colors.transparent,
+            child: SizedBox(
+              width: isMobile ? screenWidth * 0.88 : 460,
+              height: MediaQuery.of(ctx).size.height,
+              child: CartDrawer(addedProductName: addedProductName),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (ctx, anim1, anim2, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(-1.0, 0.0), // Slides out from the left!
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+          child: child,
+        );
+      },
+    );
+  }
 
   @override
   State<CartDrawer> createState() => _CartDrawerState();
@@ -19,7 +55,7 @@ class _CartDrawerState extends State<CartDrawer> {
     final bool isMobile = screenWidth < 768;
 
     return Drawer(
-      width: isMobile ? screenWidth * 2 / 3 : 450,
+      width: isMobile ? screenWidth * 0.88 : 460,
       backgroundColor: AppColors.white,
       child: ListenableBuilder(
         listenable: controller,
@@ -82,6 +118,34 @@ class _CartDrawerState extends State<CartDrawer> {
                 ),
               ),
               const Divider(height: 1),
+              if (widget.addedProductName != null && widget.addedProductName!.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFA5D6A7)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Color(0xFF2E7D32), size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '${widget.addedProductName} added to cart!',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF1B5E20),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               // Cart Items List
               Expanded(

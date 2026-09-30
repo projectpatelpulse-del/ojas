@@ -8,6 +8,7 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 import '../../../../core/services/session_service.dart';
 
@@ -130,11 +131,23 @@ class _ShopPageState extends State<ShopPage> {
             category = categoryObj.toLowerCase();
           }
 
-          // Match if every search word is found in either name, brand, or category
+          final variations = p['variations'];
+          String variationStr = '';
+          if (variations is List) {
+            variationStr = variations.map((v) {
+              if (v is Map) {
+                return '${v['color'] ?? ''} ${v['modelName'] ?? ''} ${v['material'] ?? ''} ${v['weight'] ?? ''} ${v['sku'] ?? ''} ${v['title'] ?? ''}';
+              }
+              return '';
+            }).join(' ').toLowerCase();
+          }
+
+          // Match if every search word is found in either name, brand, category, or variations
           return words.every((word) =>
               name.contains(word) ||
               brand.contains(word) ||
-              category.contains(word));
+              category.contains(word) ||
+              variationStr.contains(word));
         }).toList();
       }
     }
@@ -319,29 +332,119 @@ class _ShopPageState extends State<ShopPage> {
                         if (!HomeController.instance.isLoading && _shopProducts.isEmpty)
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.all(100),
-                              child: Column(
-                                children: [
-                                  const Icon(Icons.inventory_2_outlined, size: 60, color: Color(0xFFCBD5E1)),
-                                  const SizedBox(height: 16),
-                                  Text('No products found', style: GoogleFonts.outfit(fontSize: 18, color: const Color(0xFF64748B))),
-                                ],
+                              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 16),
+                              child: Container(
+                                constraints: const BoxConstraints(maxWidth: 520),
+                                padding: const EdgeInsets.all(36),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.black.withOpacity(0.04),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 72,
+                                      height: 72,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accentOrange.withOpacity(0.12),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.hourglass_top_rounded,
+                                        size: 36,
+                                        color: AppColors.accentOrange,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      _selectedCategory != 'All'
+                                          ? '$_selectedCategory Products Coming Soon'
+                                          : 'Products Coming Soon',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      _selectedCategory != 'All'
+                                          ? 'We are currently adding exciting new products to the $_selectedCategory collection. Stay tuned!'
+                                          : 'We are curating high-quality products for this selection. Check back shortly!',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: const Color(0xFF64748B),
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    ElevatedButton.icon(
+                                      onPressed: () {
+                                        setState(() {
+                                          _selectedCategory = 'All';
+                                          _selectedSubCategory = 'All';
+                                          _searchQuery = '';
+                                          _searchTextController.clear();
+                                          _currentPage = 1;
+                                        });
+                                      },
+                                      icon: const Icon(Icons.shopping_bag_outlined, size: 16),
+                                      label: const Text('Explore All Products'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF0F172A),
+                                        foregroundColor: AppColors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         if (!HomeController.instance.isLoading && _shopProducts.isNotEmpty) ...[
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _paginatedProducts.length,
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: isMobile ? 2 : (isTablet ? 2 : 3),
-                              crossAxisSpacing: isMobile ? 12 : 20,
-                              mainAxisSpacing: isMobile ? 12 : 20,
-                              mainAxisExtent: isMobile ? 380 : 420,
-                            ),
-                            itemBuilder: (context, index) {
-                              return _ShopProductCard(product: _paginatedProducts[index]);
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              int crossAxisCount;
+                              if (isMobile) {
+                                crossAxisCount = 2;
+                              } else if (isTablet) {
+                                crossAxisCount = constraints.maxWidth > 700 ? 3 : 2;
+                              } else if (constraints.maxWidth >= 1200) {
+                                crossAxisCount = 5;
+                              } else if (constraints.maxWidth >= 900) {
+                                crossAxisCount = 4;
+                              } else if (constraints.maxWidth >= 600) {
+                                crossAxisCount = 3;
+                              } else {
+                                crossAxisCount = 2;
+                              }
+
+                              return GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _paginatedProducts.length,
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  crossAxisSpacing: isMobile ? 12 : 16,
+                                  mainAxisSpacing: isMobile ? 12 : 16,
+                                  mainAxisExtent: isMobile ? 380 : 410,
+                                ),
+                                itemBuilder: (context, index) {
+                                  return _ShopProductCard(product: _paginatedProducts[index]);
+                                },
+                              );
                             },
                           ),
                           _buildPaginationControls(),
@@ -933,7 +1036,12 @@ class _ShopProductCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             '₹${oldPrice.ceil()}',
-                            style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8), decoration: TextDecoration.lineThrough),
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: AppColors.mrpBrown,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.lineThrough,
+                            ),
                           ),
                         ],
                       ],
@@ -982,8 +1090,8 @@ class _ShopProductCard extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final String? token = SessionService.instance.token;
-                          if (token == null) {
+                          final bool isLoggedIn = SessionService.instance.isLoggedIn;
+                          if (!isLoggedIn) {
                             final int moq = product['moq'] ?? 1;
                             CartController.instance.setPendingItem(id, moq);
                             Navigator.pushNamed(context, '/login');
@@ -992,17 +1100,8 @@ class _ShopProductCard extends StatelessWidget {
 
                           final int moq = product['moq'] ?? 1;
                           final success = await CartController.instance.addToCart(id, moq: moq);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(success ? '$name added to cart' : 'Failed to add to cart. Please login first.'),
-                                backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                margin: const EdgeInsets.all(20),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
+                          if (context.mounted && success) {
+                            CartDrawer.showSlider(context, addedProductName: name);
                           }
                         },
                         icon: const Icon(Icons.add_shopping_cart, size: 13),

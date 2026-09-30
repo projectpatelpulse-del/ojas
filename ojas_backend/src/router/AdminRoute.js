@@ -3,7 +3,7 @@ const { registerAdmin, loginAdmin, logoutAdmin, getAdmin, changePassword, getAll
 const resellerController = require("../controller/ResellerController.js");
 const { getVendors, getUsers, updateUserRole, deleteUser, updateUserStatus } = require("../controller/userController.js");
 const Adminauth = require("../middlewere/AdminAuth.js");
-const { postCategories, getCategories, deleteCategory, updateCategory, handleCategoryRequest } = require("../controller/Homecontroller.js");
+const { postCategories, getCategories, deleteCategory, updateCategory, handleCategoryRequest, reorderCategories } = require("../controller/Homecontroller.js");
 const { createProduct, getProducts, getProduct, updateProduct, deleteProduct } = require("../controller/Product.js");
 const { getAllVendorRequests, updateVendorStatus, updateVendorCommission, updateVendorMaxProductsLimit, updateAllVendorsCommission, getVendorLedger, deleteVendor } = require("../controller/VendorController");
 const { getSettings, updateSettings, resetSettings } = require("../controller/SettingController.js");
@@ -37,6 +37,7 @@ router.post("/send-bulk-email", Adminauth, checkPermission('manage_users'), send
 // Category routes (Admin task)
 router.post("/category", Adminauth, checkPermission('manage_products'), postCategories);
 router.get("/category", Adminauth, checkPermission('manage_products'), getCategories);
+router.put("/category-reorder", Adminauth, checkPermission('manage_products'), reorderCategories);
 router.put("/category/:id", Adminauth, checkPermission('manage_products'), updateCategory);
 router.delete("/category/:id", Adminauth, checkPermission('manage_products'), deleteCategory);
 router.put("/category-status/:id", Adminauth, checkPermission('manage_products'), handleCategoryRequest);

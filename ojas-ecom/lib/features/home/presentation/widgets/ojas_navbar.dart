@@ -9,6 +9,7 @@ import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/features/home/presentation/pages/shop_page.dart';
+import 'package:ojas_user/features/home/presentation/widgets/smart_search_bar.dart';
 
 class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
   final String activeTitle;
@@ -218,62 +219,12 @@ class _MobileNavbarState extends State<_MobileNavbar> {
           ),
           
           if (!isAuthScreen && SessionService.instance.refCode == null)
-            // Mobile Search Bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withOpacity(0.08),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: TextField(
-                          controller: _searchController,
-                          onSubmitted: (_) => _handleSearch(),
-                          style: const TextStyle(color: AppColors.black, fontSize: 14),
-                          decoration: InputDecoration(
-                            hintText: 'Search products...',
-                            hintStyle: TextStyle(color: AppColors.grey[500], fontSize: 14),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: _handleSearch,
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryBlue,
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            bottomRight: Radius.circular(8),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.search,
-                          color: AppColors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            // Mobile Smart Search Bar
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: SmartSearchBar(
+                isMobile: true,
+                hintText: 'Search products, categories, variations...',
               ),
             ),
       
@@ -647,61 +598,14 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
         const SizedBox(width: 16),
         
 
-        // Search Field
-Expanded(
-  flex: 5,
-  child: Container(
-    height: 45,
-    decoration: BoxDecoration(
-      color: AppColors.grey[300],
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all( // Added border
-        color: AppColors.primaryBlue,
-        width: 1.2,
-      ),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _searchController,
-              onSubmitted: (_) => _handleSearch(),
-              style: const TextStyle(color: AppColors.black, fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: 'Enter your keyword...',
-                border: InputBorder.none,
-                hintStyle: TextStyle(
-                  color: AppColors.grey,
-                  fontSize: 14,
-                ),
-              ),
-            ),
+        // Smart Search Field
+        const Expanded(
+          flex: 5,
+          child: SmartSearchBar(
+            isMobile: false,
+            hintText: 'Enter your keyword...',
           ),
         ),
-        InkWell(
-          onTap: _handleSearch,
-          child: Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(6),
-                bottomRight: Radius.circular(6),
-              ),
-            ),
-            child: const Icon(
-              Icons.search,
-              color: AppColors.white,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
         // // Search Field
         // Expanded(
         //   flex: 5,

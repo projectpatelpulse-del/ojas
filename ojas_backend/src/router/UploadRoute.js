@@ -17,39 +17,15 @@ router.post("/image", flexibleAuth, uploadImage.single("image"), async (req, res
       return res.status(400).json({ message: "No image file provided" });
     }
 
+    const { compressImageBuffer } = require("../utils/imageCompressor");
     let uploadBuffer = req.file.buffer;
+    let fileExtension = "jpg";
     const mimetype = req.file.mimetype;
 
     if (mimetype && mimetype.startsWith("image/")) {
-      try {
-        const originalSize = req.file.buffer.length;
-        
-        // Compress using sharp to 70% quality (60-80% range)
-        if (mimetype === "image/jpeg" || mimetype === "image/jpg") {
-          uploadBuffer = await sharp(req.file.buffer)
-            .jpeg({ quality: 70 })
-            .toBuffer();
-        } else if (mimetype === "image/png") {
-          uploadBuffer = await sharp(req.file.buffer)
-            .png({ quality: 70, compressionLevel: 8 })
-            .toBuffer();
-        } else if (mimetype === "image/webp") {
-          uploadBuffer = await sharp(req.file.buffer)
-            .webp({ quality: 70 })
-            .toBuffer();
-        } else {
-          // Fallback compression for other image types
-          uploadBuffer = await sharp(req.file.buffer)
-            .jpeg({ quality: 70 })
-            .toBuffer();
-        }
-
-        const compressedSize = uploadBuffer.length;
-        const savingsPercent = (((originalSize - compressedSize) / originalSize) * 100).toFixed(1);
-        console.log(`[Image Compressor] Original: ${(originalSize / 1024).toFixed(1)} KB, Compressed: ${(compressedSize / 1024).toFixed(1)} KB (Saved ${savingsPercent}%)`);
-      } catch (sharpError) {
-        console.error("[Image Compressor] Compression failed, uploading original:", sharpError.message);
-      }
+      const compressed = await compressImageBuffer(req.file.buffer, mimetype);
+      uploadBuffer = compressed.buffer;
+      fileExtension = compressed.extension;
     }
 
     let targetSubFolder = "general";
@@ -59,9 +35,10 @@ router.post("/image", flexibleAuth, uploadImage.single("image"), async (req, res
       targetSubFolder = req.body.folder.replace(/[^a-zA-Z0-9_\-\s]/g, "");
     }
 
+    const cleanOriginalName = (req.file.originalname || "image").replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_");
     const uploadResponse = await imagekit.files.upload({
       file: uploadBuffer.toString("base64"),
-      fileName: `upload_${Date.now()}_${req.file.originalname}`,
+      fileName: `upload_${Date.now()}_${cleanOriginalName}.${fileExtension}`,
       folder: `/ojas/${targetSubFolder}`,
     });
 

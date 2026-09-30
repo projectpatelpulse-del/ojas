@@ -6,6 +6,8 @@ import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
 import 'package:ojas_user/features/home/presentation/widgets/section_title.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 class FeaturedDealsSection extends StatelessWidget {
   const FeaturedDealsSection({super.key});
@@ -56,13 +58,14 @@ class FeaturedDealsSection extends StatelessWidget {
                             child: ProductCard(
                               product: product,
                               onAddToCart: () async {
+                                if (!SessionService.instance.isLoggedIn) {
+                                  CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
+                                  Navigator.pushNamed(context, '/login');
+                                  return;
+                                }
                                 final success = await CartController.instance.addToCart(product.id);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text(success ? '${product.name} added to cart!' : 'Failed. Please login.'),
-                                    backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                                    behavior: SnackBarBehavior.floating,
-                                  ));
+                                if (context.mounted && success) {
+                                  CartDrawer.showSlider(context, addedProductName: product.name);
                                 }
                               },
                             ),
@@ -80,13 +83,14 @@ class FeaturedDealsSection extends StatelessWidget {
                               child: ProductCard(
                                 product: featuredProducts[i],
                                 onAddToCart: () async {
+                                  if (!SessionService.instance.isLoggedIn) {
+                                    CartController.instance.setPendingItem(featuredProducts[i].id, featuredProducts[i].getEffectiveMoq());
+                                    Navigator.pushNamed(context, '/login');
+                                    return;
+                                  }
                                   final success = await CartController.instance.addToCart(featuredProducts[i].id);
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(success ? '${featuredProducts[i].name} added to cart!' : 'Failed. Please login.'),
-                                      backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                                      behavior: SnackBarBehavior.floating,
-                                    ));
+                                  if (context.mounted && success) {
+                                    CartDrawer.showSlider(context, addedProductName: featuredProducts[i].name);
                                   }
                                 },
                               ),

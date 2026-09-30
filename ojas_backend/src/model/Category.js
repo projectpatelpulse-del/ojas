@@ -38,6 +38,14 @@ const categorySchema = new mongoose.Schema({
     resellerCommissionValue: {
         type: Number,
         default: 0
+    },
+    sequence: {
+        type: Number,
+        default: 0
+    },
+    isBestSelling: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 
