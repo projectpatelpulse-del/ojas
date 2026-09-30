@@ -111,6 +111,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         varImages.insert(0, targetVar.image!);
       }
       _currentVariationImages = varImages;
+      if (varImages.isNotEmpty) {
+        _selectedImageUrl = varImages[0];
+      } else {
+        _selectedImageUrl = '';
+      }
     } else {
       _currentVariationImages = [];
     }
@@ -205,10 +210,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
       if (varImages.isNotEmpty) {
         _selectedImageUrl = varImages[0];
-      } else if (product.imageUrl.isNotEmpty) {
-        _selectedImageUrl = product.imageUrl;
-      } else if (product.images.isNotEmpty) {
-        _selectedImageUrl = product.images[0];
+      } else {
+        _selectedImageUrl = '';
       }
     });
   }
@@ -606,9 +609,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       );
                       _currentPrice = match.price > 0 ? match.price : product.price;
                       _currentStock = match.stock;
-                      if (match.image != null && match.image!.isNotEmpty) {
-                        _selectedImageUrl = match.image!;
+                      final List<String> varImages = [];
+                      if (match.images.isNotEmpty) {
+                        varImages.addAll(match.images.where((img) => img.isNotEmpty));
                       }
+                      if (match.image != null && match.image!.isNotEmpty && !varImages.contains(match.image)) {
+                        varImages.insert(0, match.image!);
+                      }
+                      _currentVariationImages = varImages;
+                      _selectedImageUrl = varImages.isNotEmpty ? varImages[0] : '';
                     });
                   }
                 },
@@ -787,22 +796,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   List<String> get _activeGalleryImages {
     final List<String> gallery = [];
     
-    if (product.imageUrl.isNotEmpty) {
-      gallery.add(product.imageUrl);
-    }
-    
-    if (_currentVariationImages.isNotEmpty) {
-      for (final img in _currentVariationImages) {
-        if (img.isNotEmpty && !gallery.contains(img)) {
-          gallery.add(img);
+    if (product.variations.isNotEmpty) {
+      if (_currentVariationImages.isNotEmpty) {
+        for (final img in _currentVariationImages) {
+          if (img.isNotEmpty && !gallery.contains(img)) {
+            gallery.add(img);
+          }
         }
       }
-    }
-    
-    if (product.images.isNotEmpty) {
-      for (final img in product.images) {
-        if (img.isNotEmpty && !gallery.contains(img)) {
-          gallery.add(img);
+    } else {
+      if (product.imageUrl.isNotEmpty) {
+        gallery.add(product.imageUrl);
+      }
+      if (product.images.isNotEmpty) {
+        for (final img in product.images) {
+          if (img.isNotEmpty && !gallery.contains(img)) {
+            gallery.add(img);
+          }
         }
       }
     }

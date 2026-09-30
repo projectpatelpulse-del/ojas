@@ -97,6 +97,7 @@ class Sidebar extends StatelessWidget {
                 _buildMenuItem(context, Icons.category_outlined, 'Categories', '/categories'),
                 _buildMenuItem(context, Icons.account_tree_outlined, 'Subcategories', '/subcategories'),
                 _buildMenuItem(context, Icons.group_outlined, 'Users', '/users'),
+                _buildMenuItem(context, Icons.mark_email_read_outlined, 'Subscribers', '/subscribers'),
                 _buildMenuItem(context, Icons.storefront_outlined, 'Vendors', '/vendors'),
                 _buildMenuItem(context, Icons.people_outline, 'Resellers', '/resellers'),
                 _buildMenuItem(context, Icons.account_balance_wallet_outlined, 'Vendor Payouts', '/payouts'),

@@ -14,6 +14,7 @@ const { getDashboardStats } = require("../controller/DashboardController.js");
 const upload = require("../middlewere/Upload.js");
 const payoutController = require("../controller/PayoutController.js");
 const checkPermission = require("../middlewere/PermissionAuth.js");
+const { getAllSubscribers, deleteSubscriber } = require("../controller/SubscriberController.js");
 
 const router = express.Router({ caseSensitive: true });
 
@@ -33,6 +34,8 @@ router.put("/user-role/:id", Adminauth, checkPermission('manage_users'), updateU
 router.put("/user-status/:id", Adminauth, checkPermission('manage_users'), updateUserStatus);
 router.delete("/user/:id", Adminauth, checkPermission('manage_users'), deleteUser);
 router.post("/send-bulk-email", Adminauth, checkPermission('manage_users'), sendBulkEmailController);
+router.get("/subscribers", Adminauth, getAllSubscribers);
+router.delete("/subscriber/:id", Adminauth, deleteSubscriber);
 
 // Category routes (Admin task)
 router.post("/category", Adminauth, checkPermission('manage_products'), postCategories);

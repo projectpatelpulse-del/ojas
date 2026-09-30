@@ -15,6 +15,7 @@ import 'package:ojas_admin/features/auth/presentation/pages/login_page.dart';
 import 'package:ojas_admin/features/banners/presentation/pages/banners_page.dart';
 import 'package:ojas_admin/features/payouts/presentation/pages/payouts_page.dart';
 import 'package:ojas_admin/features/resellers/presentation/pages/resellers_page.dart';
+import 'package:ojas_admin/features/subscribers/presentation/pages/subscribers_page.dart';
 
 import 'package:ojas_admin/core/services/service_locator.dart' as di;
 
@@ -48,6 +49,7 @@ class MyApp extends StatelessWidget {
         '/users': (context) => const UsersPage(),
         '/vendors': (context) => const VendorsPage(),
         '/resellers': (context) => const ResellersPage(),
+        '/subscribers': (context) => const SubscribersPage(),
         '/banners': (context) => const BannersPage(),
         '/payouts': (context) => const PayoutsPage(),
         '/help': (context) => const HelpPage(),

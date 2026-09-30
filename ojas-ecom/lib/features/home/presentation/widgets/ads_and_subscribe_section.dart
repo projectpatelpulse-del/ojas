@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
+import 'package:ojas_user/core/services/api_service.dart';
 
 class AdsAndSubscribeSection extends StatelessWidget {
   const AdsAndSubscribeSection({super.key});
@@ -287,6 +290,58 @@ class _SubscribeCard extends StatefulWidget {
 class _SubscribeCardState extends State<_SubscribeCard> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  bool _isSubmitting = false;
+
+  Future<void> _handleSubscribe() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+    final email = _emailController.text.trim();
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/home/subscribe'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      final data = jsonDecode(response.body);
+      if (mounted) {
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Successfully subscribed to newsletter!'),
+              backgroundColor: AppColors.successGreen,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          _emailController.clear();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Failed to subscribe.'),
+              backgroundColor: AppColors.errorRed,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error subscribing. Please try again.'),
+            backgroundColor: AppColors.errorRed,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -433,18 +488,7 @@ class _SubscribeCardState extends State<_SubscribeCard> {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Successfully subscribed to newsletter!'),
-                      backgroundColor: AppColors.successGreen,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                  _emailController.clear();
-                }
-              },
+              onPressed: _isSubmitting ? null : _handleSubscribe,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentOrangeHover,
                 foregroundColor: AppColors.white,
@@ -453,20 +497,29 @@ class _SubscribeCardState extends State<_SubscribeCard> {
                 ),
                 elevation: 0,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Subscribe Now',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: AppColors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Subscribe Now',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward, size: 18),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward, size: 18),
-                ],
-              ),
             ),
           ),
           const SizedBox(height: 32),

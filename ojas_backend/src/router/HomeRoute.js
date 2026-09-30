@@ -5,6 +5,7 @@ const { getProducts, getProduct } = require("../controller/Product.js");
 const { getPublicSettings, getSettingsFaviconRedirect } = require("../controller/SettingController.js");
 const { getBanners } = require("../controller/BannerController.js");
 const { getAllBlogs, getBlogById, incrementView } = require("../controller/BlogController.js");
+const { subscribeNewsletter } = require("../controller/SubscriberController.js");
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.get("/banners", getBanners);
 router.get("/blogs", getAllBlogs);
 router.get("/blogs/:id", getBlogById);
 router.post("/blogs/:id/view", incrementView);
+router.post("/subscribe", subscribeNewsletter);
 
 router.get("/pincode/:pincode", async (req, res) => {
     try {
