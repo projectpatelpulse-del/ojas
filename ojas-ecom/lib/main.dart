@@ -214,13 +214,18 @@ class _MyAppState extends State<MyApp> {
                 : pathSegments[1];
 
             if (id != null) {
-              final found = HomeController.instance.products.firstWhere(
-                (p) => p['_id'] == id,
+              final all = HomeController.instance.products.isNotEmpty
+                  ? HomeController.instance.products
+                  : HomeController.instance.shopProducts;
+              final found = all.firstWhere(
+                (p) => (p['_id'] ?? p['id'] ?? '').toString() == id,
                 orElse: () => null,
               );
 
               if (found != null) {
-                product = ProductModel.fromMap(found);
+                try {
+                  product = ProductModel.fromMap(Map<String, dynamic>.from(found));
+                } catch (_) {}
               }
             }
           }

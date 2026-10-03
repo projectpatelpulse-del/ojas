@@ -341,13 +341,13 @@ class ProductModel {
       images.add(imageUrl);
     }
 
-    if (p['gallery'] != null && (p['gallery'] as List).isNotEmpty) {
+    if (p['gallery'] != null && p['gallery'] is List && (p['gallery'] as List).isNotEmpty) {
       final galleryImages = (p['gallery'] as List)
           .map((e) => ApiService.formatImageUrl(e.toString()))
           .where((e) => e.isNotEmpty && !images.contains(e))
           .toList();
       images.addAll(galleryImages);
-    } else if (p['images'] != null && (p['images'] as List).isNotEmpty) {
+    } else if (p['images'] != null && p['images'] is List && (p['images'] as List).isNotEmpty) {
       final additionalImages = (p['images'] as List)
           .map((e) => ApiService.formatImageUrl(e.toString()))
           .where((e) => e.isNotEmpty && !images.contains(e))
@@ -374,7 +374,7 @@ class ProductModel {
     }
 
     List<ProductVariation> variations = [];
-    if (p['variations'] != null) {
+    if (p['variations'] != null && p['variations'] is List) {
       try {
         variations = (p['variations'] as List).map((e) => ProductVariation.fromMap(Map<String, dynamic>.from(e))).toList();
       } catch (_) {}
@@ -390,24 +390,24 @@ class ProductModel {
     }
 
     ProductAttributes attributes = ProductAttributes.fromMap(
-      p['attributes'] != null ? Map<String, dynamic>.from(p['attributes']) : null
+      p['attributes'] is Map ? Map<String, dynamic>.from(p['attributes']) : null
     );
 
     ProductDimensions dimensions = ProductDimensions.fromMap(
-      p['dimensions'] != null 
+      p['dimensions'] is Map 
           ? Map<String, dynamic>.from(p['dimensions']) 
           : Map<String, dynamic>.from(p)
     );
 
     ProductVendor? vendor;
-    if (p['user'] != null) {
+    if (p['user'] != null && p['user'] is Map) {
       try {
         vendor = ProductVendor.fromMap(Map<String, dynamic>.from(p['user']));
       } catch (_) {}
     }
 
     return ProductModel(
-      id: p['_id'] ?? '',
+      id: (p['_id'] ?? p['id'] ?? '').toString(),
       name: p['name'] ?? 'Product',
       title: p['title'] ?? p['name'] ?? 'Product',
       price: price,

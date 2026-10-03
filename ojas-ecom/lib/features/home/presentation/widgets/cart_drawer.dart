@@ -118,10 +118,14 @@ class _CartDrawerState extends State<CartDrawer> {
                 ),
               ),
               const Divider(height: 1),
-              if (widget.addedProductName != null && widget.addedProductName!.isNotEmpty)
+              if (widget.addedProductName != null &&
+                  widget.addedProductName!.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F5E9),
                     borderRadius: BorderRadius.circular(8),
@@ -129,7 +133,11 @@ class _CartDrawerState extends State<CartDrawer> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Color(0xFF2E7D32), size: 18),
+                      const Icon(
+                        Icons.check_circle,
+                        color: Color(0xFF2E7D32),
+                        size: 18,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -234,7 +242,9 @@ class _CartDrawerState extends State<CartDrawer> {
                               final qty = item['quantity'] ?? 1;
                               final varObj = item['variation'];
                               int moq = p['moq'] ?? 1;
-                              if (varObj != null && varObj['moq'] != null && (varObj['moq'] as num).toInt() > 0) {
+                              if (varObj != null &&
+                                  varObj['moq'] != null &&
+                                  (varObj['moq'] as num).toInt() > 0) {
                                 moq = (varObj['moq'] as num).toInt();
                               }
                               if (qty < moq) {
@@ -311,10 +321,16 @@ class _CartDrawerState extends State<CartDrawer> {
     final int quantity = item['quantity'] ?? 1;
 
     final variation = item['variation'];
-    final String? variationId = item['variationId'] ?? (variation != null ? (variation['_id'] ?? variation['id'])?.toString() : null);
+    final String? variationId =
+        item['variationId'] ??
+        (variation != null
+            ? (variation['_id'] ?? variation['id'])?.toString()
+            : null);
 
     int moq = product['moq'] ?? 1;
-    if (variation != null && variation['moq'] != null && (variation['moq'] as num).toInt() > 0) {
+    if (variation != null &&
+        variation['moq'] != null &&
+        (variation['moq'] as num).toInt() > 0) {
       moq = (variation['moq'] as num).toInt();
     }
     final double moqDiscount = (product['moqDiscount'] ?? 0).toDouble();
@@ -343,10 +359,12 @@ class _CartDrawerState extends State<CartDrawer> {
       if (modelNameVal != null && modelNameVal.toString().trim().isNotEmpty) {
         parts.add('Model: $modelNameVal');
       }
-      if (variation['color'] != null && variation['color'].toString().trim().isNotEmpty) {
+      if (variation['color'] != null &&
+          variation['color'].toString().trim().isNotEmpty) {
         parts.add('Color: ${variation['color']}');
       }
-      if (variation['material'] != null && variation['material'].toString().trim().isNotEmpty) {
+      if (variation['material'] != null &&
+          variation['material'].toString().trim().isNotEmpty) {
         parts.add('Material: ${variation['material']}');
       }
       if (parts.isNotEmpty) {
@@ -524,9 +542,12 @@ class _CartDrawerState extends State<CartDrawer> {
                 // ),
                 Builder(
                   builder: (context) {
-                    final String productId = (product['_id'] ?? product['id'])?.toString() ?? '';
-                    final bool isUpdating = CartController.instance.isItemUpdating(productId, variationId: variationId);
-                    final bool isRemoving = CartController.instance.isItemRemoving(productId, variationId: variationId);
+                    final String productId =
+                        (product['_id'] ?? product['id'])?.toString() ?? '';
+                    final bool isUpdating = CartController.instance
+                        .isItemUpdating(productId, variationId: variationId);
+                    final bool isRemoving = CartController.instance
+                        .isItemRemoving(productId, variationId: variationId);
 
                     return Row(
                       children: [
@@ -549,24 +570,35 @@ class _CartDrawerState extends State<CartDrawer> {
                                             variationId: variationId,
                                           );
                                         } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             SnackBar(
-                                              content: Text('Minimum order quantity is $moq'),
-                                              duration: const Duration(seconds: 1),
+                                              content: Text(
+                                                'Minimum order quantity is $moq',
+                                              ),
+                                              duration: const Duration(
+                                                seconds: 1,
+                                              ),
                                             ),
                                           );
                                         }
                                       },
                               ),
                               Padding(
-                                padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isMobile ? 8 : 12,
+                                ),
                                 child: isUpdating
                                     ? const SizedBox(
                                         width: 14,
                                         height: 14,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryPink),
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                AppColors.primaryPink,
+                                              ),
                                         ),
                                       )
                                     : Text(
@@ -601,7 +633,9 @@ class _CartDrawerState extends State<CartDrawer> {
                                   height: 18,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFB1B4F)),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFFB1B4F),
+                                    ),
                                   ),
                                 ),
                               )
@@ -614,7 +648,10 @@ class _CartDrawerState extends State<CartDrawer> {
                                 onPressed: (isUpdating || isRemoving)
                                     ? null
                                     : () {
-                                        CartController.instance.removeFromCart(productId, variationId: variationId);
+                                        CartController.instance.removeFromCart(
+                                          productId,
+                                          variationId: variationId,
+                                        );
                                       },
                               ),
                       ],
@@ -643,7 +680,11 @@ class _CartDrawerState extends State<CartDrawer> {
       onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.all(4.0),
-        child: Icon(icon, size: 16, color: onPressed == null ? AppColors.grey[300] : AppColors.grey[600]),
+        child: Icon(
+          icon,
+          size: 16,
+          color: onPressed == null ? AppColors.grey[300] : AppColors.grey[600],
+        ),
       ),
     );
   }
