@@ -3,7 +3,7 @@ const SubCategory = require("../model/SubCategory.js");
 
 const postCategories = async (req, res) => {
     try {
-        const { name, description, parent, sequence, isBestSelling } = req.body;
+        const { name, description, parent, sequence, isBestSelling, image } = req.body;
         if (!name) {
             return res.status(400).json({ message: "Category name is required" });
         }
@@ -12,6 +12,7 @@ const postCategories = async (req, res) => {
             name, 
             description, 
             parent,
+            image: image || (req.file ? req.file.path : undefined),
             sequence: sequence !== undefined ? Number(sequence) : 0,
             isBestSelling: isBestSelling !== undefined ? Boolean(isBestSelling) : false,
             isGlobal: true,
@@ -104,7 +105,7 @@ const deleteCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, parent, status, isGlobal, sequence, isBestSelling } = req.body;
+        const { name, description, parent, status, isGlobal, sequence, isBestSelling, image } = req.body;
         
         let updateData = {};
         if (name) updateData.name = name;
@@ -114,6 +115,7 @@ const updateCategory = async (req, res) => {
         if (isGlobal !== undefined) updateData.isGlobal = isGlobal;
         if (sequence !== undefined) updateData.sequence = Number(sequence);
         if (isBestSelling !== undefined) updateData.isBestSelling = Boolean(isBestSelling);
+        if (image !== undefined) updateData.image = image;
 
         const category = await Category.findByIdAndUpdate(id, updateData, { new: true }).populate("user");
         

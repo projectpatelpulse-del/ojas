@@ -19,13 +19,11 @@ class CategoriesSection extends StatelessWidget {
 
         final List<CategoryModel> categories = liveCategories.isNotEmpty
             ? liveCategories.map((c) {
+                final String? img = c['image']?.toString();
                 return CategoryModel(
                   id: (c['_id'] ?? c['id'] ?? '').toString(),
                   title: (c['name'] ?? '').toString(),
-                  imageUrl:
-                      (c['image'] != null && c['image'].toString().isNotEmpty)
-                      ? c['image'].toString()
-                      : 'https://via.placeholder.com/150',
+                  imageUrl: (img != null && img.isNotEmpty) ? img : '',
                   icon: c['icon']?.toString(),
                 );
               }).toList()
@@ -69,7 +67,7 @@ class CategoriesSection extends StatelessWidget {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
-                    separatorBuilder: (_, __) => SizedBox(width: isMobile ? 14 : 20),
+                    separatorBuilder: (_, index) => SizedBox(width: isMobile ? 14 : 20),
                     itemBuilder: (context, index) {
                       final cat = categories[index];
                       final bool isBestSelling =
@@ -94,7 +92,7 @@ class CategoriesSection extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.red.withOpacity(0.3),
+                                      color: Colors.red.withValues(alpha: 0.3),
                                       blurRadius: 4,
                                     ),
                                   ],

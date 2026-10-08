@@ -28,19 +28,35 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
       listenable: Listenable.merge([HomeController.instance, settingsController]),
       builder: (context, _) {
         final settings = settingsController.settings;
-        final List<String> categories = settings.trendingCategories
+        List<String> categories = settings.trendingCategories
             .split(',')
             .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
             .toList();
+        
+        // Fallback to active categories if not configured in settings
+        if (categories.isEmpty) {
+          categories = HomeController.instance.categories
+              .map((c) => (c is Map ? (c['name'] ?? '') : '').toString().trim())
+              .where((e) => e.isNotEmpty)
+              .take(6)
+              .toList()
+              .cast<String>();
+        }
         
         if (!categories.contains('All')) {
           categories.insert(0, 'All');
+        }
+
+        if (!categories.contains(_selectedCategory)) {
+          _selectedCategory = 'All';
         }
 
         var products = HomeController.instance.trendingProducts;
 
         // Apply filtering
         if (_selectedCategory != 'All') {
+          final target = _selectedCategory.toLowerCase().replaceAll('&', 'and').replaceAll(RegExp(r'\s+'), ' ').trim();
           products = products.where((p) {
             final category = p['category'];
             String? catName;
@@ -48,11 +64,21 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
               catName = category['name']?.toString();
             } else if (p['categoryName'] != null) {
               catName = p['categoryName'].toString();
+            } else if (category is String) {
+              catName = category;
             }
             
-            // Match against selected category (partial match or exact)
-            if (catName == null) return false;
-            return catName.toLowerCase().contains(_selectedCategory.split(' ')[0].toLowerCase());
+            if (catName == null || catName.isEmpty) return false;
+            final normalized = catName.toLowerCase().replaceAll('&', 'and').replaceAll(RegExp(r'\s+'), ' ').trim();
+            
+            if (normalized == target || normalized.contains(target) || target.contains(normalized)) {
+              return true;
+            }
+            final targetWords = target.split(' ').where((w) => w.length > 2).toList();
+            for (final word in targetWords) {
+              if (normalized.contains(word)) return true;
+            }
+            return false;
           }).toList();
         }
 
@@ -87,14 +113,9 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                         categories: categories,
                         selectedCategory: _selectedCategory,
                         onCategoryChanged: (cat) {
-                          Navigator.pushNamed(
-                            context,
-                            '/shop',
-                            arguments: <String, dynamic>{
-                              'category': cat,
-                              'subcategory': 'All',
-                            },
-                          );
+                          setState(() {
+                            _selectedCategory = cat;
+                          });
                         },
                       ),
                     ),
@@ -119,14 +140,9 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                       categories: categories,
                       selectedCategory: _selectedCategory,
                       onCategoryChanged: (cat) {
-                        Navigator.pushNamed(
-                          context,
-                          '/shop',
-                          arguments: <String, dynamic>{
-                            'category': cat,
-                            'subcategory': 'All',
-                          },
-                        );
+                        setState(() {
+                          _selectedCategory = cat;
+                        });
                       },
                     ),
                   ],
@@ -158,10 +174,10 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                             decoration:  BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
 
-                              color: Colors.transparent,
+                               color: Colors.transparent,
                                boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.black.withOpacity(0.04),
+                                  color: AppColors.black.withValues(alpha: 0.04),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -409,6 +425,40 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                         },
                       );
                     },
+                  ),
+                if (products.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 28),
+                    child: Center(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/shop',
+                            arguments: <String, dynamic>{
+                              'category': _selectedCategory == 'All' ? 'All' : _selectedCategory,
+                              'subcategory': 'All',
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_forward, size: 16, color: AppColors.primaryPink),
+                        label: Text(
+                          _selectedCategory == 'All'
+                              ? 'View All Trending in Shop'
+                              : 'Explore All in "$_selectedCategory"',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryPink,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.primaryPink, width: 1.5),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ),
                   ),
               ],
               // SizedBox(height: isMobile ? 32 : 60),

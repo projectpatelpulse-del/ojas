@@ -47,7 +47,7 @@ class _CategoryItemState extends State<CategoryItem> {
                 height: boxSize,
                 decoration: BoxDecoration(
                   color: _isHovered
-                      ? AppColors.primaryBlue.withOpacity(0.1)
+                      ? AppColors.primaryBlue.withValues(alpha: 0.1)
                       : AppColors.bgSecondaryLight,
                   borderRadius: BorderRadius.circular(_isHovered ? 24 : 16),
                   border: Border.all(
@@ -64,18 +64,26 @@ class _CategoryItemState extends State<CategoryItem> {
                           style: TextStyle(fontSize: isMobile ? 28 : 32),
                         ),
                       )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          widget.category.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
+                    : (widget.category.imageUrl.isNotEmpty)
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.network(
+                              widget.category.imageUrl,
+                              width: boxSize,
+                              height: boxSize,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.category_outlined,
+                                size: isMobile ? 28 : 32,
+                                color: AppColors.primaryPink,
+                              ),
+                            ),
+                          )
+                        : Icon(
                             Icons.category_outlined,
                             size: isMobile ? 28 : 32,
                             color: AppColors.primaryPink,
                           ),
-                        ),
-                      ),
               ),
               // const SizedBox(height: 8),
               // Text(

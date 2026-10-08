@@ -618,64 +618,64 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
     return Row(
       children: [
         // Become Vendor Button
-        Flexible(
-          flex: 2,
-          child: ElevatedButton.icon(
-            onPressed: () => Navigator.pushNamed(context, '/become-vendor'),
-            // style: ElevatedButton.styleFrom(
-            //   backgroundColor: AppColors.accentOrange,
-            //   foregroundColor: AppColors.black,
-            //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            // ),
-            // icon: const Icon(Icons.storefront_outlined, size: 18),
-            // label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.goldAccent,
-              foregroundColor: AppColors.charcoal,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            icon: const Icon(Icons.storefront_outlined, size: 18, color: AppColors.charcoal),
-            label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.charcoal))),
-          ),
-        ),
+        // Flexible(
+        //   flex: 2,
+        //   child: ElevatedButton.icon(
+        //     onPressed: () => Navigator.pushNamed(context, '/become-vendor'),
+        //     // style: ElevatedButton.styleFrom(
+        //     //   backgroundColor: AppColors.accentOrange,
+        //     //   foregroundColor: AppColors.black,
+        //     //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        //     //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        //     // ),
+        //     // icon: const Icon(Icons.storefront_outlined, size: 18),
+        //     // label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+        //     style: ElevatedButton.styleFrom(
+        //       backgroundColor: AppColors.goldAccent,
+        //       foregroundColor: AppColors.charcoal,
+        //       elevation: 0,
+        //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        //     ),
+        //     icon: const Icon(Icons.storefront_outlined, size: 18, color: AppColors.charcoal),
+        //     label: const FittedBox(child: Text('BECOME VENDOR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.charcoal))),
+        //   ),
+        // ),
         
-        const SizedBox(width: 12),
+        // const SizedBox(width: 12),
 
-        // Become Reseller Button
-        ValueListenableBuilder<UserModel?>(
-          valueListenable: SessionService.instance.userNotifier,
-          builder: (context, user, _) {
-            if (user != null && user.role == 'reseller') {
-              return const SizedBox.shrink();
-            }
-            return Flexible(
-              flex: 2,
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.pushNamed(context, '/become-reseller'),
-                // style: ElevatedButton.styleFrom(
-                //   backgroundColor: AppColors.primaryBlue,
-                //   foregroundColor: AppColors.black,
-                //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                // ),
-                // icon: const Icon(Icons.people_outline, size: 18),
-                // label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.goldAccent,
-                  foregroundColor: AppColors.charcoal,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                icon: const Icon(Icons.people_outline, size: 18, color: AppColors.charcoal),
-                label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.charcoal))),
-              ),
-            );
-          },
-        ),
+        // // Become Reseller Button
+        // ValueListenableBuilder<UserModel?>(
+        //   valueListenable: SessionService.instance.userNotifier,
+        //   builder: (context, user, _) {
+        //     if (user != null && user.role == 'reseller') {
+        //       return const SizedBox.shrink();
+        //     }
+        //     return Flexible(
+        //       flex: 2,
+        //       child: ElevatedButton.icon(
+        //         onPressed: () => Navigator.pushNamed(context, '/become-reseller'),
+        //         // style: ElevatedButton.styleFrom(
+        //         //   backgroundColor: AppColors.primaryBlue,
+        //         //   foregroundColor: AppColors.black,
+        //         //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        //         //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        //         // ),
+        //         // icon: const Icon(Icons.people_outline, size: 18),
+        //         // label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+        //         style: ElevatedButton.styleFrom(
+        //           backgroundColor: AppColors.goldAccent,
+        //           foregroundColor: AppColors.charcoal,
+        //           elevation: 0,
+        //           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        //         ),
+        //         icon: const Icon(Icons.people_outline, size: 18, color: AppColors.charcoal),
+        //         label: const FittedBox(child: Text('BECOME RESELLER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.charcoal))),
+        //       ),
+        //     );
+        //   },
+        // ),
         
         const SizedBox(width: 16),
         
@@ -736,6 +736,7 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
      
       ],
     );
+ 
   }
 }
 

@@ -1,0 +1,14 @@
+# Robots.txt for My Collections For You (https://mycollectionsforyou.com)
+User-agent: *
+Allow: /
+Allow: /collection/
+Allow: /product/
+
+# Disallow private user and order areas
+Disallow: /orders
+Disallow: /orders/
+Disallow: /profile
+Disallow: /profile/
+
+# Sitemap location
+Sitemap: https://mycollectionsforyou.com/sitemap.xml

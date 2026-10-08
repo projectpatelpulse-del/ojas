@@ -80,14 +80,36 @@ module.exports = async (req, res) => {
   <meta name="twitter:image" content="${imageUrl}" />
         `;
 
+        const productSchema = {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": title,
+          "image": imageUrl,
+          "description": description ? description.substring(0, 300) : '',
+          "sku": String(product._id || id),
+          "offers": {
+            "@type": "Offer",
+            "url": productUrl,
+            "priceCurrency": "INR",
+            "price": Math.ceil(price),
+            "availability": "https://schema.org/InStock"
+          }
+        };
+        const productJsonLd = `\n  <script type="application/ld+json">\n  ${JSON.stringify(productSchema, null, 2)}\n  </script>`;
+
         // Replace the default title, description, and apple-mobile-web-app-title
         let modifiedHtml = baseHtml
           .replace(/<title>.*?<\/title>/g, '')
           .replace(/<meta name="description" content=".*?">/g, '')
           .replace(/<meta name="apple-mobile-web-app-title" content=".*?">/g, '');
 
-        // Insert new meta tags right after the opening <head> tag
-        modifiedHtml = modifiedHtml.replace('<head>', `<head>${ogMetaTags}`);
+        // Support GTM_ID from environment if configured
+        if (process.env.GTM_ID && process.env.GTM_ID !== 'GTM-XXXXXXX') {
+          modifiedHtml = modifiedHtml.replace(/GTM-XXXXXXX/g, process.env.GTM_ID);
+        }
+
+        // Insert new meta tags and product JSON-LD right after the opening <head> tag
+        modifiedHtml = modifiedHtml.replace('<head>', `<head>${ogMetaTags}${productJsonLd}`);
 
         return res.status(200).send(modifiedHtml);
       }

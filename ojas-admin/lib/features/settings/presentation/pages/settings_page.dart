@@ -6,6 +6,8 @@ import 'package:ojas_admin/core/services/api_service.dart';
 import 'package:ojas_admin/features/settings/presentation/widgets/blog_management.dart';
 import 'package:dio/dio.dart';
 import 'package:ojas_admin/core/services/favicon_helper.dart';
+import 'package:ojas_admin/features/categories/data/services/category_service.dart';
+import 'package:ojas_admin/core/services/service_locator.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -68,6 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _card4SubtitleController = TextEditingController();
   final TextEditingController _card4IconController = TextEditingController();
   
+  List<String> _availableCategoryNames = [];
   bool _enableAnnouncement = false;
   bool _showTrendingProducts = true;
   bool _showTrendingB2BBanner = true;
@@ -147,6 +150,17 @@ class _SettingsPageState extends State<SettingsPage> {
         _faviconUrl = data['favicon'];
         if (_faviconUrl != null && _faviconUrl!.isNotEmpty) {
           updateFavicon(_faviconUrl!);
+        }
+
+        // Load available store categories for interactive chips
+        try {
+          final catData = await sl<CategoryService>().getCategories(type: 'global');
+          _availableCategoryNames = catData
+              .map((e) => (e['name'] ?? '').toString().trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+        } catch (e) {
+          debugPrint('Error loading categories in settings: $e');
         }
       }
     } catch (e) {
@@ -994,9 +1008,99 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 24),
+          if (_availableCategoryNames.isNotEmpty) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Select from Store Categories (Click to toggle):',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _trendingCategoriesController.text = _availableCategoryNames.join(', ');
+                        });
+                      },
+                      child: const Text('Select All', style: TextStyle(fontSize: 12, color: Color(0xFF6B21A8))),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _trendingCategoriesController.text = '';
+                        });
+                      },
+                      child: Text('Clear All', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _availableCategoryNames.map((catName) {
+                final currentList = _trendingCategoriesController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList();
+                final isSelected = currentList.any((c) => c.toLowerCase() == catName.toLowerCase());
+
+                return FilterChip(
+                  label: Text(catName),
+                  selected: isSelected,
+                  selectedColor: const Color(0xFF6B21A8).withOpacity(0.15),
+                  checkmarkColor: const Color(0xFF6B21A8),
+                  labelStyle: TextStyle(
+                    color: isSelected ? const Color(0xFF6B21A8) : const Color(0xFF475569),
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                  backgroundColor: Colors.grey.shade100,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: isSelected ? const Color(0xFF6B21A8) : Colors.grey.shade300,
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    setState(() {
+                      final updated = _trendingCategoriesController.text
+                          .split(',')
+                          .map((e) => e.trim())
+                          .where((e) => e.isNotEmpty)
+                          .toList();
+                      if (selected) {
+                        if (!updated.any((c) => c.toLowerCase() == catName.toLowerCase())) {
+                          updated.add(catName);
+                        }
+                      } else {
+                        updated.removeWhere((c) => c.toLowerCase() == catName.toLowerCase());
+                      }
+                      _trendingCategoriesController.text = updated.join(', ');
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
           _buildTextField(
             'Trending Categories (Comma Separated)',
             _trendingCategoriesController,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Tip: Selected categories will show as tabs next to "TRENDING ITEMS" on the home page.',
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
           ),
           const SizedBox(height: 24),
           const Divider(),

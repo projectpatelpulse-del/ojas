@@ -1,0 +1,41 @@
+# Robots.txt for OJAS INDIA (https://ojasindia.com)
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /deals
+Allow: /shop
+Allow: /about-us
+Allow: /blog
+Allow: /become-vendor
+Allow: /become-reseller
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /returns
+Allow: /product/
+
+# Disallow admin, vendor, checkout, and private user areas
+Disallow: /admin
+Disallow: /admin/
+Disallow: /vendor
+Disallow: /vendor/
+Disallow: /api/
+Disallow: /cart
+Disallow: /cart/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /login
+Disallow: /login/
+Disallow: /register
+Disallow: /register/
+Disallow: /welcome
+Disallow: /welcome/
+Disallow: /profile
+Disallow: /profile/
+Disallow: /orders
+Disallow: /orders/
+Disallow: /wishlist
+Disallow: /wishlist/
+
+# Sitemap location
+Sitemap: https://ojasindia.com/sitemap.xml

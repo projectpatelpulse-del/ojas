@@ -61,8 +61,90 @@
       }
     };
   </script>
+
+  <!-- Google Tag Manager Configuration -->
+  <script>
+    // Configuration for Google Tag Manager Container ID.
+    // Replace 'GTM-XXXXXXX' below with your actual GTM Container ID,
+    // or inject via window.GTM_ID before loading.
+    window.GTM_ID = window.GTM_ID || 'GTM-XXXXXXX';
+  </script>
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){
+      if(!i || i === 'GTM-XXXXXXX' || w['gtm_loaded']) return;
+      w['gtm_loaded'] = true;
+      w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer',window.GTM_ID);
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://ojasindia.com/#organization",
+        "name": "OJAS INDIA",
+        "url": "https://ojasindia.com",
+        "logo": {
+          "@type": "ImageObject",
+          "@id": "https://ojasindia.com/#logo",
+          "url": "https://ik.imagekit.io/xgdosezi9/uploads/upload_1784985235078_Untitled_design-42_x6tZltUAp.png",
+          "contentUrl": "https://ik.imagekit.io/xgdosezi9/uploads/upload_1784985235078_Untitled_design-42_x6tZltUAp.png",
+          "caption": "OJAS INDIA"
+        },
+        "image": "https://ik.imagekit.io/xgdosezi9/uploads/upload_1784985235078_Untitled_design-42_x6tZltUAp.png",
+        "description": "25 Years of Trusted Partner, Now Just a Click Away.",
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "telephone": "+91 9421874649",
+            "contactType": "customer service",
+            "email": "support@ojasindia.com",
+            "areaServed": "IN",
+            "availableLanguage": ["en", "hi"]
+          }
+        ],
+        "sameAs": [
+          "https://www.facebook.com/ojasindiasilver",
+          "https://www.instagram.com/ojasindiab2b/",
+          "https://www.youtube.com/@ojasindia6422"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://ojasindia.com/#website",
+        "url": "https://ojasindia.com",
+        "name": "OJAS INDIA",
+        "publisher": {
+          "@id": "https://ojasindia.com/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://ojasindia.com/shop?search={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+  <!-- End Google Tag Manager (noscript) -->
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
