@@ -30,6 +30,7 @@ import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/cart/presentation/pages/cart_page.dart';
 import 'package:ojas_user/features/home/presentation/pages/shared_collection_page.dart';
 
+import 'package:ojas_user/core/utils/url_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sizer/sizer.dart';
 
@@ -148,105 +149,102 @@ class _MyAppState extends State<MyApp> {
         final name = routeSettings.name ?? '/';
         final uri = Uri.parse(name);
         final path = uri.path;
-
         final pathSegments = uri.pathSegments;
-        final isProductPath =
-            pathSegments.length == 2 && pathSegments[0] == 'product';
-        final isCollectionPath =
-            pathSegments.length == 2 && pathSegments[0] == 'collection';
 
+        // Check if referral code is present
         final ref = uri.queryParameters['ref'];
-        if (ref != null) {
-          final id = path == '/product-detail'
-              ? uri.queryParameters['id']
-              : (pathSegments.length == 2 ? pathSegments[1] : null);
 
-          if (id != null) {
-            SessionService.instance.setReferral(ref, id);
-          }
-        }
+        // Reserved static route prefixes
+        const reservedRoutes = {
+          '',
+          'features',
+          'deals',
+          'shop',
+          'cart',
+          'become-vendor',
+          'become-reseller',
+          'wishlist',
+          'blog',
+          'orders',
+          'returns',
+          'terms',
+          'privacy',
+          'contact',
+          'about-us',
+          'login',
+          'register',
+          'welcome',
+          'profile',
+          'collection',
+          'category',
+          'product',
+          'product-detail',
+        };
 
-        // Commented out referral redirect hijacking logic.
-        // Previously, if refCode was present in session, navigating to '/' or other unallowed paths
-        // would forcibly redirect user to the referred ProductDetailPage instead of home page.
-        // if (SessionService.instance.refCode != null) {
-        //   final allowedPaths = {
-        //     '/product-detail',
-        //     '/cart',
-        //     '/login',
-        //     '/register',
-        //     '/welcome',
-        //     '/profile',
-        //     '/orders',
-        //     '/returns',
-        //     '/terms',
-        //     '/privacy',
-        //     '/contact',
-        //   };
-        // 
-        //   if (!allowedPaths.contains(path) && !isProductPath) {
-        //     final targetProductId =
-        //         SessionService.instance.referredProductId;
-        // 
-        //     if (targetProductId != null) {
-        //       return MaterialPageRoute(
-        //         settings: RouteSettings(
-        //           name:
-        //               '/product-detail?id=$targetProductId&ref=${SessionService.instance.refCode}',
-        //         ),
-        //         builder: (context) => ProductDetailPage(
-        //           productId: targetProductId,
-        //           refCode: SessionService.instance.refCode,
-        //         ),
-        //       );
-        //     }
-        //   }
-        // }
+        // 1. Product Detail Page
+        // Matches:
+        // - /product-detail?id=...
+        // - /product/:idOrSlug
+        // - /product/:categorySlug/:idOrSlug
+        // - /product/:categorySlug/:subCategorySlug/:idOrSlug
+        // - /:categorySlug/:subCategorySlug/:idOrSlug (when segments == 3 and segment[0] not reserved)
+        final isProductPrefix = pathSegments.isNotEmpty && pathSegments[0] == 'product';
+        final isProductDetailRoute = path == '/product-detail';
+        final is3SegmentCustomProduct = pathSegments.length == 3 && !reservedRoutes.contains(pathSegments[0]);
 
-        if (path == '/product-detail' || isProductPath) {
+        if (isProductDetailRoute || isProductPrefix || is3SegmentCustomProduct) {
           ProductModel? product;
+          final identifier = isProductDetailRoute
+              ? uri.queryParameters['id']
+              : pathSegments.last;
 
           if (routeSettings.arguments is ProductModel) {
             product = routeSettings.arguments as ProductModel;
-          } else {
-            final id = path == '/product-detail'
-                ? uri.queryParameters['id']
-                : pathSegments[1];
+          } else if (identifier != null && identifier.isNotEmpty) {
+            final all = HomeController.instance.products.isNotEmpty
+                ? HomeController.instance.products
+                : HomeController.instance.shopProducts;
+            final found = all.firstWhere(
+              (p) {
+                final idStr = (p['_id'] ?? p['id'] ?? '').toString();
+                final slugStr = (p['slug'] ?? '').toString();
+                final nameStr = (p['name'] ?? '').toString();
+                final titleStr = (p['title'] ?? '').toString();
+                return idStr == identifier ||
+                       slugStr == identifier ||
+                       UrlHelper.matchesSlug(slugStr, identifier) ||
+                       UrlHelper.matchesSlug(nameStr, identifier) ||
+                       UrlHelper.matchesSlug(titleStr, identifier);
+              },
+              orElse: () => null,
+            );
 
-            if (id != null) {
-              final all = HomeController.instance.products.isNotEmpty
-                  ? HomeController.instance.products
-                  : HomeController.instance.shopProducts;
-              final found = all.firstWhere(
-                (p) => (p['_id'] ?? p['id'] ?? '').toString() == id,
-                orElse: () => null,
-              );
-
-              if (found != null) {
-                try {
-                  product = ProductModel.fromMap(Map<String, dynamic>.from(found));
-                } catch (_) {}
-              }
+            if (found != null) {
+              try {
+                product = ProductModel.fromMap(Map<String, dynamic>.from(found));
+              } catch (_) {}
             }
           }
 
-          final id = path == '/product-detail'
-              ? uri.queryParameters['id']
-              : (pathSegments.length == 2 ? pathSegments[1] : null);
+          final targetId = product?.id ?? identifier;
+          final refCodeVal = ref ?? SessionService.instance.refCode;
 
-          final refCodeVal =
-              ref ?? uri.queryParameters['ref'] ?? SessionService.instance.refCode;
+          if (refCodeVal != null && targetId != null) {
+            SessionService.instance.setReferral(refCodeVal, targetId);
+          }
 
           return MaterialPageRoute(
             settings: routeSettings,
             builder: (context) => ProductDetailPage(
               product: product,
-              productId: id,
+              productId: targetId,
               refCode: refCodeVal,
             ),
           );
         }
 
+        // 2. Collection Route
+        final isCollectionPath = pathSegments.length == 2 && pathSegments[0] == 'collection';
         if (path == '/collection' || isCollectionPath) {
           final shareCode = path == '/collection'
               ? uri.queryParameters['shareCode']
@@ -260,8 +258,54 @@ class _MyAppState extends State<MyApp> {
           );
         }
 
-        final builder = routes[path];
+        // 3. Shop / Category / Subcategory Route
+        // Matches:
+        // - /shop
+        // - /shop/:category
+        // - /shop/:category/:subcategory
+        // - /category/:category
+        // - /category/:category/:subcategory
+        // - /:category (when 1 segment and not reserved)
+        // - /:category/:subcategory (when 2 segments and not reserved)
+        final isShopPrefix = pathSegments.isNotEmpty && (pathSegments[0] == 'shop' || pathSegments[0] == 'category');
+        final isCustomCategoryRoute = (pathSegments.length == 1 || pathSegments.length == 2) &&
+            pathSegments.isNotEmpty &&
+            !reservedRoutes.contains(pathSegments[0]);
 
+        if (path == '/shop' || isShopPrefix || isCustomCategoryRoute) {
+          String? category;
+          String? subcategory;
+          String? search = uri.queryParameters['search'] ?? uri.queryParameters['q'];
+
+          if (routeSettings.arguments is Map<String, dynamic>) {
+            final args = routeSettings.arguments as Map<String, dynamic>;
+            category = args['category'];
+            subcategory = args['subcategory'];
+            search = args['search'] ?? search;
+          } else {
+            if (isShopPrefix) {
+              category = pathSegments.length > 1 ? pathSegments[1] : null;
+              subcategory = pathSegments.length > 2 ? pathSegments[2] : null;
+            } else if (isCustomCategoryRoute) {
+              category = pathSegments[0];
+              subcategory = pathSegments.length > 1 ? pathSegments[1] : null;
+            }
+            category ??= uri.queryParameters['category'];
+            subcategory ??= uri.queryParameters['subcategory'];
+          }
+
+          return MaterialPageRoute(
+            settings: routeSettings,
+            builder: (context) => ShopPage(
+              initialCategory: category,
+              initialSubCategory: subcategory,
+              initialSearch: search,
+            ),
+          );
+        }
+
+        // 4. Other Standard Routes
+        final builder = routes[path];
         if (builder != null) {
           return MaterialPageRoute(
             settings: routeSettings,

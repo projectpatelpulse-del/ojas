@@ -4,6 +4,7 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/services/api_service.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
 
 class SmartSearchBar extends StatefulWidget {
   final bool isMobile;
@@ -376,12 +377,12 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
       debugPrint('Error converting product to ProductModel: $e\n$stack');
     }
 
-    final String refSuffix = (productModel?.resellerCode != null && productModel!.resellerCode!.isNotEmpty)
-        ? '&ref=${productModel.resellerCode}'
-        : '';
+    final route = productModel != null
+        ? UrlHelper.productUrl(productModel, refCode: productModel.resellerCode)
+        : UrlHelper.productUrl({'id': id});
 
     Navigator.of(context).pushNamed(
-      '/product-detail?id=$id$refSuffix',
+      route,
       arguments: productModel,
     );
   }
@@ -392,8 +393,9 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
 
     if (!mounted) return;
 
+    final route = UrlHelper.categoryUrl(name);
     Navigator.of(context).pushNamed(
-      '/shop',
+      route,
       arguments: {'category': name},
     );
   }

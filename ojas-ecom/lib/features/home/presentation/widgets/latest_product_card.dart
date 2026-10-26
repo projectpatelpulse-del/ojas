@@ -6,6 +6,7 @@ import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
 
 class LatestProductCard extends StatefulWidget {
   final ProductModel product;
@@ -38,7 +39,10 @@ class _LatestProductCardState extends State<LatestProductCard> {
         final bool isWishlisted = WishlistController.instance.isWishlisted(widget.product.id);
         
         return GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/product-detail?id=${widget.product.id}', arguments: widget.product),
+          onTap: () {
+            final route = UrlHelper.productUrl(widget.product);
+            Navigator.pushNamed(context, route, arguments: widget.product);
+          },
           child: MouseRegion(
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),

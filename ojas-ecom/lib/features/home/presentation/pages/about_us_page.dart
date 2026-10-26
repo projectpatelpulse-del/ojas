@@ -8,6 +8,7 @@ import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:ojas_user/core/models/app_settings.dart';
 import 'package:ojas_user/core/widgets/formatted_text.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
@@ -226,8 +227,25 @@ class AboutUsPage extends StatelessWidget {
     );
   }
 
+  Future<void> _launchUrlString(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: url.startsWith('http') ? LaunchMode.externalApplication : LaunchMode.platformDefault);
+    }
+  }
+
   Widget _contactSubCard(IconData icon, String title, String value, bool isMobile) {
-    return Container(
+    VoidCallback? onTap;
+    if (title == 'Email') {
+      onTap = () => _launchUrlString('mailto:$value');
+    } else if (title == 'Phone') {
+      final clean = value.replaceAll(RegExp(r'[^0-9+]'), '');
+      onTap = () => _launchUrlString('tel:$clean');
+    } else if (title == 'Address') {
+      onTap = () => _launchUrlString('https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7');
+    }
+
+    Widget card = Container(
       width: isMobile ? double.infinity : 300,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -244,6 +262,18 @@ class AboutUsPage extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap != null) {
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: card,
+        ),
+      );
+    }
+
+    return card;
   }
 }
 

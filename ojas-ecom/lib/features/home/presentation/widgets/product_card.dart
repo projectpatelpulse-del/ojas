@@ -6,6 +6,7 @@ import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
 
 class ProductCard extends StatefulWidget {
   final ProductModel product;
@@ -33,12 +34,13 @@ class _ProductCardState extends State<ProductCard> {
         
         return GestureDetector(
           onTap: () {
-            final String refSuffix = (widget.product.resellerCode != null && widget.product.resellerCode!.isNotEmpty)
-                ? '&ref=${widget.product.resellerCode}'
-                : '';
+            final route = UrlHelper.productUrl(
+              widget.product,
+              refCode: widget.product.resellerCode,
+            );
             Navigator.pushNamed(
               context,
-              '/product-detail?id=${widget.product.id}$refSuffix',
+              route,
               arguments: widget.product,
             );
           },

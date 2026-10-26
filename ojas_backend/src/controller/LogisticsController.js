@@ -225,6 +225,10 @@ exports.assignDelhivery = async (req, res) => {
             order.trackingUrl = waybills.map(wb => `https://www.delhivery.com/track/package/${wb}`).join(",");
             await order.save();
 
+            // Trigger WhatsApp Dispatched update with AWB tracking
+            const WhatsAppService = require("../service/WhatsAppService");
+            WhatsAppService.sendOrderStatusUpdateMessage(order, "READY_TO_DISPATCH").catch(err => console.error("[WhatsApp] Logistics dispatch update failed:", err));
+
             const io = req.app.get("io");
             if (io) {
                 io.emit("admin_data_updated", { type: "order", action: "shipped", data: order });

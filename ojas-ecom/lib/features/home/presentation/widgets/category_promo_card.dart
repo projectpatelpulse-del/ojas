@@ -1,6 +1,7 @@
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
 
 class CategoryPromoCard extends StatelessWidget {
   final Color backgroundColor;
@@ -26,9 +27,10 @@ class CategoryPromoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        final route = UrlHelper.categoryUrl(title, 'All');
         Navigator.pushNamed(
           context, 
-          '/shop', 
+          route, 
           arguments: {'category': title, 'subcategory': 'All'}
         );
       },

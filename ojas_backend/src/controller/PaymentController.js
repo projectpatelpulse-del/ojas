@@ -147,10 +147,12 @@ exports.verifyPayment = async (req, res) => {
                 }
             );
 
-            // Send Emails (Admin, Vendor, User)
+            // Send Emails (Admin, Vendor, User) & WhatsApp Notifications
             const emailService = require("../service/emailService");
+            const WhatsAppService = require("../service/WhatsAppService");
             for (const oId of orderIds) {
                 emailService.sendOrderEmails(oId).catch(err => console.error("Email trigger failed:", err));
+                WhatsAppService.sendOrderPlacedMessage(oId).catch(err => console.error("[WhatsApp] Trigger failed on payment success:", err));
             }
 
             return res.status(200).json({ success: true, message: "Payment successful" });
@@ -215,10 +217,12 @@ exports.payuWebhook = async (req, res) => {
                 }
             );
 
-            // Send Emails (Admin, Vendor, User)
+            // Send Emails (Admin, Vendor, User) & WhatsApp Notifications
             const emailService = require("../service/emailService");
+            const WhatsAppService = require("../service/WhatsAppService");
             for (const oId of orderIds) {
                 emailService.sendOrderEmails(oId).catch(err => console.error("Email trigger failed:", err));
+                WhatsAppService.sendOrderPlacedMessage(oId).catch(err => console.error("[WhatsApp] Trigger failed on webhook payment:", err));
             }
         } else {
             payment.status = "FAILED";
@@ -440,11 +444,13 @@ const processPaymentSuccess = async (payment, gatewayResponse) => {
 
     try {
         const emailService = require("../service/emailService");
+        const WhatsAppService = require("../service/WhatsAppService");
         for (const oId of orderIds) {
             emailService.sendOrderEmails(oId).catch(err => console.error("Email trigger failed:", err));
+            WhatsAppService.sendOrderPlacedMessage(oId).catch(err => console.error("[WhatsApp] Trigger failed on redirect verify:", err));
         }
     } catch (e) {
-        console.error("Email Service Error:", e);
+        console.error("Email / WhatsApp Service Error:", e);
     }
 };
 

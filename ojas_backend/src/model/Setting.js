@@ -126,7 +126,15 @@ const settingSchema = new mongoose.Schema({
   },
   whatsappNumber: {
     type: String,
-    default: ''
+    default: '919325570093'
+  },
+  whatsappChatLink: {
+    type: String,
+    default: 'https://wa.me/919325570093'
+  },
+  whatsappOrderUpdates: {
+    type: Boolean,
+    default: true
   },
   whatsappApiUrl: {
     type: String,

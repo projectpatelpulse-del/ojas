@@ -171,6 +171,8 @@ exports.createOrder = async (req, res) => {
         const txnid = paymentMethod === "ONLINE" ? "TXN" + Date.now() + Math.floor(Math.random() * 1000) : null;
         const addrObj = shippingAddress || {};
         const finalShipping = {
+            name: addrObj.name || buyer.name || "Customer",
+            phone: addrObj.phone || addrObj.mobile || buyer.mobile || "",
             buildingName: addrObj.buildingName || "",
             street: addrObj.street || "",
             area: addrObj.area || "",
@@ -237,6 +239,10 @@ exports.createOrder = async (req, res) => {
                 // Send Emails (Admin, Vendor, User)
                 const emailService = require("../service/emailService");
                 emailService.sendOrderEmails(newOrder._id).catch(err => console.error("Email trigger failed:", err));
+
+                // Send WhatsApp Order Confirmation to Customer
+                const WhatsAppService = require("../service/WhatsAppService");
+                WhatsAppService.sendOrderPlacedMessage(newOrder._id).catch(err => console.error("[WhatsApp] Order confirmation failed:", err));
             }
         }
 
@@ -491,6 +497,10 @@ exports.updateOrderStatus = async (req, res) => {
 
         await order.save();
 
+        // Trigger WhatsApp Order Status Update to customer
+        const WhatsAppService = require("../service/WhatsAppService");
+        WhatsAppService.sendOrderStatusUpdateMessage(order, upperStatus).catch(err => console.error("[WhatsApp] Status update failed:", err));
+
         // Note: Product stock is now deducted upon order placement (checkout) rather than on delivery.
 
         res.status(200).json({ success: true, order });
@@ -620,6 +630,10 @@ exports.verifyDeliveryOtp = async (req, res) => {
 
         await order.save();
 
+        // Send WhatsApp Delivered Notification
+        const WhatsAppService = require("../service/WhatsAppService");
+        WhatsAppService.sendOrderStatusUpdateMessage(order, "DELIVERED").catch(err => console.error("[WhatsApp] Delivered update failed:", err));
+
         // Note: Product stock is now deducted upon order placement (checkout) rather than on delivery.
 
         // Notify vendor/users
@@ -659,6 +673,10 @@ exports.resendDeliveryOtp = async (req, res) => {
         await order.save();
 
         console.log(`[OrderController] OTP resent for Order ${order.orderId}: ${otpCode}`);
+
+        // Send WhatsApp OTP Notification
+        const WhatsAppService = require("../service/WhatsAppService");
+        WhatsAppService.sendDeliveryOtpMessage(order, otpCode).catch(err => console.error("[WhatsApp] Resend OTP failed:", err));
 
         return res.status(200).json({ success: true, message: "OTP resent successfully!", deliveryOtp: otpCode });
     } catch (error) {

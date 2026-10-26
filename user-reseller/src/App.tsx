@@ -194,7 +194,7 @@ const AppContent: React.FC = () => {
             <div className="empty-card animate-scale-up">
               <h2>Welcome to our Curated Storefront</h2>
               <p>Please load this page using a shared collection link or a product link shared by your Reseller Partner.</p>
-              <a href="https://wa.me/918340248443" target="_blank" rel="noreferrer" className="contact-support-btn">
+              <a href="https://wa.me/919325570093" target="_blank" rel="noreferrer" className="contact-support-btn">
                 Contact Support for Links
               </a>
             </div>

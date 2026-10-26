@@ -351,26 +351,46 @@ class OjasFooter extends StatelessWidget {
   }
 
   Widget _contactInfo(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon(icon, size: 16, color: AppColors.black54),
-          Icon(icon, size: 16, color: AppColors.goldAccent),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(
-                // color: AppColors.black87,
-                color: AppColors.charcoal.withOpacity(0.85),
-                fontSize: 13,
-              ),
+    VoidCallback? onTap;
+    if (icon == Icons.phone_outlined) {
+      final cleanPhone = text.replaceAll(RegExp(r'[^0-9+]'), '');
+      onTap = () => _launchURL('tel:$cleanPhone');
+    } else if (icon == Icons.email_outlined) {
+      onTap = () => _launchURL('mailto:$text');
+    } else if (icon == Icons.location_on_outlined) {
+      onTap = () => _launchURL('https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7');
+    }
+
+    Widget content = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppColors.goldAccent),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              color: AppColors.charcoal.withOpacity(0.85),
+              fontSize: 13,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+
+    if (onTap != null) {
+      content = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: content,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: content,
     );
   }
 

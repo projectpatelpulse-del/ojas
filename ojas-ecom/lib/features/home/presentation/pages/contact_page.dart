@@ -129,9 +129,26 @@ class _ContactPageState extends State<ContactPage> {
     if (await canLaunchUrl(emailLaunchUri)) {
       await launchUrl(emailLaunchUri);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch email app')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch email app')),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchPhone(String phone) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+    final Uri uri = Uri(scheme: 'tel', path: cleanPhone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Future<void> _launchMaps() async {
+    final Uri uri = Uri.parse('https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -729,7 +746,16 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   Widget _infoCard(IconData icon, String title, String value, String subtitle, bool isMobile) {
-    return Container(
+    VoidCallback? onTap;
+    if (title == 'Email Us') {
+      onTap = _launchEmail;
+    } else if (title == 'Call Us') {
+      onTap = () => _launchPhone(value);
+    } else if (title == 'Visit Us') {
+      onTap = _launchMaps;
+    }
+
+    Widget card = Container(
       width: isMobile ? double.infinity : 280,
       padding: EdgeInsets.all(isMobile ? 24 : 32),
       decoration: BoxDecoration(
@@ -753,6 +779,18 @@ class _ContactPageState extends State<ContactPage> {
         ],
       ),
     );
+
+    if (onTap != null) {
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: card,
+        ),
+      );
+    }
+
+    return card;
   }
 
   Widget _buildFAQSection(bool isMobile) {

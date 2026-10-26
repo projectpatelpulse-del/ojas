@@ -6,6 +6,7 @@ import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
 
 class DailyDealCard extends StatelessWidget {
   final ProductModel product;
@@ -133,11 +134,14 @@ class DailyDealCard extends StatelessWidget {
         );
 
         return InkWell(
-          onTap: () => Navigator.pushNamed(
-            context,
-            '/product-detail?id=${product.id}',
-            arguments: product,
-          ),
+          onTap: () {
+            final route = UrlHelper.productUrl(product);
+            Navigator.pushNamed(
+              context,
+              route,
+              arguments: product,
+            );
+          },
           borderRadius: BorderRadius.circular(20),
           child: Container(
             padding: const EdgeInsets.all(14),

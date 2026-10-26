@@ -9,7 +9,8 @@ import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
-import 'package:ojas_user/features/home/data/models/banner_model.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 
 class FeaturesPage extends StatelessWidget {
   const FeaturesPage({super.key});
@@ -57,9 +58,9 @@ class FeaturesPage extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: isMobile ? 1 : (isTablet ? 2 : 3),
-                      crossAxisSpacing: isMobile ? 16 : 30,
-                      mainAxisSpacing: isMobile ? 16 : 30,
-                      childAspectRatio: isMobile ? 0.8 : 0.6,
+                      crossAxisSpacing: isMobile ? 16 : 24,
+                      mainAxisSpacing: isMobile ? 16 : 24,
+                      mainAxisExtent: isMobile ? 465 : 475,
                     ),
                     itemCount: count,
                     itemBuilder: (context, index) {
@@ -86,14 +87,27 @@ class FeaturesPage extends StatelessWidget {
                         category: p['category']?.toString() ?? 'Category',
                         description: p['description']?.toString() ?? '',
                         onAddToCart: () async {
-                          final success = await CartController.instance.addToCart(id);
+                          if (!SessionService.instance.isLoggedIn) {
+                            final int moq = p['moq'] ?? 1;
+                            CartController.instance.setPendingItem(id, moq);
+                            Navigator.pushNamed(context, '/login');
+                            return;
+                          }
+                          final int moq = p['moq'] ?? 1;
+                          final success = await CartController.instance.addToCart(id, moq: moq);
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(success ? 'Added to cart!' : 'Failed. Please login.'),
-                              backgroundColor: success ? AppColors.successGreen : AppColors.errorRed,
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 2),
-                            ));
+                            if (success) {
+                              CartDrawer.showSlider(context, addedProductName: p['name']?.toString() ?? 'Product');
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed to add to cart.'),
+                                  backgroundColor: AppColors.errorRed,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
                           }
                         },
                       );

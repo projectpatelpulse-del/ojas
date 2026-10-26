@@ -343,9 +343,31 @@ const getProducts = async (req, res) => {
 
 const getProduct = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id)
-            .populate("user", "name email mobile shopName")
-            .populate("relatedProducts");
+        const mongoose = require("mongoose");
+        let product = null;
+        const paramId = (req.params.id || "").trim();
+
+        if (mongoose.Types.ObjectId.isValid(paramId)) {
+            product = await Product.findById(paramId)
+                .populate("user", "name email mobile shopName")
+                .populate("relatedProducts");
+        }
+
+        if (!product) {
+            const normalized = paramId.toLowerCase();
+            const wordsPattern = normalized.split('-').filter(Boolean).join('.*');
+            product = await Product.findOne({
+                $or: [
+                    { slug: paramId },
+                    { slug: normalized },
+                    { name: { $regex: new RegExp(`^${wordsPattern}$`, 'i') } },
+                    { title: { $regex: new RegExp(`^${wordsPattern}$`, 'i') } }
+                ]
+            })
+                .populate("user", "name email mobile shopName")
+                .populate("relatedProducts");
+        }
+
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
@@ -357,7 +379,7 @@ const getProduct = async (req, res) => {
 
         if (ref) {
             const ResellerProduct = require("../model/ResellerProduct.js");
-            const rp = await ResellerProduct.findOne({ referralCode: ref, product: req.params.id });
+            const rp = await ResellerProduct.findOne({ referralCode: ref, product: product._id });
             if (rp) {
                 markupAmount = rp.markupAmount || 0;
                 resellerId = rp.Reseller;

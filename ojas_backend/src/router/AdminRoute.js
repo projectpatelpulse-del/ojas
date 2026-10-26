@@ -6,7 +6,7 @@ const Adminauth = require("../middlewere/AdminAuth.js");
 const { postCategories, getCategories, deleteCategory, updateCategory, handleCategoryRequest, reorderCategories } = require("../controller/Homecontroller.js");
 const { createProduct, getProducts, getProduct, updateProduct, deleteProduct } = require("../controller/Product.js");
 const { getAllVendorRequests, updateVendorStatus, updateVendorCommission, updateVendorMaxProductsLimit, updateAllVendorsCommission, getVendorLedger, deleteVendor } = require("../controller/VendorController");
-const { getSettings, updateSettings, resetSettings } = require("../controller/SettingController.js");
+const { getSettings, updateSettings, resetSettings, testWhatsApp } = require("../controller/SettingController.js");
 const { createBanner, getAllBanners, updateBanner, deleteBanner } = require("../controller/BannerController.js");
 const { createSubCategory, getSubCategories, updateSubCategory, deleteSubCategory } = require("../controller/SubCategoryController.js");
 const { createBlog, getAllBlogs, updateBlog, deleteBlog } = require("../controller/BlogController.js");
@@ -71,6 +71,7 @@ router.put("/payout/:id/mark-paid", Adminauth, checkPermission('manage_orders'),
 router.get("/settings", Adminauth, checkPermission('manage_settings'), getSettings);
 router.put("/settings", Adminauth, checkPermission('manage_settings'), updateSettings);
 router.post("/settings/reset", Adminauth, checkPermission('manage_settings'), resetSettings);
+router.post("/settings/test-whatsapp", Adminauth, checkPermission('manage_settings'), testWhatsApp);
 
 // Banner Routes
 router.post("/banners", Adminauth, checkPermission('manage_settings'), upload.single("image"), createBanner);

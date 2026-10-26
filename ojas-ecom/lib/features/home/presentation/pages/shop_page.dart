@@ -9,6 +9,8 @@ import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../../../core/services/session_service.dart';
 
@@ -40,6 +42,7 @@ class _ShopPageState extends State<ShopPage> {
 
   int _currentPage = 1;
   int _pageSize = 50;
+  bool _hasResolvedCategories = false;
 
   @override
   void initState() {
@@ -56,20 +59,49 @@ class _ShopPageState extends State<ShopPage> {
       _searchQuery = widget.initialSearch!;
       _searchTextController.text = _searchQuery;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateBrowserUrl(pushState: false);
+    });
+  }
+
+  void _syncInitialFilters() {
+    if (_hasResolvedCategories) return;
+    if (HomeController.instance.categories.isNotEmpty) {
+      if (widget.initialCategory != null && widget.initialCategory != 'All') {
+        _resolveInitialCategory();
+      }
+      if (widget.initialSubCategory != null && widget.initialSubCategory != 'All') {
+        _resolveInitialSubCategory();
+      }
+      _hasResolvedCategories = true;
+    }
+  }
+
+  void _updateBrowserUrl({bool pushState = true}) {
+    if (!kIsWeb) return;
+    final url = UrlHelper.categoryUrl(_selectedCategory, _selectedSubCategory);
+    String fullUrl = url;
+    if (_searchQuery.isNotEmpty) {
+      fullUrl += '${url.contains('?') ? '&' : '?'}search=${Uri.encodeComponent(_searchQuery)}';
+    }
+    UrlHelper.updateBrowserUrl(fullUrl, pushState: pushState);
   }
 
   void _resolveInitialCategory() {
     final initial = widget.initialCategory;
-    if (initial == null || initial == 'All') return;
+    if (initial == null || initial == 'All' || initial.isEmpty) return;
     
     final categories = HomeController.instance.categories;
+    if (categories.isEmpty) return;
+
     final initialLower = initial.toLowerCase();
     
     for (final cat in categories) {
       final String catName = (cat['name'] ?? '').toString();
       final catLower = catName.toLowerCase();
       
-      if (catLower == initialLower || 
+      if (UrlHelper.matchesSlug(catName, initial) ||
+          catLower == initialLower || 
           catLower.contains(initialLower) || 
           initialLower.contains(catLower) ||
           (catLower.split(' ')[0].length > 2 && catLower.split(' ')[0] == initialLower.split(' ')[0])) {
@@ -81,10 +113,10 @@ class _ShopPageState extends State<ShopPage> {
 
   void _resolveInitialSubCategory() {
     final initialSub = widget.initialSubCategory;
-    if (initialSub == null || initialSub == 'All') return;
+    if (initialSub == null || initialSub == 'All' || initialSub.isEmpty) return;
     
     final cat = HomeController.instance.categories.firstWhere(
-      (c) => c['name'] == _selectedCategory,
+      (c) => c['name'] == _selectedCategory || UrlHelper.matchesSlug(c['name']?.toString(), _selectedCategory),
       orElse: () => null,
     );
     if (cat == null) return;
@@ -96,7 +128,8 @@ class _ShopPageState extends State<ShopPage> {
       final String subName = (sub['name'] ?? '').toString();
       final subLower = subName.toLowerCase();
       
-      if (subLower == initialSubLower ||
+      if (UrlHelper.matchesSlug(subName, initialSub) ||
+          subLower == initialSubLower ||
           subLower.contains(initialSubLower) ||
           initialSubLower.contains(subLower) ||
           (subLower.split(' ')[0].length > 2 && subLower.split(' ')[0] == initialSubLower.split(' ')[0])) {
@@ -298,6 +331,7 @@ class _ShopPageState extends State<ShopPage> {
 
   @override
   Widget build(BuildContext context) {
+    _syncInitialFilters();
     final bool isMobile = Responsive.isMobile(context);
     final bool isTablet = Responsive.isTablet(context);
 
@@ -398,6 +432,7 @@ class _ShopPageState extends State<ShopPage> {
                                           _searchTextController.clear();
                                           _currentPage = 1;
                                         });
+                                        _updateBrowserUrl(pushState: true);
                                       },
                                       icon: const Icon(Icons.shopping_bag_outlined, size: 16),
                                       label: const Text('Explore All Products'),
@@ -772,6 +807,7 @@ class _ShopPageState extends State<ShopPage> {
                 _selectedSubCategory = 'All'; // Reset subcategory when category changes
                 _currentPage = 1;
               });
+              _updateBrowserUrl(pushState: true);
             }
           ),
           
@@ -790,10 +826,13 @@ class _ShopPageState extends State<ShopPage> {
                 return _radioGroup(
                   ['All', ...subs.map((s) => s['name'].toString())],
                   _selectedSubCategory,
-                  (v) => setState(() {
-                    _selectedSubCategory = v!;
-                    _currentPage = 1;
-                  })
+                  (v) {
+                    setState(() {
+                      _selectedSubCategory = v!;
+                      _currentPage = 1;
+                    });
+                    _updateBrowserUrl(pushState: true);
+                  }
                 );
               },
             ),
@@ -935,7 +974,11 @@ class _ShopProductCard extends StatelessWidget {
         final bool isWishlisted = WishlistController.instance.isWishlisted(id);
         
         return GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/product-detail?id=$id', arguments: ProductModel.fromMap(product)),
+          onTap: () {
+            final productModel = ProductModel.fromMap(product);
+            final route = UrlHelper.productUrl(productModel);
+            Navigator.pushNamed(context, route, arguments: productModel);
+          },
           child: Container(
             decoration: BoxDecoration(
             color: AppColors.white,

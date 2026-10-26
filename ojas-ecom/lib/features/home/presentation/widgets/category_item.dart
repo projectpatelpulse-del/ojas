@@ -3,6 +3,7 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/features/home/domain/models/category_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
 
 class CategoryItem extends StatefulWidget {
   final CategoryModel category;
@@ -24,9 +25,10 @@ class _CategoryItemState extends State<CategoryItem> {
 
     return InkWell(
       onTap: () {
+        final route = UrlHelper.categoryUrl(widget.category.title);
         Navigator.pushNamed(
           context,
-          '/shop',
+          route,
           arguments: {'category': widget.category.title},
         );
       },

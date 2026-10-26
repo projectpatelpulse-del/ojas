@@ -42,7 +42,12 @@ const defaultSettings = {
   serviceCard4Title: '24/7 SUPPORT',
   serviceCard4Subtitle: 'Dedicated Support',
   serviceCard4Icon: 'https://cdn-icons-png.flaticon.com/512/2838/2838634.png',
-  whatsappNumber: '',
+  whatsappToken: '31DB85C1-3DDE-47C4-AC1C-A59B4ED89624',
+  whatsappNumber: '919325570093',
+  whatsappChatLink: 'https://wa.me/919325570093',
+  whatsappOrderUpdates: true,
+  whatsappApiUrl: 'https://mankiwave.in/api/send',
+  whatsappInstanceId: '',
 };
 
 // Helper to get or create the singleton setting document
@@ -131,6 +136,8 @@ const updateSettings = async (req, res) => {
       emailPass,
       whatsappToken,
       whatsappNumber,
+      whatsappChatLink,
+      whatsappOrderUpdates,
       whatsappApiUrl,
       whatsappInstanceId,
       geminiApiKey,
@@ -188,6 +195,8 @@ const updateSettings = async (req, res) => {
     if (showTrendingB2BBanner !== undefined) setting.showTrendingB2BBanner = showTrendingB2BBanner;
     if (trendingCategories !== undefined) setting.trendingCategories = trendingCategories;
     if (whatsappNumber !== undefined) setting.whatsappNumber = whatsappNumber;
+    if (whatsappChatLink !== undefined) setting.whatsappChatLink = whatsappChatLink;
+    if (whatsappOrderUpdates !== undefined) setting.whatsappOrderUpdates = whatsappOrderUpdates;
     
     if (serviceCard1Title !== undefined) setting.serviceCard1Title = serviceCard1Title;
     if (serviceCard1Subtitle !== undefined) setting.serviceCard1Subtitle = serviceCard1Subtitle;
@@ -258,6 +267,39 @@ const resetSettings = async (req, res) => {
   }
 };
 
+const testWhatsApp = async (req, res) => {
+  try {
+    const { mobile, message, whatsappToken, whatsappApiUrl, whatsappInstanceId } = req.body;
+    if (!mobile) {
+      return res.status(400).json({ success: false, message: "Recipient mobile number is required" });
+    }
+
+    const WhatsAppService = require("../service/WhatsAppService");
+    const result = await WhatsAppService.sendTestMessage(mobile, message, {
+      whatsappToken,
+      whatsappApiUrl,
+      whatsappInstanceId
+    });
+
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: result.mocked ? "Simulated test message logged (WhatsApp Token not set)" : "WhatsApp test message sent successfully!",
+        data: result.data
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: result.error || "Failed to send WhatsApp message",
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error("Test WhatsApp error:", error.message);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getSettingsFaviconRedirect = async (req, res) => {
   try {
     const setting = await getOrCreateSetting();
@@ -271,4 +313,4 @@ const getSettingsFaviconRedirect = async (req, res) => {
   }
 };
 
-module.exports = { getSettings, getPublicSettings, updateSettings, resetSettings, getSettingsFaviconRedirect };
+module.exports = { getSettings, getPublicSettings, updateSettings, resetSettings, testWhatsApp, getSettingsFaviconRedirect };

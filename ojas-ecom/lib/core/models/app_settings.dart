@@ -22,6 +22,7 @@ class AppSettings {
   final String youtubeLink;
   final String linkedinLink;
   final String whatsappNumber;
+  final String whatsappChatLink;
   final String aboutUsContent;
   final String navigationMenuItems;
   final String homeSectionsActive;
@@ -68,6 +69,7 @@ class AppSettings {
     required this.youtubeLink,
     required this.linkedinLink,
     required this.whatsappNumber,
+    required this.whatsappChatLink,
     required this.aboutUsContent,
     required this.navigationMenuItems,
     required this.homeSectionsActive,
@@ -114,6 +116,7 @@ class AppSettings {
       youtubeLink: json['youtubeLink'] ?? '',
       linkedinLink: json['linkedinLink'] ?? '',
       whatsappNumber: json['whatsappNumber'] ?? '',
+      whatsappChatLink: json['whatsappChatLink'] ?? '',
       aboutUsContent: json['aboutUsContent'] ?? '',
       navigationMenuItems: json['navigationMenuItems'] ?? 'HOME, FEATURES, DEALS, SHOP, BLOG',
       homeSectionsActive: json['homeSectionsActive'] ?? 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE',
@@ -161,6 +164,7 @@ class AppSettings {
       youtubeLink: '',
       linkedinLink: '',
       whatsappNumber: '',
+      whatsappChatLink: '',
       aboutUsContent: '',
       navigationMenuItems: 'HOME, FEATURES, DEALS, SHOP, BLOG',
       homeSectionsActive: 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE',

@@ -75,6 +75,8 @@ const orderSchema = new mongoose.Schema(
             type: Date
         },
         shippingAddress: {
+            name: String,
+            phone: String,
             buildingName: String,
             street: String,
             area: String,

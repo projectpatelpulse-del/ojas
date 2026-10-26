@@ -73,12 +73,18 @@ class _OjasLayoutState extends State<OjasLayout> {
         listenable: SettingsController.instance,
         builder: (context, _) {
           final settings = SettingsController.instance.settings;
-          if (settings.whatsappNumber.isEmpty) return const SizedBox.shrink();
+          if (settings.whatsappNumber.isEmpty && settings.whatsappChatLink.isEmpty) return const SizedBox.shrink();
 
           return FloatingActionButton(
             onPressed: () async {
-              final number = settings.whatsappNumber.replaceAll(RegExp(r'[^\d]'), '');
-              final url = Uri.parse("https://wa.me/$number");
+              Uri? url;
+              if (settings.whatsappChatLink.isNotEmpty) {
+                url = Uri.tryParse(settings.whatsappChatLink);
+              }
+              if (url == null || !url.hasScheme) {
+                final number = settings.whatsappNumber.replaceAll(RegExp(r'[^\d]'), '');
+                url = Uri.parse("https://wa.me/$number");
+              }
               try {
                 await launchUrl(url, mode: LaunchMode.externalApplication);
               } catch (e) {

@@ -49,8 +49,10 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _emailPassController = TextEditingController();
   final TextEditingController _whatsappTokenController = TextEditingController();
   final TextEditingController _whatsappNumberController = TextEditingController();
+  final TextEditingController _whatsappChatLinkController = TextEditingController();
   final TextEditingController _whatsappApiUrlController = TextEditingController();
   final TextEditingController _whatsappInstanceIdController = TextEditingController();
+  bool _whatsappOrderUpdates = true;
   final TextEditingController _geminiKeyController = TextEditingController();
   final TextEditingController _navigationMenuItemsController = TextEditingController();
   final TextEditingController _homeSectionsActiveController = TextEditingController();
@@ -122,10 +124,12 @@ class _SettingsPageState extends State<SettingsPage> {
         _delhiveryTokenController.text = data['delhiveryToken'] ?? '';
         _emailUserController.text = data['emailUser'] ?? '';
         _emailPassController.text = data['emailPass'] ?? '';
-        _whatsappTokenController.text = data['whatsappToken'] ?? '';
-        _whatsappNumberController.text = data['whatsappNumber'] ?? '';
+        _whatsappTokenController.text = data['whatsappToken'] ?? '31DB85C1-3DDE-47C4-AC1C-A59B4ED89624';
+        _whatsappNumberController.text = data['whatsappNumber'] ?? '919325570093';
+        _whatsappChatLinkController.text = data['whatsappChatLink'] ?? 'https://wa.me/919325570093';
         _whatsappApiUrlController.text = data['whatsappApiUrl'] ?? 'https://mankiwave.in/api/send';
         _whatsappInstanceIdController.text = data['whatsappInstanceId'] ?? '';
+        _whatsappOrderUpdates = data['whatsappOrderUpdates'] ?? true;
         _geminiKeyController.text = data['geminiApiKey'] ?? '';
         _navigationMenuItemsController.text = data['navigationMenuItems'] ?? '';
         _homeSectionsActiveController.text = data['homeSectionsActive'] ?? '';
@@ -206,6 +210,8 @@ class _SettingsPageState extends State<SettingsPage> {
         'emailPass': _emailPassController.text,
         'whatsappToken': _whatsappTokenController.text,
         'whatsappNumber': _whatsappNumberController.text,
+        'whatsappChatLink': _whatsappChatLinkController.text,
+        'whatsappOrderUpdates': _whatsappOrderUpdates,
         'whatsappApiUrl': _whatsappApiUrlController.text,
         'whatsappInstanceId': _whatsappInstanceIdController.text,
         'geminiApiKey': _geminiKeyController.text,
@@ -466,6 +472,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                     _buildSocialMediaCard(),
                                     const SizedBox(height: 24),
                                     _buildTrendingSectionSettingsCard(),
+                                    const SizedBox(height: 24),
+                                    _buildWhatsAppSettingsCard(),
                                     const SizedBox(height: 24),
                                     _buildSecureConfigCard(),
                                     const SizedBox(height: 40),
@@ -1174,6 +1182,239 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  void _showTestWhatsAppDialog() {
+    final TextEditingController testMobileController = TextEditingController(
+      text: _whatsappNumberController.text.isNotEmpty ? _whatsappNumberController.text : '919325570093',
+    );
+    final TextEditingController testMsgController = TextEditingController(
+      text: '🔔 *OJAS WhatsApp Integration Test*\n\nYour WhatsApp API configuration is working properly!',
+    );
+    bool isSending = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                const Icon(Icons.mark_chat_read_outlined, color: Color(0xFF25D366)),
+                const SizedBox(width: 10),
+                Text('Test WhatsApp Notification', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+              ],
+            ),
+            content: SizedBox(
+              width: 460,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Enter a WhatsApp number with country code (e.g., 919325570093) to verify that your configured API Token and Gateway are functioning.',
+                    style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: testMobileController,
+                    decoration: InputDecoration(
+                      labelText: 'Recipient Phone Number (with Country Code)',
+                      hintText: 'e.g. 919325570093',
+                      prefixIcon: const Icon(Icons.phone_outlined, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: testMsgController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Test Message Content',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSending ? null : () => Navigator.of(ctx).pop(),
+                child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey.shade600)),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF25D366),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: isSending
+                    ? null
+                    : () async {
+                        final phone = testMobileController.text.trim();
+                        if (phone.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter a recipient phone number')),
+                          );
+                          return;
+                        }
+                        final messenger = ScaffoldMessenger.of(context);
+                        setDialogState(() => isSending = true);
+                        try {
+                          final res = await ApiService().dio.post(
+                            '/admin/settings/test-whatsapp',
+                            data: {
+                              'mobile': phone,
+                              'message': testMsgController.text.trim(),
+                              'whatsappToken': _whatsappTokenController.text.trim(),
+                              'whatsappApiUrl': _whatsappApiUrlController.text.trim(),
+                              'whatsappInstanceId': _whatsappInstanceIdController.text.trim(),
+                            },
+                          );
+                          if (ctx.mounted) Navigator.of(ctx).pop();
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(res.data['message'] ?? 'WhatsApp test message sent successfully!'),
+                              backgroundColor: Colors.green.shade700,
+                            ),
+                          );
+                        } catch (e) {
+                          setDialogState(() => isSending = false);
+                          String err = 'Failed to send WhatsApp message';
+                          if (e is DioException && e.response?.data != null) {
+                            err = e.response?.data['message'] ?? err;
+                          }
+                          messenger.showSnackBar(
+                            SnackBar(content: Text(err), backgroundColor: Colors.red.shade700),
+                          );
+                        }
+                      },
+                icon: isSending
+                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.send_rounded, size: 16),
+                label: Text(isSending ? 'Sending...' : 'Send Test Message'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppSettingsCard() {
+    return _buildCardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.mark_chat_unread_outlined, color: Color(0xFF25D366), size: 22),
+                        const SizedBox(width: 8),
+                        Text('WhatsApp & Order Notifications',
+                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage WhatsApp API Gateway, direct chat link, and automated customer order updates.',
+                      style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              OutlinedButton.icon(
+                onPressed: _showTestWhatsAppDialog,
+                icon: const Icon(Icons.send_rounded, size: 16, color: Color(0xFF25D366)),
+                label: Text('Test WhatsApp', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: const Color(0xFF25D366))),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF25D366)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF25D366).withOpacity(0.06),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF25D366).withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Automated Order Notifications',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: const Color(0xFF0F172A)),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Automatically message customer on WhatsApp when order is confirmed, shipped (with tracking), out for delivery (with OTP), and delivered.',
+                        style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _whatsappOrderUpdates,
+                  activeColor: const Color(0xFF25D366),
+                  onChanged: (val) {
+                    setState(() {
+                      _whatsappOrderUpdates = val;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildTextField('Direct Chat Link (wa.me)', _whatsappChatLinkController),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                flex: 1,
+                child: _buildTextField('WhatsApp Phone Number (e.g. 919325570093)', _whatsappNumberController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildTextField('WhatsApp API Token / Key', _whatsappTokenController),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                flex: 2,
+                child: _buildTextField('WhatsApp API URL', _whatsappApiUrlController),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildTextField('WhatsApp Instance ID (Optional)', _whatsappInstanceIdController),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSecureConfigCard() {
     return _buildCardWrapper(
       child: Column(
@@ -1212,16 +1453,6 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(child: _buildTextField('SMTP Email User', _emailUserController)),
               const SizedBox(width: 20),
               Expanded(child: _buildTextField('SMTP Email Pass', _emailPassController)),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildTextField('WhatsApp Token / Access Token', _whatsappTokenController),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(child: _buildTextField('WhatsApp API URL', _whatsappApiUrlController)),
-              const SizedBox(width: 20),
-              Expanded(child: _buildTextField('WhatsApp Instance ID', _whatsappInstanceIdController)),
             ],
           ),
           const SizedBox(height: 20),

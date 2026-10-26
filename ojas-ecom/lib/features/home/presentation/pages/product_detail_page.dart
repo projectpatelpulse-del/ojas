@@ -14,6 +14,8 @@ import 'package:ojas_user/core/widgets/youtube_embed_widget.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:ojas_user/features/auth/presentation/pages/auth_screen.dart';
+import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sizer/sizer.dart';
 
 import '../../../../core/services/api_service.dart';
@@ -119,11 +121,48 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     } else {
       _currentVariationImages = [];
     }
+
+    // Synchronize browser URL bar to clean category/subcategory/product path
+    if (kIsWeb) {
+      final canonicalUrl = UrlHelper.productUrl(p, refCode: widget.refCode);
+      UrlHelper.updateBrowserUrl(canonicalUrl, pushState: false);
+    }
   }
 
   Future<void> _fetchProductDetails() async {
     final id = widget.productId ?? widget.product?.id;
     if (id == null) return;
+
+    // Check in-memory cached products first for instant display
+    final all = HomeController.instance.products.isNotEmpty
+        ? HomeController.instance.products
+        : HomeController.instance.shopProducts;
+    final cached = all.firstWhere(
+      (p) {
+        final idStr = (p['_id'] ?? p['id'] ?? '').toString();
+        final slugStr = (p['slug'] ?? '').toString();
+        final nameStr = (p['name'] ?? '').toString();
+        final titleStr = (p['title'] ?? '').toString();
+        return idStr == id ||
+               slugStr == id ||
+               UrlHelper.matchesSlug(slugStr, id) ||
+               UrlHelper.matchesSlug(nameStr, id) ||
+               UrlHelper.matchesSlug(titleStr, id);
+      },
+      orElse: () => null,
+    );
+
+    if (cached != null) {
+      try {
+        final fetched = ProductModel.fromMap(Map<String, dynamic>.from(cached));
+        setState(() {
+          _loadedProduct = fetched;
+          _initProductDetails(fetched);
+          _isLoading = false;
+        });
+        if (widget.refCode == null) return;
+      } catch (_) {}
+    }
 
     setState(() {
       _isLoading = _loadedProduct == null;
