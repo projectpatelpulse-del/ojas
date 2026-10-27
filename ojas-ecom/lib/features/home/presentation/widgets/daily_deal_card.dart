@@ -7,6 +7,7 @@ import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class DailyDealCard extends StatelessWidget {
   final ProductModel product;
@@ -110,7 +111,7 @@ class DailyDealCard extends StatelessWidget {
                 onPressed: () async {
                   if (!SessionService.instance.isLoggedIn) {
                     CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
-                    Navigator.pushNamed(context, '/login');
+                    AppRouter.push(context, '/login');
                     return;
                   }
                   final success = await CartController.instance.addToCart(product.id);
@@ -135,12 +136,7 @@ class DailyDealCard extends StatelessWidget {
 
         return InkWell(
           onTap: () {
-            final route = UrlHelper.productUrl(product);
-            Navigator.pushNamed(
-              context,
-              route,
-              arguments: product,
-            );
+            AppRouter.pushProduct(context, product);
           },
           borderRadius: BorderRadius.circular(20),
           child: Container(

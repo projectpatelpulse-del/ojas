@@ -10,6 +10,7 @@ import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../../../core/services/session_service.dart';
@@ -64,6 +65,36 @@ class _ShopPageState extends State<ShopPage> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant ShopPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialCategory != oldWidget.initialCategory ||
+        widget.initialSubCategory != oldWidget.initialSubCategory ||
+        widget.initialSearch != oldWidget.initialSearch) {
+      if (widget.initialCategory != null) {
+        _selectedCategory = widget.initialCategory!;
+        _resolveInitialCategory();
+      } else {
+        _selectedCategory = 'All';
+      }
+      if (widget.initialSubCategory != null) {
+        _selectedSubCategory = widget.initialSubCategory!;
+        _resolveInitialSubCategory();
+      } else {
+        _selectedSubCategory = 'All';
+      }
+      if (widget.initialSearch != null) {
+        _searchQuery = widget.initialSearch!;
+        _searchTextController.text = _searchQuery;
+      } else {
+        _searchQuery = '';
+        _searchTextController.clear();
+      }
+      _currentPage = 1;
+      _updateBrowserUrl(pushState: false);
+    }
+  }
+
   void _syncInitialFilters() {
     if (_hasResolvedCategories) return;
     if (HomeController.instance.categories.isNotEmpty) {
@@ -77,7 +108,7 @@ class _ShopPageState extends State<ShopPage> {
     }
   }
 
-  void _updateBrowserUrl({bool pushState = true}) {
+  void _updateBrowserUrl({bool pushState = false}) {
     if (!kIsWeb) return;
     final url = UrlHelper.categoryUrl(_selectedCategory, _selectedSubCategory);
     String fullUrl = url;
@@ -94,47 +125,73 @@ class _ShopPageState extends State<ShopPage> {
     final categories = HomeController.instance.categories;
     if (categories.isEmpty) return;
 
-    final initialLower = initial.toLowerCase();
+    final initialLower = initial.toLowerCase().trim();
     
+    // 1. Direct name match or slug match with main category
     for (final cat in categories) {
-      final String catName = (cat['name'] ?? '').toString();
+      final String catName = (cat['name'] ?? '').toString().trim();
       final catLower = catName.toLowerCase();
       
-      if (UrlHelper.matchesSlug(catName, initial) ||
-          catLower == initialLower || 
-          catLower.contains(initialLower) || 
-          initialLower.contains(catLower) ||
-          (catLower.split(' ')[0].length > 2 && catLower.split(' ')[0] == initialLower.split(' ')[0])) {
+      if (catLower == initialLower || 
+          UrlHelper.matchesSlug(catName, initial)) {
         _selectedCategory = catName;
-        break;
+        return;
+      }
+    }
+
+    // 2. Check if initial was passed as a subcategory directly (e.g. /shop/pooja-articles)
+    for (final cat in categories) {
+      final String catName = (cat['name'] ?? '').toString().trim();
+      final List<dynamic> subs = cat['subcategories'] ?? [];
+      for (final sub in subs) {
+        final String subName = (sub['name'] ?? '').toString().trim();
+        if (subName.toLowerCase() == initialLower ||
+            UrlHelper.matchesSlug(subName, initial)) {
+          _selectedCategory = catName;
+          _selectedSubCategory = subName;
+          return;
+        }
       }
     }
   }
 
   void _resolveInitialSubCategory() {
     final initialSub = widget.initialSubCategory;
-    if (initialSub == null || initialSub == 'All' || initialSub.isEmpty) return;
+    if (initialSub == null || initialSub == 'All' || initialSub.isEmpty) {
+      _selectedSubCategory = 'All';
+      return;
+    }
     
     final cat = HomeController.instance.categories.firstWhere(
-      (c) => c['name'] == _selectedCategory || UrlHelper.matchesSlug(c['name']?.toString(), _selectedCategory),
+      (c) => (c['name'] ?? '').toString().toLowerCase().trim() == _selectedCategory.toLowerCase().trim() ||
+             UrlHelper.matchesSlug((c['name'] ?? '').toString(), _selectedCategory),
       orElse: () => null,
     );
     if (cat == null) return;
     
     final List<dynamic> subs = cat['subcategories'] ?? [];
-    final initialSubLower = initialSub.toLowerCase();
+    final initialSubLower = initialSub.toLowerCase().trim();
     
+    // Pass 1: Exact match or slug match
     for (final sub in subs) {
-      final String subName = (sub['name'] ?? '').toString();
-      final subLower = subName.toLowerCase();
-      
-      if (UrlHelper.matchesSlug(subName, initialSub) ||
-          subLower == initialSubLower ||
-          subLower.contains(initialSubLower) ||
-          initialSubLower.contains(subLower) ||
-          (subLower.split(' ')[0].length > 2 && subLower.split(' ')[0] == initialSubLower.split(' ')[0])) {
+      final String subName = (sub['name'] ?? '').toString().trim();
+      if (subName.toLowerCase() == initialSubLower ||
+          UrlHelper.matchesSlug(subName, initialSub)) {
         _selectedSubCategory = subName;
-        break;
+        return;
+      }
+    }
+
+    // Pass 2: Word-based subset match (e.g., 'pooja-thali' matches 'Pooja Thali Sets')
+    final initialWords = UrlHelper.slugify(initialSub).split('-').where((w) => w.isNotEmpty).toList();
+    if (initialWords.length >= 2) {
+      for (final sub in subs) {
+        final String subName = (sub['name'] ?? '').toString().trim();
+        final subWords = UrlHelper.slugify(subName).split('-').where((w) => w.isNotEmpty).toList();
+        if (initialWords.every((w) => subWords.contains(w))) {
+          _selectedSubCategory = subName;
+          return;
+        }
       }
     }
   }
@@ -164,6 +221,14 @@ class _ShopPageState extends State<ShopPage> {
             category = categoryObj.toLowerCase();
           }
 
+          final subCatObj = p['subCategory'] ?? p['subcategory'];
+          String subCategory = '';
+          if (subCatObj is Map) {
+            subCategory = (subCatObj['name'] ?? '').toString().toLowerCase();
+          } else if (subCatObj != null) {
+            subCategory = subCatObj.toString().toLowerCase();
+          }
+
           final variations = p['variations'];
           String variationStr = '';
           if (variations is List) {
@@ -175,11 +240,12 @@ class _ShopPageState extends State<ShopPage> {
             }).join(' ').toLowerCase();
           }
 
-          // Match if every search word is found in either name, brand, category, or variations
+          // Match if every search word is found in either name, brand, category, subCategory, or variations
           return words.every((word) =>
               name.contains(word) ||
               brand.contains(word) ||
               category.contains(word) ||
+              subCategory.contains(word) ||
               variationStr.contains(word));
         }).toList();
       }
@@ -199,33 +265,34 @@ class _ShopPageState extends State<ShopPage> {
           catName = p['categoryName'].toString();
         }
 
-        if (catName == null) return false;
+        if (catName == null || catName.trim().isEmpty) return false;
         
-        final selectedLower = _selectedCategory.toLowerCase();
-        final catLower = catName.toLowerCase();
+        final selectedLower = _selectedCategory.toLowerCase().trim();
+        final catLower = catName.toLowerCase().trim();
         
         if (selectedLower == catLower) return true;
+        if (UrlHelper.matchesSlug(catName, _selectedCategory)) return true;
         
         // Also check if they map to the same category object in HomeController.instance.categories
         final matchedSelectedCat = HomeController.instance.categories.firstWhere(
-          (c) => (c['name'] ?? '').toString().toLowerCase() == selectedLower,
+          (c) => (c['name'] ?? '').toString().toLowerCase().trim() == selectedLower ||
+                 (c['_id'] ?? '').toString() == selectedLower ||
+                 UrlHelper.matchesSlug((c['name'] ?? '').toString(), _selectedCategory),
           orElse: () => null,
         );
         final matchedProductCat = HomeController.instance.categories.firstWhere(
-          (c) => c['_id'] == catLower || c['id'] == catLower || (c['name'] ?? '').toString().toLowerCase() == catLower,
+          (c) => (c['_id'] ?? '').toString().toLowerCase() == catLower ||
+                 (c['name'] ?? '').toString().toLowerCase().trim() == catLower ||
+                 UrlHelper.matchesSlug((c['name'] ?? '').toString(), catName),
           orElse: () => null,
         );
         if (matchedSelectedCat != null && matchedProductCat != null) {
-          if (matchedSelectedCat['_id'] == matchedProductCat['_id']) return true;
+          if (matchedSelectedCat['_id'] != null && matchedSelectedCat['_id'] == matchedProductCat['_id']) {
+            return true;
+          }
         }
 
-        final firstWordSelected = selectedLower.split(' ')[0];
-        final firstWordProduct = catLower.split(' ')[0];
-        if (firstWordSelected.length > 2 && firstWordProduct.length > 2) {
-          if (firstWordSelected == firstWordProduct) return true;
-        }
-
-        return catLower.contains(selectedLower) || selectedLower.contains(catLower);
+        return false;
       }).toList();
     }
 
@@ -240,20 +307,44 @@ class _ShopPageState extends State<ShopPage> {
           subCatName = subCategory;
         }
         
-        if (subCatName == null) return false;
+        if (subCatName == null || subCatName.trim().isEmpty) return false;
 
-        final selectedLower = _selectedSubCategory.toLowerCase();
-        final subCatLower = subCatName.toLowerCase();
+        final selectedLower = _selectedSubCategory.toLowerCase().trim();
+        final subCatLower = subCatName.toLowerCase().trim();
 
         if (selectedLower == subCatLower) return true;
+        if (UrlHelper.matchesSlug(subCatName, _selectedSubCategory)) return true;
 
-        final firstWordSelected = selectedLower.split(' ')[0];
-        final firstWordSubCat = subCatLower.split(' ')[0];
-        if (firstWordSelected.length > 2 && firstWordSubCat.length > 2) {
-          if (firstWordSelected == firstWordSubCat) return true;
+        // Check if both map to the same subcategory object under the selected category
+        final selectedCatObj = HomeController.instance.categories.firstWhere(
+          (c) => (c['name'] ?? '').toString().toLowerCase().trim() == _selectedCategory.toLowerCase().trim() ||
+                 UrlHelper.matchesSlug((c['name'] ?? '').toString(), _selectedCategory),
+          orElse: () => null,
+        );
+
+        if (selectedCatObj != null && selectedCatObj['subcategories'] is List) {
+          final List<dynamic> subs = selectedCatObj['subcategories'];
+          final matchedSelectedSub = subs.firstWhere(
+            (s) => (s['name'] ?? '').toString().toLowerCase().trim() == selectedLower ||
+                   (s['_id'] ?? '').toString() == selectedLower ||
+                   UrlHelper.matchesSlug((s['name'] ?? '').toString(), _selectedSubCategory),
+            orElse: () => null,
+          );
+          final matchedProductSub = subs.firstWhere(
+            (s) => (s['name'] ?? '').toString().toLowerCase().trim() == subCatLower ||
+                   (s['_id'] ?? '').toString() == subCatLower ||
+                   UrlHelper.matchesSlug((s['name'] ?? '').toString(), subCatName),
+            orElse: () => null,
+          );
+
+          if (matchedSelectedSub != null && matchedProductSub != null) {
+            if (matchedSelectedSub['_id'] != null && matchedSelectedSub['_id'] == matchedProductSub['_id']) {
+              return true;
+            }
+          }
         }
 
-        return subCatLower.contains(selectedLower) || selectedLower.contains(subCatLower);
+        return false;
       }).toList();
     }
 
@@ -334,11 +425,22 @@ class _ShopPageState extends State<ShopPage> {
     _syncInitialFilters();
     final bool isMobile = Responsive.isMobile(context);
     final bool isTablet = Responsive.isTablet(context);
+    final bool canPop = Navigator.of(context).canPop();
 
-    return ListenableBuilder(
-      listenable: HomeController.instance,
-      builder: (context, _) => OjasLayout(
-        activeTitle: 'SHOP',
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        debugPrint('⬅️ [SHOP SYSTEM/BROWSER BACK INVOKED]');
+        debugPrint('   Current Route: /shop');
+        debugPrint('   Can Pop in Stack: false (Direct URL Landing)');
+        debugPrint('   Destination: Navigating to Home (/)');
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      },
+      child: ListenableBuilder(
+        listenable: HomeController.instance,
+        builder: (context, _) => OjasLayout(
+          activeTitle: 'SHOP',
         child: Container(
           color: const Color(0xFFF8FAFC),
           child: CenteredContent(
@@ -400,9 +502,11 @@ class _ShopPageState extends State<ShopPage> {
                                     ),
                                     const SizedBox(height: 20),
                                     Text(
-                                      _selectedCategory != 'All'
-                                          ? '$_selectedCategory Products Coming Soon'
-                                          : 'Products Coming Soon',
+                                      _selectedSubCategory != 'All'
+                                          ? '$_selectedSubCategory Products Coming Soon'
+                                          : (_selectedCategory != 'All'
+                                              ? '$_selectedCategory Products Coming Soon'
+                                              : 'Products Coming Soon'),
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.outfit(
                                         fontSize: 22,
@@ -412,9 +516,11 @@ class _ShopPageState extends State<ShopPage> {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      _selectedCategory != 'All'
-                                          ? 'We are currently adding exciting new products to the $_selectedCategory collection. Stay tuned!'
-                                          : 'We are curating high-quality products for this selection. Check back shortly!',
+                                      _selectedSubCategory != 'All'
+                                          ? 'We are currently adding exciting new products to the $_selectedSubCategory collection. Stay tuned!'
+                                          : (_selectedCategory != 'All'
+                                              ? 'We are currently adding exciting new products to the $_selectedCategory collection. Stay tuned!'
+                                              : 'We are curating high-quality products for this selection. Check back shortly!'),
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.inter(
                                         fontSize: 14,
@@ -493,8 +599,9 @@ class _ShopPageState extends State<ShopPage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildPaginationControls() {
     final total = _totalPages;
@@ -623,23 +730,120 @@ class _ShopPageState extends State<ShopPage> {
       child: Column(
         children: [
           isMobile 
-            ? Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 10,
-                runSpacing: 10,
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFilterButton(),
-                  _buildSortDropdown(),
-                  _buildPageSizeDropdown(),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          final canPop = Navigator.of(context).canPop();
+                          debugPrint('🔘 [SHOP UI BACK BUTTON CLICKED]');
+                          debugPrint('   Current Route: /shop');
+                          debugPrint('   Can Pop: $canPop');
+                          debugPrint('   Target: ${canPop ? "Previous Page in Stack (1-step pop)" : "Home (/)"}');
+                          if (canPop) {
+                            Navigator.of(context).pop();
+                          } else {
+                            Navigator.of(context).pushReplacementNamed('/');
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.arrow_back_rounded, size: 14, color: Color(0xFF1E293B)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Back',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${_shopProducts.length} products',
+                        style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildFilterButton(),
+                      _buildSortDropdown(),
+                      _buildPageSizeDropdown(),
+                    ],
+                  ),
                 ],
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${_shopProducts.length} products found',
-                    style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          final canPop = Navigator.of(context).canPop();
+                          debugPrint('🔘 [SHOP UI BACK BUTTON CLICKED]');
+                          debugPrint('   Current Route: /shop');
+                          debugPrint('   Can Pop: $canPop');
+                          debugPrint('   Target: ${canPop ? "Previous Page in Stack (1-step pop)" : "Home (/)"}');
+                          if (canPop) {
+                            Navigator.of(context).pop();
+                          } else {
+                            Navigator.of(context).pushReplacementNamed('/');
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.arrow_back_rounded, size: 16, color: Color(0xFF1E293B)),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Back',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Text(
+                        '${_shopProducts.length} products found',
+                        style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+                      ),
+                    ],
                   ),
                   Row(
                     children: [
@@ -817,14 +1021,15 @@ class _ShopPageState extends State<ShopPage> {
             Builder(
               builder: (context) {
                 final cat = HomeController.instance.categories.firstWhere(
-                  (c) => c['name'] == _selectedCategory,
+                  (c) => (c['name'] ?? '').toString().toLowerCase().trim() == _selectedCategory.toLowerCase().trim() ||
+                         UrlHelper.matchesSlug((c['name'] ?? '').toString(), _selectedCategory),
                   orElse: () => {},
                 );
                 final List<dynamic> subs = cat['subcategories'] ?? [];
                 if (subs.isEmpty) return const SizedBox.shrink();
                 
                 return _radioGroup(
-                  ['All', ...subs.map((s) => s['name'].toString())],
+                  ['All', ...subs.map((s) => (s['name'] ?? '').toString()).where((n) => n.isNotEmpty)],
                   _selectedSubCategory,
                   (v) {
                     setState(() {
@@ -976,8 +1181,7 @@ class _ShopProductCard extends StatelessWidget {
         return GestureDetector(
           onTap: () {
             final productModel = ProductModel.fromMap(product);
-            final route = UrlHelper.productUrl(productModel);
-            Navigator.pushNamed(context, route, arguments: productModel);
+            AppRouter.pushProduct(context, productModel);
           },
           child: Container(
             decoration: BoxDecoration(
@@ -1178,7 +1382,7 @@ class _ShopProductCard extends StatelessWidget {
                           if (!isLoggedIn) {
                             final int moq = product['moq'] ?? 1;
                             CartController.instance.setPendingItem(id, moq);
-                            Navigator.pushNamed(context, '/login');
+                            AppRouter.push(context, '/login');
                             return;
                           }
 

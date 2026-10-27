@@ -6,6 +6,7 @@ import 'package:ojas_user/features/home/presentation/widgets/category_item.dart'
 import 'package:ojas_user/features/home/presentation/widgets/section_title.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class CategoriesSection extends StatelessWidget {
   const CategoriesSection({super.key});
@@ -59,7 +60,7 @@ class CategoriesSection extends StatelessWidget {
               children: [
                 SectionTitle(
                   title: 'Shop by Category',
-                  onSeeAll: () => Navigator.pushNamed(context, '/shop'),
+                  onSeeAll: () => AppRouter.push(context, '/shop'),
                 ),
                 SizedBox(height: isMobile ? 12 : 24),
                 SizedBox(

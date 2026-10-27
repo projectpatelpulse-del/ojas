@@ -5,6 +5,7 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/home/data/models/banner_model.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class GiftPromoStrip extends StatelessWidget {
   const GiftPromoStrip({super.key});
@@ -34,7 +35,7 @@ class GiftPromoStrip extends StatelessWidget {
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, link),
+                onTap: () => AppRouter.push(context, link),
                 child: Container(
                   width: double.infinity,
                   //  constraints: BoxConstraints(
@@ -212,7 +213,7 @@ class GiftPromoStrip extends StatelessWidget {
                 return MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, link),
+                    onTap: () => AppRouter.push(context, link),
                     child: mainContent,
                   ),
                 );

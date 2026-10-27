@@ -4,6 +4,7 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class SummerSaleBanner extends StatelessWidget {
   const SummerSaleBanner({super.key});
@@ -115,7 +116,7 @@ class SummerSaleBanner extends StatelessWidget {
           return MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () => Navigator.pushNamed(context, targetLink),
+              onTap: () => AppRouter.push(context, targetLink),
               child: mainContent,
             ),
           );

@@ -10,6 +10,7 @@ import 'package:ojas_user/features/orders/data/services/order_service.dart';
 import 'package:ojas_user/features/orders/domain/models/order_model.dart';
 import 'package:ojas_user/features/orders/presentation/pages/order_details_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -134,7 +135,7 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () => Navigator.pushNamed(context, '/shop'),
+            onPressed: () => AppRouter.push(context, '/shop'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryPink,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

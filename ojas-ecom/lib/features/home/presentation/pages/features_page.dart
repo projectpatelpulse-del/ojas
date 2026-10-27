@@ -11,6 +11,7 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class FeaturesPage extends StatelessWidget {
   const FeaturesPage({super.key});
@@ -90,7 +91,7 @@ class FeaturesPage extends StatelessWidget {
                           if (!SessionService.instance.isLoggedIn) {
                             final int moq = p['moq'] ?? 1;
                             CartController.instance.setPendingItem(id, moq);
-                            Navigator.pushNamed(context, '/login');
+                            AppRouter.push(context, '/login');
                             return;
                           }
                           final int moq = p['moq'] ?? 1;

@@ -5,6 +5,7 @@ import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/services/api_service.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class SmartSearchBar extends StatefulWidget {
   final bool isMobile;
@@ -27,6 +28,7 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
   OverlayEntry? _overlayEntry;
 
   List<Map<String, dynamic>> _matchingCategories = [];
+  List<Map<String, dynamic>> _matchingSubcategories = [];
   List<Map<String, dynamic>> _matchingProducts = [];
 
   @override
@@ -66,7 +68,31 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
       return name.contains(lower);
     }).take(4).map((c) => Map<String, dynamic>.from(c)).toList();
 
-    // 2. Match Products & Variations
+    // 2. Match Subcategories
+    final matchedSubs = <Map<String, dynamic>>[];
+    for (var cat in allCategories) {
+      final catName = (cat['name'] ?? '').toString();
+      final subs = cat['subcategories'];
+      if (subs is List) {
+        for (var sub in subs) {
+          if (matchedSubs.length >= 6) break;
+          if (sub is Map) {
+            final subName = (sub['name'] ?? '').toString();
+            if (subName.toLowerCase().contains(lower)) {
+              matchedSubs.add({
+                'name': subName,
+                'categoryName': catName,
+                'catId': cat['_id'] ?? cat['id'],
+                'id': sub['_id'] ?? sub['id'],
+              });
+            }
+          }
+        }
+      }
+      if (matchedSubs.length >= 6) break;
+    }
+
+    // 3. Match Products & Variations
     final allProducts = HomeController.instance.products.isNotEmpty 
         ? HomeController.instance.products 
         : HomeController.instance.shopProducts;
@@ -86,7 +112,18 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
         catName = p['category'].toString().toLowerCase();
       }
 
-      bool nameOrCatMatch = name.contains(lower) || brand.contains(lower) || catName.contains(lower);
+      String subCatName = '';
+      final subCatObj = p['subCategory'] ?? p['subcategory'];
+      if (subCatObj is Map) {
+        subCatName = (subCatObj['name'] ?? '').toString().toLowerCase();
+      } else if (subCatObj != null) {
+        subCatName = subCatObj.toString().toLowerCase();
+      }
+
+      bool nameOrCatMatch = name.contains(lower) ||
+          brand.contains(lower) ||
+          catName.contains(lower) ||
+          subCatName.contains(lower);
       String matchedVarLabel = '';
 
       // Check variations
@@ -123,10 +160,11 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
 
     setState(() {
       _matchingCategories = matchedCats;
+      _matchingSubcategories = matchedSubs;
       _matchingProducts = matchedProds;
     });
 
-    if (_matchingCategories.isNotEmpty || _matchingProducts.isNotEmpty) {
+    if (_matchingCategories.isNotEmpty || _matchingSubcategories.isNotEmpty || _matchingProducts.isNotEmpty) {
       _showOverlay();
     } else {
       _hideOverlay();
@@ -205,6 +243,69 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
                                 backgroundColor: const Color(0xFFF8FAFC),
                                 side: const BorderSide(color: Color(0xFFE2E8F0)),
                                 onPressed: () => _navigateToCategory(name),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      ],
+
+                      // Subcategories Section
+                      if (_matchingSubcategories.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
+                          child: Text(
+                            'SUBCATEGORIES',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: _matchingSubcategories.map((sub) {
+                              final subName = (sub['name'] ?? '').toString();
+                              final catName = (sub['categoryName'] ?? '').toString();
+                              return ActionChip(
+                                label: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: subName,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      if (catName.isNotEmpty) ...[
+                                        TextSpan(
+                                          text: '  in $catName',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w400,
+                                            color: const Color(0xFF64748B),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                avatar: const Icon(
+                                  Icons.subdirectory_arrow_right_rounded,
+                                  size: 14,
+                                  color: AppColors.primaryPink,
+                                ),
+                                backgroundColor: const Color(0xFFF8FAFC),
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                onPressed: () => _navigateToSubCategory(catName, subName),
                               );
                             }).toList(),
                           ),
@@ -381,9 +482,10 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
         ? UrlHelper.productUrl(productModel, refCode: productModel.resellerCode)
         : UrlHelper.productUrl({'id': id});
 
-    Navigator.of(context).pushNamed(
+    AppRouter.push(
+      context,
       route,
-      arguments: productModel,
+      extra: productModel,
     );
   }
 
@@ -394,9 +496,27 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
     if (!mounted) return;
 
     final route = UrlHelper.categoryUrl(name);
-    Navigator.of(context).pushNamed(
+    AppRouter.push(
+      context,
       route,
-      arguments: {'category': name},
+      extra: {'category': name},
+    );
+  }
+
+  void _navigateToSubCategory(String categoryName, String subCategoryName) {
+    _hideOverlay();
+    _focusNode.unfocus();
+
+    if (!mounted) return;
+
+    final route = UrlHelper.categoryUrl(categoryName, subCategoryName);
+    AppRouter.push(
+      context,
+      route,
+      extra: {
+        'category': categoryName,
+        'subcategory': subCategoryName,
+      },
     );
   }
 
@@ -408,9 +528,10 @@ class _SmartSearchBarState extends State<SmartSearchBar> {
 
       if (!mounted) return;
 
-      Navigator.of(context).pushNamed(
+      AppRouter.push(
+        context,
         '/shop',
-        arguments: {'search': query},
+        extra: {'search': query},
       );
     }
   }

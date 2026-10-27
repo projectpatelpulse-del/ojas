@@ -1,4 +1,7 @@
+const mongoose = require("mongoose");
 const Product = require("../model/Product.js");
+const Category = require("../model/Category.js");
+const SubCategory = require("../model/SubCategory.js");
 const Vendor = require("../model/Vendor.js");
 const { calculateProductPricing } = require("../utils/pricing.js");
 const imagekit = require("../config/imagekit.js");
@@ -220,12 +223,36 @@ const getProducts = async (req, res) => {
 
         // Filtering by Category
         if (category && category !== 'All') {
-            query.category = category;
+            const trimmedCat = category.trim();
+            if (mongoose.Types.ObjectId.isValid(trimmedCat)) {
+                const catDoc = await Category.findById(trimmedCat);
+                if (catDoc) {
+                    query.category = catDoc.name;
+                } else {
+                    query.category = trimmedCat;
+                }
+            } else {
+                const escaped = trimmedCat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const slugPattern = escaped.replace(/[-_]/g, '[-_ ]+').replace(/\band\b/gi, '(&|and)');
+                query.category = { $regex: new RegExp(`^(${escaped}|${slugPattern})$`, 'i') };
+            }
         }
 
         // Filtering by SubCategory
         if (subCategory && subCategory !== 'All') {
-            query.subCategory = subCategory;
+            const trimmedSub = subCategory.trim();
+            if (mongoose.Types.ObjectId.isValid(trimmedSub)) {
+                const subDoc = await SubCategory.findById(trimmedSub);
+                if (subDoc) {
+                    query.subCategory = subDoc.name;
+                } else {
+                    query.subCategory = trimmedSub;
+                }
+            } else {
+                const escaped = trimmedSub.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const slugPattern = escaped.replace(/[-_]/g, '[-_ ]+').replace(/\band\b/gi, '(&|and)');
+                query.subCategory = { $regex: new RegExp(`^(${escaped}|${slugPattern})$`, 'i') };
+            }
         }
 
         // Searching by Name or Title

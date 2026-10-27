@@ -7,6 +7,7 @@ import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class LatestProductCard extends StatefulWidget {
   final ProductModel product;
@@ -40,8 +41,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
         
         return GestureDetector(
           onTap: () {
-            final route = UrlHelper.productUrl(widget.product);
-            Navigator.pushNamed(context, route, arguments: widget.product);
+            AppRouter.pushProduct(context, widget.product);
           },
           child: MouseRegion(
             onEnter: (_) => setState(() => _isHovered = true),
@@ -226,7 +226,7 @@ class _LatestProductCardState extends State<LatestProductCard> {
                               onPressed: () async {
                                 if (!SessionService.instance.isLoggedIn) {
                                   CartController.instance.setPendingItem(widget.product.id, widget.product.moq);
-                                  Navigator.pushNamed(context, '/login');
+                                  AppRouter.push(context, '/login');
                                   return;
                                 }
                                 if (widget.onAddToCart != null) {

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="OJAS INDIA - Your trusted online shopping platform for quality products and gifts.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="OJAS INDIA">
+  <link rel="apple-touch-icon" href="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2">
+
+  <!-- Open Graph / Facebook Link Preview Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OJAS INDIA">
+  <meta property="og:description" content="OJAS INDIA - Your trusted online shopping platform for quality products and gifts.">
+  <meta property="og:image" content="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2">
+  <meta property="og:url" content="https://ojasindia.com">
+
+  <!-- Twitter Link Preview Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="OJAS INDIA">
+  <meta name="twitter:description" content="OJAS INDIA - Your trusted online shopping platform for quality products and gifts.">
+  <meta name="twitter:image" content="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://api.ojasindia.com/api/home/settings/favicon.png?v=1.2"/>
+
+  <title>OJAS INDIA</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+  <script>
+    window.openCashfreeCheckout = function(paymentSessionId, mode) {
+      console.log("[Cashfree JS SDK] Initializing checkout with session ID:", paymentSessionId, "mode:", mode);
+      try {
+        const cashfree = Cashfree({
+          mode: mode
+        });
+        cashfree.checkout({
+          paymentSessionId: paymentSessionId,
+          redirectTarget: "_self"
+        });
+      } catch (err) {
+        console.error("[Cashfree JS SDK] Error:", err);
+      }
+    };
+  </script>
+
+  <!-- Google Site Verification & Canonical -->
+  <meta name="google-site-verification" content="5hiqXNZODqGbYJLaR2XJlnC8Xd6vCdqLrA7lQXnTkBQ" />
+  <link rel="canonical" href="https://ojasindia.com" />
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5D6BNM86');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://ojasindia.com/",
+    "url": "https://ojasindia.com/",
+    "additionalType": [
+      "https://schema.org/LocalBusiness"
+    ],
+    "name": "Ojas India",
+    "alternateName": "Ojas India",
+    "legalName": "Ojas India",
+    "description": "Established in 2000, Ojas is a gift shop in Pune, India, offering a curated selection of handcrafted and imported items. From gleaming silver and gold-plated gifts to unique copperware and a diverse range of imported finds, Ojas provides a one-stop destination for those seeking distinctive and thoughtful presents.",
+    "disambiguatingDescription": "Established in 2000, Ojas is a gift shop in Pune, India, offering a curated selection of handcrafted and imported items. From gleaming silver and gold-plated gifts to unique copperware and a diverse range of imported finds, Ojas provides a one-stop destination for those seeking distinctive and thoughtful presents.",
+    "logo": {
+      "@type": "ImageObject",
+      "@id": "#logo",
+      "url": "https://scontent.cdninstagram.com/v/t51.82787-19/788033362_18425836915198825_7728308944116141427_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=s9j7o0S2YIQQ7kNvwFcPz44&_nc_oc=AdoKWvwExyk0T9OWJijP51FCu7m1_R8ZUjAV0hoSh4KUdRwdilqGxwBmgIZrlk-GCf4&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=NWLxW8RSBcksPoZNp_eDtA&_nc_ss=7b689&oh=00_AQM4RCE8kwPiKQ4OpyETQTlryfSCI8oXCgTPsr2_0kzukg&oe=6AC6AC0E"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Shop No 68,69, Prestige point, Sathe Colony, Shukrawar Peth",
+      "addressLocality": "Pune",
+      "addressRegion": "Maharashtra",
+      "postalCode": "411002",
+      "addressCountry": "India"
+    },
+    "image": {
+      "@type": "ImageObject",
+      "@id": "https://scontent.cdninstagram.com/v/t51.82787-19/788033362_18425836915198825_7728308944116141427_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=s9j7o0S2YIQQ7kNvwFcPz44&_nc_oc=AdoKWvwExyk0T9OWJijP51FCu7m1_R8ZUjAV0hoSh4KUdRwdilqGxwBmgIZrlk-GCf4&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=NWLxW8RSBcksPoZNp_eDtA&_nc_ss=7b689&oh=00_AQM4RCE8kwPiKQ4OpyETQTlryfSCI8oXCgTPsr2_0kzukg&oe=6AC6AC0E",
+      "url": "https://scontent.cdninstagram.com/v/t51.82787-19/788033362_18425836915198825_7728308944116141427_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=s9j7o0S2YIQQ7kNvwFcPz44&_nc_oc=AdoKWvwExyk0T9OWJijP51FCu7m1_R8ZUjAV0hoSh4KUdRwdilqGxwBmgIZrlk-GCf4&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=NWLxW8RSBcksPoZNp_eDtA&_nc_ss=7b689&oh=00_AQM4RCE8kwPiKQ4OpyETQTlryfSCI8oXCgTPsr2_0kzukg&oe=6AC6AC0E"
+    },
+    "areaServed": {
+      "@type": "GeoCircle",
+      "geoMidpoint": {
+        "@type": "GeoCoordinates",
+        "latitude": 18.50822544369259,
+        "longitude": 73.85526874973064
+      },
+      "geoRadius": 16093
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+      "opens": "10:00",
+      "closes": "20:00"
+    },
+    "sameAs": [
+      "https://www.facebook.com/ojasindiasilver",
+      "https://www.instagram.com/ojasindiab2b/",
+      "https://www.youtube.com/@ojasindia6422"
+    ],
+    "email": "support@ojasindia.com",
+    "telephone": "+91 9421874649",
+    "foundingLocation": {
+      "@type": "Place",
+      "hasMap": "https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Shop No 68,69, Prestige point, Sathe Colony, Shukrawar Peth",
+        "addressLocality": "Pune",
+        "addressRegion": "Maharashtra",
+        "postalCode": "411002",
+        "addressCountry": "India"
+      }
+    },
+    "slogan": "Gift shop featuring a wide selection of silver-plated items and diverse gift articles.",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "Customer Service",
+      "telephone": "+91 9421874649",
+      "email": "support@ojasindia.com"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "732"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5D6BNM86"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

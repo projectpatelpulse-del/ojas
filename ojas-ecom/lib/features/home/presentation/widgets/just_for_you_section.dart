@@ -9,6 +9,7 @@ import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/features/home/presentation/widgets/just_for_you_card.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class JustForYouSection extends StatelessWidget {
   const JustForYouSection({super.key});
@@ -43,7 +44,7 @@ class JustForYouSection extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () => Navigator.pushNamed(context, '/shop'),
+                      onPressed: () => AppRouter.push(context, '/shop'),
                       child: Text(
                         'View all',
                         style: GoogleFonts.inter(
@@ -106,7 +107,7 @@ class JustForYouSection extends StatelessWidget {
                         onAddToCart: () async {
                           if (!SessionService.instance.isLoggedIn) {
                             CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
-                            Navigator.pushNamed(context, '/login');
+                            AppRouter.push(context, '/login');
                             return;
                           }
                           final success = await CartController.instance.addToCart(product.id);

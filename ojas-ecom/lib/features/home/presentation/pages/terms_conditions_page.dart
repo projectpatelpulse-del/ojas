@@ -8,6 +8,7 @@ import 'package:ojas_user/core/models/app_settings.dart';
 import 'package:ojas_user/core/widgets/formatted_text.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:intl/intl.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class TermsConditionsPage extends StatelessWidget {
   const TermsConditionsPage({super.key});
@@ -516,9 +517,9 @@ class TermsConditionsPage extends StatelessWidget {
             runSpacing: 20,
             alignment: WrapAlignment.center,
             children: [
-              _ackButton('Privacy Policy', onPressed: () => Navigator.pushNamed(context, '/privacy')),
-              _ackButton('Returns', onPressed: () => Navigator.pushNamed(context, '/returns')),
-              _ackButton('Contact', onPressed: () => Navigator.pushNamed(context, '/contact')),
+              _ackButton('Privacy Policy', onPressed: () => AppRouter.push(context, '/privacy')),
+              _ackButton('Returns', onPressed: () => AppRouter.push(context, '/returns')),
+              _ackButton('Contact', onPressed: () => AppRouter.push(context, '/contact')),
             ],
           ),
         ],

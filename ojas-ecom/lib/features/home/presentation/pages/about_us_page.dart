@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:ojas_user/core/models/app_settings.dart';
 import 'package:ojas_user/core/widgets/formatted_text.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
@@ -68,7 +69,7 @@ class AboutUsPage extends StatelessWidget {
               // 4. Back to Shop button
               Center(
                 child: ElevatedButton.icon(
-                  onPressed: () => Navigator.pushNamed(context, '/shop'),
+                  onPressed: () => AppRouter.push(context, '/shop'),
                   icon: const Icon(Icons.shopping_bag_outlined),
                   label: const Text('Start Shopping'),
                   style: ElevatedButton.styleFrom(

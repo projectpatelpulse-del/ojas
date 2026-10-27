@@ -8,6 +8,7 @@ import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
 import 'package:ojas_user/features/home/presentation/widgets/section_title.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class TrendingProductsSection extends StatelessWidget {
   const TrendingProductsSection({super.key});
@@ -65,7 +66,7 @@ class TrendingProductsSection extends StatelessWidget {
                     onAddToCart: () async {
                       if (!SessionService.instance.isLoggedIn) {
                         CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
-                        Navigator.pushNamed(context, '/login');
+                        AppRouter.push(context, '/login');
                         return;
                       }
                       final success = await CartController.instance.addToCart(product.id);

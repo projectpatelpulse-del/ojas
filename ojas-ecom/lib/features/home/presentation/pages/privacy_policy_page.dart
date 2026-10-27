@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:ojas_user/core/models/app_settings.dart';
 import 'package:ojas_user/core/widgets/formatted_text.dart';
 import 'package:intl/intl.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
@@ -366,9 +367,9 @@ class PrivacyPolicyPage extends StatelessWidget {
             runSpacing: 20,
             alignment: WrapAlignment.center,
             children: [
-              _relatedButton(Icons.email_outlined, 'Contact', onPressed: () => Navigator.pushNamed(context, '/contact')),
-              _relatedButton(Icons.description_outlined, 'Terms', onPressed: () => Navigator.pushNamed(context, '/terms')),
-              _relatedButton(Icons.refresh_outlined, 'Returns', onPressed: () => Navigator.pushNamed(context, '/returns')),
+              _relatedButton(Icons.email_outlined, 'Contact', onPressed: () => AppRouter.push(context, '/contact')),
+              _relatedButton(Icons.description_outlined, 'Terms', onPressed: () => AppRouter.push(context, '/terms')),
+              _relatedButton(Icons.refresh_outlined, 'Returns', onPressed: () => AppRouter.push(context, '/returns')),
             ],
           ),
         ],

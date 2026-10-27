@@ -5,6 +5,7 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/home/data/models/banner_model.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class BecomeVendorBanner extends StatelessWidget {
   const BecomeVendorBanner({super.key});
@@ -36,7 +37,7 @@ class BecomeVendorBanner extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     final targetLink = banner.link.isEmpty ? '/become-vendor' : banner.link;
-                    Navigator.pushNamed(context, targetLink);
+                    AppRouter.push(context, targetLink);
                   },
                   child: Container(
                     width: double.infinity,
@@ -144,7 +145,7 @@ class BecomeVendorBanner extends StatelessWidget {
                   final targetLink = banner.link.isEmpty
                       ? '/become-vendor'
                       : banner.link;
-                  Navigator.pushNamed(context, targetLink);
+                  AppRouter.push(context, targetLink);
                 },
                 icon: const Icon(Icons.storefront, size: 18),
                 label: const Text('Become a Vendor'),
@@ -159,7 +160,7 @@ class BecomeVendorBanner extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               OutlinedButton(
-                onPressed: () => Navigator.pushNamed(context, '/shop'),
+                onPressed: () => AppRouter.push(context, '/shop'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0F172A),
                   side: const BorderSide(color: AppColors.grey),
@@ -267,7 +268,7 @@ class BecomeVendorBanner extends StatelessWidget {
                   // const SizedBox(width: 16),
                  
                   OutlinedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/shop'),
+                    onPressed: () => AppRouter.push(context, '/shop'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF0F172A),
                       side: const BorderSide(color: AppColors.grey),

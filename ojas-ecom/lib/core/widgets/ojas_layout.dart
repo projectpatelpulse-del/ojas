@@ -13,6 +13,7 @@ import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
  
 import '../../features/auth/domain/models/user_model.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 import '../services/session_service.dart';
  
 class OjasLayout extends StatefulWidget {
@@ -245,7 +246,10 @@ class _MobileDrawer extends StatelessWidget {
                   return _DrawerItem(
                     title: item,
                     icon: icon,
-                    onTap: () => Navigator.pushNamed(context, route),
+                    onTap: () {
+                      Navigator.pop(context);
+                      AppRouter.go(context, route);
+                    },
                   );
                 }).toList(),
               );
@@ -253,17 +257,17 @@ class _MobileDrawer extends StatelessWidget {
           ),
           // const Divider(color: AppColors.white24, indent: 20, endIndent: 20),
           const Divider(color: AppColors.cardBorderTint, indent: 20, endIndent: 20),
-          _DrawerItem(title: 'BECOME VENDOR', icon: Icons.storefront_outlined, onTap: () => Navigator.pushNamed(context, '/become-vendor')),
+          _DrawerItem(title: 'BECOME VENDOR', icon: Icons.storefront_outlined, onTap: () => AppRouter.push(context, '/become-vendor')),
           ValueListenableBuilder<UserModel?>(
             valueListenable: SessionService.instance.userNotifier,
             builder: (context, user, _) {
               if (user != null && user.role == 'reseller') {
                 return const SizedBox.shrink();
               }
-              return _DrawerItem(title: 'BECOME RESELLER', icon: Icons.people_outline, onTap: () => Navigator.pushNamed(context, '/become-reseller'));
+              return _DrawerItem(title: 'BECOME RESELLER', icon: Icons.people_outline, onTap: () => AppRouter.push(context, '/become-reseller'));
             },
           ),
-          _DrawerItem(title: 'MY ORDERS', icon: Icons.local_shipping_outlined, onTap: () => Navigator.pushNamed(context, '/orders')),
+          _DrawerItem(title: 'MY ORDERS', icon: Icons.local_shipping_outlined, onTap: () => AppRouter.push(context, '/orders')),
           ListenableBuilder(
             listenable: WishlistController.instance,
             builder: (context, _) {
@@ -271,7 +275,7 @@ class _MobileDrawer extends StatelessWidget {
               return _DrawerItem(
                 title: 'WISHLIST ${count > 0 ? "($count)" : ""}', 
                 icon: Icons.favorite_border, 
-                onTap: () => Navigator.pushNamed(context, '/wishlist')
+                onTap: () => AppRouter.push(context, '/wishlist'),
               );
             },
           ),

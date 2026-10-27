@@ -152,6 +152,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/features/home/data/models/banner_model.dart';
 import 'package:ojas_user/core/constants/app_colors.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class WeekendDealsSlider extends StatefulWidget {
   const WeekendDealsSlider({super.key});
@@ -359,7 +360,7 @@ class _WeekendDealsSliderState extends State<WeekendDealsSlider> {
                       return MouseRegion(
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, item.link),
+                          onTap: () => AppRouter.push(context, item.link),
                           child: slideContent,
                         ),
                       );

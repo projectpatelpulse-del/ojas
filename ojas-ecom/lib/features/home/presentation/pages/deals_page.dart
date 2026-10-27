@@ -12,6 +12,7 @@ import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class DealsPage extends StatefulWidget {
   const DealsPage({super.key});
@@ -48,24 +49,65 @@ class _DealsPageState extends State<DealsPage> {
   Widget build(BuildContext context) {
     final bool isMobile = Responsive.isMobile(context);
     final bool isTablet = Responsive.isTablet(context);
+    final bool canPop = Navigator.of(context).canPop();
 
-    return ListenableBuilder(
-      listenable: HomeController.instance,
-      builder: (context, _) {
-        final List<_DealProduct> deals = _deals;
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      },
+      child: ListenableBuilder(
+        listenable: HomeController.instance,
+        builder: (context, _) {
+          final List<_DealProduct> deals = _deals;
 
-        return OjasLayout(
-          activeTitle: 'DEALS',
-          child: Container(
-            color: const Color(0xFFF8FAFC),
-            child: Column(
-              children: [
-                CenteredContent(
-                  horizontalPadding: isMobile ? 16 : 40,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: isMobile ? 32 : 60),
+          return OjasLayout(
+            activeTitle: 'DEALS',
+            child: Container(
+              color: const Color(0xFFF8FAFC),
+              child: Column(
+                children: [
+                  CenteredContent(
+                    horizontalPadding: isMobile ? 16 : 40,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        InkWell(
+                          onTap: () {
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            } else {
+                              Navigator.of(context).pushReplacementNamed('/');
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.arrow_back_rounded, size: 16, color: Color(0xFF1E293B)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Back',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1E293B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: isMobile ? 24 : 40),
 
                       // Header
                       Column(
@@ -180,8 +222,9 @@ class _DealsPageState extends State<DealsPage> {
           ),
         );
       },
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildEmptyState() {
     return Center(
@@ -480,20 +523,17 @@ class _DealCardState extends State<_DealCard> {
         ? p.productModel!.resellerCode
         : null;
 
-    final route = p.productModel != null
-        ? UrlHelper.productUrl(p.productModel, refCode: refCode)
-        : UrlHelper.productUrl({
-            'id': p.id,
-            'name': p.name,
-            'category': p.category,
-            'subCategory': p.subCategory,
-          }, refCode: refCode);
-
-    Navigator.pushNamed(
-      context,
-      route,
-      arguments: p.productModel,
-    );
+    if (p.productModel != null) {
+      AppRouter.pushProduct(context, p.productModel!, refCode: refCode);
+    } else {
+      final route = UrlHelper.productUrl({
+        'id': p.id,
+        'name': p.name,
+        'category': p.category,
+        'subCategory': p.subCategory,
+      }, refCode: refCode);
+      AppRouter.push(context, route);
+    }
   }
 
   @override
@@ -703,7 +743,7 @@ class _DealCardState extends State<_DealCard> {
                               onPressed: () async {
                                 if (!SessionService.instance.isLoggedIn) {
                                   CartController.instance.setPendingItem(p.id, 1);
-                                  Navigator.pushNamed(context, '/login');
+                                  AppRouter.push(context, '/login');
                                   return;
                                 }
                                 final success = await CartController.instance.addToCart(p.id);

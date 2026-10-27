@@ -9,6 +9,7 @@ import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/features/home/presentation/widgets/smart_search_bar.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class OjasNavbar extends StatelessWidget implements PreferredSizeWidget {
   final String activeTitle;
@@ -143,10 +144,10 @@ class _MobileNavbarState extends State<_MobileNavbar> {
 
   void _handleSearch() {
     if (_searchController.text.trim().isNotEmpty) {
-      Navigator.pushNamed(
+      AppRouter.push(
         context, 
         '/shop', 
-        arguments: {'search': _searchController.text.trim()}
+        extra: {'search': _searchController.text.trim()},
       );
     }
   }
@@ -201,13 +202,13 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                   child: InkWell(
                     onTap: () {
                       if (SessionService.instance.refCode != null && SessionService.instance.referredProductId != null) {
-                        Navigator.pushNamed(
+                        AppRouter.push(
                           context,
                           '/product-detail',
-                          arguments: {'id': SessionService.instance.referredProductId, 'ref': SessionService.instance.refCode},
+                          extra: {'id': SessionService.instance.referredProductId, 'ref': SessionService.instance.refCode},
                         );
                       } else {
-                        Navigator.pushNamed(context, '/');
+                        AppRouter.go(context, '/');
                       }
                     },
                     child: Center(
@@ -244,7 +245,7 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.black, size: 22),
-                      onPressed: () => Navigator.pushNamed(context, '/cart'),
+                      onPressed: () => AppRouter.push(context, '/cart'),
                     ),
                     ValueListenableBuilder<UserModel?>(
                       valueListenable: SessionService.instance.userNotifier,
@@ -253,9 +254,9 @@ class _MobileNavbarState extends State<_MobileNavbar> {
                           icon: const Icon(Icons.person_outline, color: AppColors.black, size: 22),
                           onPressed: () {
                             if (user != null) {
-                              Navigator.pushNamed(context, '/profile', arguments: user);
+                              AppRouter.push(context, '/profile', extra: user);
                             } else {
-                              Navigator.pushNamed(context, '/login');
+                              AppRouter.push(context, '/login');
                             }
                           },
                         );
@@ -317,7 +318,7 @@ class _TopInfoBarContent extends StatelessWidget {
             _TopInfoItem(
               icon: Icons.location_on_outlined, 
               label: 'Track Order',
-              onTap: () => Navigator.pushNamed(context, '/orders'),
+              onTap: () => AppRouter.push(context, '/orders'),
             ),
             const SizedBox(width: 24),
             _TopInfoItem(icon: Icons.phone_outlined, label: SettingsController.instance.settings.supportPhone),
@@ -364,13 +365,13 @@ class _MainNavBarContent extends StatelessWidget {
         InkWell(
           onTap: () {
             if (SessionService.instance.refCode != null && SessionService.instance.referredProductId != null) {
-              Navigator.pushNamed(
+              AppRouter.push(
                 context,
                 '/product-detail',
-                arguments: {'id': SessionService.instance.referredProductId, 'ref': SessionService.instance.refCode},
+                extra: {'id': SessionService.instance.referredProductId, 'ref': SessionService.instance.refCode},
               );
             } else {
-              Navigator.pushNamed(context, '/');
+              AppRouter.go(context, '/');
             }
           },
           child: SettingsController.instance.settings.logo.isNotEmpty
@@ -433,7 +434,10 @@ class _MainNavBarContent extends StatelessWidget {
                             key: ValueKey('nav_${item.toLowerCase()}'),
                             title: item,
                             isActive: activeTitle.toUpperCase() == upperItem,
-                            onTap: () => Navigator.pushNamed(context, route),
+                            onTap: () {
+                              if (activeTitle.toUpperCase() == upperItem) return;
+                              AppRouter.go(context, route);
+                            },
                           );
                         }).toList(),
                       );
@@ -452,7 +456,7 @@ class _MainNavBarContent extends StatelessWidget {
                 icon: Icons.favorite_border, 
                 label: 'Wishlist', 
                 count: WishlistController.instance.count.toString(), 
-                onTap: () => Navigator.pushNamed(context, '/wishlist')
+                onTap: () => AppRouter.push(context, '/wishlist'),
               );
             },
           ),
@@ -525,7 +529,7 @@ class _UserInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/profile', arguments: user),
+      onTap: () => AppRouter.push(context, '/profile', extra: user),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -599,10 +603,10 @@ class _SearchBarRowContentState extends State<_SearchBarRowContent> {
 
   void _handleSearch() {
     if (_searchController.text.trim().isNotEmpty) {
-      Navigator.pushNamed(
+      AppRouter.push(
         context, 
         '/shop', 
-        arguments: {'search': _searchController.text.trim()}
+        extra: {'search': _searchController.text.trim()},
       );
     }
   }
@@ -834,7 +838,7 @@ class _AuthLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/login'),
+      onTap: () => AppRouter.push(context, '/login'),
       borderRadius: BorderRadius.circular(4),
       child: Padding(
         // padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -854,7 +858,7 @@ class _RegisterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/register'),
+      onTap: () => AppRouter.push(context, '/register'),
       // borderRadius: BorderRadius.circular(4),
       borderRadius: BorderRadius.circular(6),
       child: Container(

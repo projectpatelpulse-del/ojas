@@ -3,6 +3,7 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class FeaturedProductCard extends StatefulWidget {
   final String name;
@@ -66,7 +67,7 @@ class _FeaturedProductCardState extends State<FeaturedProductCard> {
                       'name': widget.name,
                       'category': widget.category,
                     });
-                    Navigator.pushNamed(
+                    AppRouter.push(
                       context,
                       route,
                     );

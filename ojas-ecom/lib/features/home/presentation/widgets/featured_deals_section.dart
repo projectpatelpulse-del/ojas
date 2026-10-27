@@ -8,6 +8,7 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class FeaturedDealsSection extends StatelessWidget {
   const FeaturedDealsSection({super.key});
@@ -60,7 +61,7 @@ class FeaturedDealsSection extends StatelessWidget {
                               onAddToCart: () async {
                                 if (!SessionService.instance.isLoggedIn) {
                                   CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
-                                  Navigator.pushNamed(context, '/login');
+                                  AppRouter.push(context, '/login');
                                   return;
                                 }
                                 final success = await CartController.instance.addToCart(product.id);
@@ -85,7 +86,7 @@ class FeaturedDealsSection extends StatelessWidget {
                                 onAddToCart: () async {
                                   if (!SessionService.instance.isLoggedIn) {
                                     CartController.instance.setPendingItem(featuredProducts[i].id, featuredProducts[i].getEffectiveMoq());
-                                    Navigator.pushNamed(context, '/login');
+                                    AppRouter.push(context, '/login');
                                     return;
                                   }
                                   final success = await CartController.instance.addToCart(featuredProducts[i].id);

@@ -7,6 +7,7 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/services/api_service.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class AdsAndSubscribeSection extends StatelessWidget {
   const AdsAndSubscribeSection({super.key});
@@ -210,9 +211,9 @@ class _OfferCard extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 if (offer.link.isNotEmpty) {
-                  Navigator.pushNamed(context, '/shop', arguments: {'search': offer.link});
+                  AppRouter.push(context, '/shop', extra: {'search': offer.link});
                 } else {
-                  Navigator.pushNamed(context, '/shop');
+                  AppRouter.push(context, '/shop');
                 }
               },
               child: mainContent,
@@ -229,9 +230,9 @@ class _OfferCard extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {
         if (link.isNotEmpty) {
-          Navigator.pushNamed(context, '/shop', arguments: {'search': link});
+          AppRouter.push(context, '/shop', extra: {'search': link});
         } else {
-          Navigator.pushNamed(context, '/shop');
+          AppRouter.push(context, '/shop');
         }
       },
       style: ElevatedButton.styleFrom(

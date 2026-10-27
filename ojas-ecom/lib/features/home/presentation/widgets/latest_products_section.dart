@@ -9,6 +9,7 @@ import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class LatestProductsSection extends StatelessWidget {
   const LatestProductsSection({super.key});
@@ -38,7 +39,7 @@ class LatestProductsSection extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/shop'),
+                  onPressed: () => AppRouter.push(context, '/shop'),
                   child: Text(
                     'View all',
                     style: GoogleFonts.inter(
@@ -104,7 +105,7 @@ class LatestProductsSection extends StatelessWidget {
                       onAddToCart: () async {
                         if (!SessionService.instance.isLoggedIn) {
                           CartController.instance.setPendingItem(id, productModel.moq);
-                          Navigator.pushNamed(context, '/login');
+                          AppRouter.push(context, '/login');
                           return;
                         }
                         final success = await CartController.instance.addToCart(id, moq: productModel.moq);

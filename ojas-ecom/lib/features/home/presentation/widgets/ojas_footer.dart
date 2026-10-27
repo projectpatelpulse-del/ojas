@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../auth/domain/models/user_model.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class OjasFooter extends StatelessWidget {
   const OjasFooter({super.key});
@@ -110,7 +111,7 @@ class OjasFooter extends StatelessWidget {
                       _footerLink(context, 'Offers', route: '/deals'),
                       const SizedBox(height: 8),
                       InkWell(
-                        onTap: () => Navigator.pushNamed(context, '/become-vendor'),
+                        onTap: () => AppRouter.push(context, '/become-vendor'),
                         child: _vendorBadge(),
                       ),
                       const SizedBox(height: 8),
@@ -125,7 +126,7 @@ class OjasFooter extends StatelessWidget {
                             children: [
                               const SizedBox(height: 8),
                               InkWell(
-                                onTap: () => Navigator.pushNamed(context, '/become-reseller'),
+                                onTap: () => AppRouter.push(context, '/become-reseller'),
                                 child: _resellerBadge(),
                               ),
                             ],
@@ -345,7 +346,7 @@ class OjasFooter extends StatelessWidget {
       child: _FooterLinkItem(
         text: text,
         isActive: isActive,
-        onTap: onTap ?? (route != null ? () => Navigator.pushNamed(context, route) : null),
+        onTap: onTap ?? (route != null ? () => AppRouter.push(context, route) : null),
       ),
     );
   }

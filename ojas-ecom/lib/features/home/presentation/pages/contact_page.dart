@@ -8,6 +8,7 @@ import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/core/services/support_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({super.key});
@@ -418,7 +419,7 @@ class _ContactPageState extends State<ContactPage> {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () => Navigator.pushNamed(context, '/login'),
+            onPressed: () => AppRouter.push(context, '/login'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0F172A),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

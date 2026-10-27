@@ -17,6 +17,7 @@ import 'package:ojas_user/features/auth/presentation/pages/auth_screen.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sizer/sizer.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 import '../../../../core/services/api_service.dart';
 
@@ -24,12 +25,14 @@ class ProductDetailPage extends StatefulWidget {
   final ProductModel? product;
   final String? productId;
   final String? refCode;
+  final String? initialVariation;
 
   const ProductDetailPage({
     super.key,
     this.product,
     this.productId,
     this.refCode,
+    this.initialVariation,
   });
 
   @override
@@ -80,6 +83,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
+  @override
+  void didUpdateWidget(covariant ProductDetailPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialVariation != oldWidget.initialVariation &&
+        widget.initialVariation != null) {
+      if (_loadedProduct != null || widget.product != null) {
+        _initProductDetails(product);
+      }
+    }
+  }
+
   void _initProductDetails(ProductModel p) {
     debugPrint('Product Detail - Main Image URL: ${p.imageUrl}');
     _selectedImageUrl = p.imageUrl;
@@ -90,10 +104,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _selectedVariationTitle = null;
 
     if (p.variations.isNotEmpty) {
-      final targetVar = p.variations.firstWhere(
-        (v) => (v.price - p.price).abs() < 0.01,
-        orElse: () => p.variations.reduce((a, b) => (a.price > 0 && a.price < b.price) ? a : b),
-      );
+      ProductVariation? targetVar;
+      if (widget.initialVariation != null && widget.initialVariation!.trim().isNotEmpty) {
+        final query = widget.initialVariation!.trim();
+        for (final v in p.variations) {
+          if (UrlHelper.matchesSlug(v.title, query) ||
+              UrlHelper.matchesSlug(v.modelName, query) ||
+              UrlHelper.matchesSlug(v.size, query) ||
+              UrlHelper.matchesSlug(v.sku, query) ||
+              v.id == query ||
+              (v.sku != null && v.sku!.toLowerCase() == query.toLowerCase())) {
+            targetVar = v;
+            break;
+          }
+        }
+      }
+
+      if (targetVar == null) {
+        for (final v in p.variations) {
+          if ((v.price - p.price).abs() < 0.01) {
+            targetVar = v;
+            break;
+          }
+        }
+      }
+
+      targetVar ??= p.variations.reduce((a, b) => (a.price > 0 && a.price < b.price) ? a : b);
+
       _selectedSize = targetVar.modelName;
       _selectedColor = targetVar.color;
       _selectedMaterial = targetVar.material;
@@ -122,9 +159,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       _currentVariationImages = [];
     }
 
-    // Synchronize browser URL bar to clean category/subcategory/product path
+    // Synchronize browser URL bar to clean category/subcategory/product/variation path
     if (kIsWeb) {
-      final canonicalUrl = UrlHelper.productUrl(p, refCode: widget.refCode);
+      ProductVariation? currentVar;
+      if (p.variations.isNotEmpty) {
+        currentVar = p.variations.firstWhere(
+          (v) => v.title == _selectedVariationTitle || v.modelName == _selectedSize,
+          orElse: () => p.variations.first,
+        );
+      }
+      final canonicalUrl = UrlHelper.productUrl(
+        p, 
+        refCode: widget.refCode, 
+        variation: currentVar,
+      );
       UrlHelper.updateBrowserUrl(canonicalUrl, pushState: false);
     }
   }
@@ -253,6 +301,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _selectedImageUrl = '';
       }
     });
+
+    if (kIsWeb) {
+      final canonicalUrl = UrlHelper.productUrl(
+        product,
+        refCode: widget.refCode,
+        variation: match,
+      );
+      UrlHelper.updateBrowserUrl(canonicalUrl, pushState: false);
+    }
   }
 
   Widget _buildVariationSelectors() {
@@ -640,14 +697,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 selected: isSelected,
                 onSelected: (selected) {
                   if (selected) {
+                    final match = product.variations.firstWhere(
+                      (v) => v.title == title,
+                      orElse: () => product.variations.first,
+                    );
                     setState(() {
                       _selectedVariationTitle = title;
-                      final match = product.variations.firstWhere(
-                        (v) => v.title == title,
-                        orElse: () => product.variations.first,
-                      );
+                      _selectedSize = match.modelName ?? _selectedSize;
+                      _selectedColor = match.color ?? _selectedColor;
+                      _selectedMaterial = match.material ?? _selectedMaterial;
+                      _selectedWeight = match.weightStr ?? _selectedWeight;
                       _currentPrice = match.price > 0 ? match.price : product.price;
+                      _currentOldPrice = match.oldPrice ?? product.oldPrice;
                       _currentStock = match.stock;
+                      _currentWeight = match.weight ?? product.weight;
                       final List<String> varImages = [];
                       if (match.images.isNotEmpty) {
                         varImages.addAll(match.images.where((img) => img.isNotEmpty));
@@ -658,6 +721,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       _currentVariationImages = varImages;
                       _selectedImageUrl = varImages.isNotEmpty ? varImages[0] : '';
                     });
+
+                    if (kIsWeb) {
+                      final canonicalUrl = UrlHelper.productUrl(
+                        product,
+                        refCode: widget.refCode,
+                        variation: match,
+                      );
+                      UrlHelper.updateBrowserUrl(canonicalUrl, pushState: false);
+                    }
                   }
                 },
                 selectedColor: AppColors.primaryPink,
@@ -777,54 +849,93 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               .toList();
         }
 
-        return OjasLayout(
-          activeTitle: 'PRODUCT DETAIL',
-          hideNavigation: false,
-          child: CenteredContent(
-            horizontalPadding: isMobile ? 16 : 40,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                if (isMobile)
-                  _buildMobileLayout(context)
-                else
-                  _buildDesktopLayout(context),
+        final bool canPop = GoRouter.of(context).canPop();
 
-                const SizedBox(height: 60),
-
-                // Related Products Section
-                if (widget.refCode == null && relatedProducts.isNotEmpty) ...[
-                  Text(
-                    'Related Products',
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: relatedProducts.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: isMobile ? 2 : 5,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: isMobile ? 0.65 : 0.62,
-                    ),
-                    itemBuilder: (context, index) {
-                      return ProductCard(
-                        product: relatedProducts[index],
-                        onAddToCart: () =>
-                            _addToCart(context, relatedProducts[index]),
-                      );
+        return PopScope(
+          canPop: canPop,
+          onPopInvokedWithResult: (bool didPop, dynamic result) {
+            if (didPop) return;
+            AppRouter.go(context, '/');
+          },
+          child: OjasLayout(
+            activeTitle: 'PRODUCT DETAIL',
+            hideNavigation: false,
+            child: CenteredContent(
+              horizontalPadding: isMobile ? 16 : 40,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  InkWell(
+                    onTap: () {
+                      AppRouter.pop(context);
                     },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.arrow_back_rounded, size: 16, color: Color(0xFF1E293B)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Back',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 20),
+                  if (isMobile)
+                    _buildMobileLayout(context)
+                  else
+                    _buildDesktopLayout(context),
+
+                  const SizedBox(height: 60),
+
+                  // Related Products Section
+                  if (widget.refCode == null && relatedProducts.isNotEmpty) ...[
+                    Text(
+                      'Related Products',
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: relatedProducts.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: isMobile ? 2 : 5,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: isMobile ? 0.65 : 0.62,
+                      ),
+                      itemBuilder: (context, index) {
+                        return ProductCard(
+                          product: relatedProducts[index],
+                          onAddToCart: () =>
+                              _addToCart(context, relatedProducts[index]),
+                        );
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 60),
                 ],
-                const SizedBox(height: 60),
-              ],
+              ),
             ),
           ),
         );
@@ -1090,12 +1201,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               },
             ),
             const SizedBox(width: 24),
-            
-               ElevatedButton.icon(
-                  onPressed: _currentStock <= 0 ? null : () {
-                    _addToCart(context, product);
-                    Navigator.pushNamed(context, '/cart');
-                  },
+            ElevatedButton.icon(
+              onPressed: _currentStock <= 0 ? null : () => _buyNow(context, product),
                   icon: const Icon(Icons.flash_on),
                   label: Text(
                     _currentStock <= 0 ? 'Out of Stock' : 'Buy Now',
@@ -1563,10 +1670,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton.icon(
-                      onPressed: _currentStock <= 0 ? null : () {
-                        _addToCart(context, product);
-                        Navigator.pushNamed(context, '/cart');
-                      },
+                      onPressed: _currentStock <= 0 ? null : () => _buyNow(context, product),
                       icon: const Icon(Icons.flash_on),
                       label: Text(
                         _currentStock <= 0 ? 'Out of Stock' : 'Buy Now',
@@ -1619,10 +1723,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     child: SizedBox(
                       height: 56,
                       child: ElevatedButton.icon(
-                        onPressed: _currentStock <= 0 ? null : () {
-                          _addToCart(context, product);
-                          Navigator.pushNamed(context, '/cart');
-                        },
+                        onPressed: _currentStock <= 0 ? null : () => _buyNow(context, product),
                         icon: const Icon(Icons.flash_on),
                         label: Text(
                           _currentStock <= 0 ? 'Out of Stock' : 'Buy Now',
@@ -1925,7 +2026,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 */
 
-  Future<void> _addToCart(BuildContext context, ProductModel p) async {
+  Future<bool> _addToCart(BuildContext context, ProductModel p, {bool showDrawer = true}) async {
       final ProductVariation? selectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && p.variations.isNotEmpty
         ? p.variations.firstWhere(
             (v) =>
@@ -1941,8 +2042,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     if (!SessionService.instance.isLoggedIn) {
       CartController.instance.setPendingItem(p.id, effMoq);
-      Navigator.pushNamed(context, '/login');
-      return;
+      AppRouter.push(context, '/login');
+      return false;
     }
 
     final success = await CartController.instance.addToCart(
@@ -1952,8 +2053,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       variationId: variationId != null && variationId.isNotEmpty ? variationId : null,
     );
 
-    if (context.mounted && success) {
+    if (context.mounted && success && showDrawer) {
       CartDrawer.showSlider(context, addedProductName: p.name);
+    }
+    return success;
+  }
+
+  Future<void> _buyNow(BuildContext context, ProductModel p) async {
+    if (!SessionService.instance.isLoggedIn) {
+      final ProductVariation? selectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && p.variations.isNotEmpty
+          ? p.variations.firstWhere(
+              (v) =>
+                  (_selectedColor == null || v.color == _selectedColor) &&
+                  (_selectedSize == null || v.modelName == _selectedSize) &&
+                  (_selectedMaterial == null || v.material == _selectedMaterial) &&
+                  (_selectedWeight == null || v.weightStr == _selectedWeight),
+              orElse: () => p.variations.first,
+            )
+          : null;
+      final int effMoq = p.getEffectiveMoq(selectedVar);
+      CartController.instance.setPendingItem(p.id, effMoq);
+      AppRouter.push(context, '/login');
+      return;
+    }
+
+    final success = await _addToCart(context, p, showDrawer: false);
+    if (context.mounted && success) {
+      AppRouter.push(context, '/cart');
     }
   }
 

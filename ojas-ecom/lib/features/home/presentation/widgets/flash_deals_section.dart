@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class FlashDealsSection extends StatelessWidget {
   const FlashDealsSection({super.key});
@@ -72,7 +73,7 @@ class FlashDealsSection extends StatelessWidget {
                           onAddToCart: () async {
                             if (!SessionService.instance.isLoggedIn) {
                               CartController.instance.setPendingItem(product.id, product.getEffectiveMoq());
-                              Navigator.pushNamed(context, '/login');
+                              AppRouter.push(context, '/login');
                               return;
                             }
                             final success = await CartController.instance.addToCart(product.id);

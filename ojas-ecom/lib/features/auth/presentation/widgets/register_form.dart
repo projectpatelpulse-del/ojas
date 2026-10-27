@@ -10,6 +10,7 @@ import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/core/widgets/scrollable_terms_dialog.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class RegisterForm extends StatefulWidget {
   final VoidCallback onToggle;
@@ -39,7 +40,7 @@ class _RegisterFormState extends State<RegisterForm> {
       };
     _privacyRecognizer = TapGestureRecognizer()
       ..onTap = () {
-        Navigator.pushNamed(context, '/privacy');
+        AppRouter.push(context, '/privacy');
       };
   }
 

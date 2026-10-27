@@ -3,6 +3,7 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/features/home/data/models/banner_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class BannerWidget extends StatelessWidget {
   final BannerModel banner;
@@ -68,7 +69,7 @@ class BannerWidget extends StatelessWidget {
       return MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
-          onTap: () => Navigator.pushNamed(context, banner.link),
+          onTap: () => AppRouter.push(context, banner.link),
           child: mainContent,
         ),
       );

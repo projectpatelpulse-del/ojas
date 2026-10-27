@@ -9,6 +9,7 @@ import 'package:ojas_user/features/home/presentation/widgets/product_card.dart';
 import 'package:ojas_user/features/home/presentation/widgets/category_filter.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 import '../../../../core/services/session_service.dart';
 
 class TrendingItemsSection extends StatefulWidget {
@@ -164,7 +165,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                         child: GestureDetector(
                           onTap: () {
                             final targetLink = banner.link.isEmpty ? '/shop' : banner.link;
-                            Navigator.pushNamed(context, targetLink);
+                            AppRouter.push(context, targetLink);
                           },
                           child: Container(
                             width: double.infinity,
@@ -248,7 +249,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                                 ),
                                 const SizedBox(height: 24),
                                 ElevatedButton(
-                                  onPressed: () => Navigator.pushNamed(context, link),
+                                  onPressed: () => AppRouter.push(context, link),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.transparent,
                                     foregroundColor: const Color(0xFFFBBF24),
@@ -318,7 +319,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                                       ),
                                       const SizedBox(height: 24),
                                       ElevatedButton(
-                                        onPressed: () => Navigator.pushNamed(context, link),
+                                        onPressed: () => AppRouter.push(context, link),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.transparent,
                                           foregroundColor: const Color(0xFFFBBF24),
@@ -409,7 +410,7 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                           final String? token = SessionService.instance.token;
                           if (token == null) {
                             CartController.instance.setPendingItem(product.id, null);
-                            Navigator.pushNamed(context, '/login');
+                            AppRouter.push(context, '/login');
                             return;
                           }
                           
@@ -432,13 +433,9 @@ class _TrendingItemsSectionState extends State<TrendingItemsSection> {
                     child: Center(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          Navigator.pushNamed(
+                          AppRouter.pushCategory(
                             context,
-                            '/shop',
-                            arguments: <String, dynamic>{
-                              'category': _selectedCategory == 'All' ? 'All' : _selectedCategory,
-                              'subcategory': 'All',
-                            },
+                            _selectedCategory == 'All' ? null : _selectedCategory,
                           );
                         },
                         icon: const Icon(Icons.arrow_forward, size: 16, color: AppColors.primaryPink),

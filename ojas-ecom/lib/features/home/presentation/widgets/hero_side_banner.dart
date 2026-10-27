@@ -149,6 +149,7 @@
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class HeroSideBanner extends StatelessWidget {
   final String title;
@@ -278,7 +279,7 @@ class HeroSideBanner extends StatelessWidget {
 
     if (hasLink) {
       return InkWell(
-        onTap: () => Navigator.pushNamed(context, link),
+        onTap: () => AppRouter.push(context, link),
         borderRadius: BorderRadius.circular(12),
         child: mainContent,
       );

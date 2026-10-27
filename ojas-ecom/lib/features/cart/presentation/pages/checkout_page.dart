@@ -10,10 +10,10 @@ import 'package:ojas_user/features/cart/presentation/widgets/checkout_step_heade
 import 'package:ojas_user/features/cart/presentation/widgets/address_item_tile.dart';
 import 'package:ojas_user/features/cart/presentation/widgets/price_details_card.dart';
 import 'package:ojas_user/features/cart/presentation/widgets/address_form_dialog.dart';
-import 'package:ojas_user/features/cart/presentation/widgets/order_success_dialog.dart';
 import 'package:ojas_user/features/cart/presentation/widgets/payment_option_tile.dart';
 
 import '../../../../core/services/payment_service.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -234,7 +234,7 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
                 Text('Your cart is empty', style: GoogleFonts.outfit(fontSize: 18, color: const Color(0xFF64748B))),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/shop'),
+                  onPressed: () => AppRouter.push(context, '/shop'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0F172A),
                     foregroundColor: AppColors.white,
@@ -256,7 +256,7 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   OutlinedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, '/shop'),
+                    onPressed: () => AppRouter.push(context, '/shop'),
                     icon: const Icon(Icons.add_shopping_cart, size: 16),
                     label: const Text('Add More Products'),
                     style: OutlinedButton.styleFrom(
@@ -687,18 +687,31 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
 
     if (mounted) {
       if (response['success'] == true) {
+        final String? referralCode = SessionService.instance.refCode;
+        final String? refProductId = SessionService.instance.referredProductId;
+        SessionService.instance.setReferral(null, null);
+
+        String? orderId;
+        if (response['orders'] is List && (response['orders'] as List).isNotEmpty) {
+          final firstOrder = (response['orders'] as List).first;
+          orderId = firstOrder['_id']?.toString() ?? firstOrder['id']?.toString();
+        }
+        final String totalAmount = _cartController.totalAmount.toStringAsFixed(2);
+        final shippingAddress = _addressController.selectedAddress?.toJson();
+
         if (_selectedPaymentMethod == 'COD') {
-          final String? referralCode = SessionService.instance.refCode;
-          final String? refProductId = SessionService.instance.referredProductId;
-          SessionService.instance.setReferral(null, null);
           setState(() => _isLoading = false);
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => OrderSuccessDialog(
-              referralCode: referralCode,
-              referredProductId: refProductId,
-            ),
+          AppRouter.go(
+            context,
+            '/order-success?orderId=${orderId ?? ''}&amount=$totalAmount&payment=COD',
+            extra: {
+              'orderId': orderId,
+              'amount': totalAmount,
+              'paymentMethod': 'COD',
+              'referralCode': referralCode,
+              'referredProductId': refProductId,
+              'shippingAddress': shippingAddress,
+            },
           );
         } else {
           // Handle Online Payment
@@ -710,18 +723,19 @@ backgroundColor: AppColors.primaryPink,                    foregroundColor: AppC
               // Verify with backend
               final verifyRes = await _paymentService.verifyPayment(res);
               if (verifyRes['success'] == true) {
-                final String? referralCode = SessionService.instance.refCode;
-                final String? refProductId = SessionService.instance.referredProductId;
-                SessionService.instance.setReferral(null, null);
                 _cartController.clear(); // Clear cart after success
                 if (mounted) {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) => OrderSuccessDialog(
-                      referralCode: referralCode,
-                      referredProductId: refProductId,
-                    ),
+                  AppRouter.go(
+                    context,
+                    '/order-success?orderId=${orderId ?? ''}&amount=$totalAmount&payment=ONLINE',
+                    extra: {
+                      'orderId': orderId,
+                      'amount': totalAmount,
+                      'paymentMethod': 'ONLINE',
+                      'referralCode': referralCode,
+                      'referredProductId': refProductId,
+                      'shippingAddress': shippingAddress,
+                    },
                   );
                 }
               } else {

@@ -3,6 +3,7 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/controllers/home_controller.dart';
 import 'package:ojas_user/core/utils/url_helper.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class CategorySidebar extends StatelessWidget {
   const CategorySidebar({super.key});
@@ -138,15 +139,7 @@ class CategorySidebar extends StatelessWidget {
                             color: AppColors.grey,
                           ),
                           onTap: () {
-                            final route = UrlHelper.categoryUrl(title, 'All');
-                            Navigator.pushNamed(
-                              context,
-                              route,
-                              arguments: {
-                                'category': title,
-                                'subcategory': 'All',
-                              },
-                            );
+                            AppRouter.pushCategory(context, title, 'All');
                           },
                           dense: true,
                           hoverColor: AppColors.bgSecondaryLight,
@@ -181,15 +174,7 @@ class CategorySidebar extends StatelessWidget {
                               ),
                             ),
                             onTap: () {
-                              final route = UrlHelper.categoryUrl(title, sub['name'] ?? '');
-                              Navigator.pushNamed(
-                                context,
-                                route,
-                                arguments: {
-                                  'category': title,
-                                  'subcategory': sub['name'] ?? '',
-                                },
-                              );
+                              AppRouter.pushCategory(context, title, sub['name'] ?? '');
                             },
                             dense: true,
                             visualDensity: VisualDensity.compact,

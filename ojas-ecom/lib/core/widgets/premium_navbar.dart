@@ -5,10 +5,15 @@ import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
-import 'package:ojas_user/features/home/presentation/pages/shop_page.dart';
 
 /// A Premium, Highly Animated Navbar for eCommerce
+import 'package:ojas_user/core/routes/app_router.dart';
+
 /// Designed by Ojas Senior UI/UX Expert
+void _navigateTo(BuildContext context, String targetRoute) {
+  AppRouter.go(context, targetRoute);
+}
+
 class PremiumAnimatedNavbar extends StatefulWidget {
   const PremiumAnimatedNavbar({super.key});
 
@@ -131,7 +136,7 @@ class _TopUtilityBar extends StatelessWidget {
           _TopLink(
             icon: Icons.location_on_outlined,
             text: 'Track Order',
-            onTap: () => Navigator.pushReplacementNamed(context, '/orders'),
+            onTap: () => _navigateTo(context, '/orders'),
           ),
           const SizedBox(width: 20),
           _TopLink(icon: Icons.phone_outlined, text: '+91 908754321'),
@@ -178,7 +183,7 @@ class _MainNavbar extends StatelessWidget {
         children: [
           // Elegant Logo Section
           InkWell(
-            onTap: () => Navigator.of(context).pushReplacementNamed('/'),
+            onTap: () => _navigateTo(context, '/'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -240,19 +245,19 @@ class _NavMenu extends StatelessWidget {
             isActive: isActive,
             onTap: () {
               if (item == 'HOME') {
-                Navigator.of(context).pushReplacementNamed('/');
+                _navigateTo(context, '/');
               } else if (item == 'FEATURES') {
-                Navigator.of(context).pushReplacementNamed('/features');
+                _navigateTo(context, '/features');
               } else if (item == 'DEALS') {
-                Navigator.of(context).pushReplacementNamed('/deals');
+                _navigateTo(context, '/deals');
               } else if (item == 'SHOP') {
-                Navigator.of(context).pushReplacementNamed('/shop');
+                _navigateTo(context, '/shop');
               } else if (item == 'BLOG') {
-                Navigator.of(context).pushReplacementNamed('/blog');
+                _navigateTo(context, '/blog');
               } else if (item == 'LOGIN') {
-                Navigator.of(context).pushReplacementNamed('/login');
+                _navigateTo(context, '/login');
               } else if (item == 'REGISTER') {
-                Navigator.of(context).pushReplacementNamed('/register');
+                _navigateTo(context, '/register');
               }
             },
           ),
@@ -396,7 +401,7 @@ class _UserActionSection extends StatelessWidget {
                 _HoverIconAction(
                   icon: Icons.favorite_border, 
                   label: 'Wishlist',
-                  onTap: () => Navigator.of(context).pushReplacementNamed('/wishlist'),
+                  onTap: () => _navigateTo(context, '/wishlist'),
                 ),
                 if (count > 0)
                   Positioned(
@@ -448,7 +453,7 @@ class _UserActionSection extends StatelessWidget {
                   _HoverIconAction(
                     icon: Icons.person_outline,
                     label: SessionService.instance.currentUser?.name ?? 'Profile',
-                    onTap: () => Navigator.of(context).pushReplacementNamed('/profile'),
+                    onTap: () => _navigateTo(context, '/profile'),
                   ),
                   const SizedBox(width: 15),
                   IconButton(
@@ -456,7 +461,7 @@ class _UserActionSection extends StatelessWidget {
                     onPressed: () async {
                        await SessionService.instance.logout();
                        if (context.mounted) {
-                         Navigator.of(context).pushReplacementNamed('/login');
+                         _navigateTo(context, '/login');
                        }
                     },
                   ),
@@ -467,7 +472,7 @@ class _UserActionSection extends StatelessWidget {
               children: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/login');
+                    _navigateTo(context, '/login');
                   },
                   child: Text(
                     'Login',
@@ -477,7 +482,7 @@ class _UserActionSection extends StatelessWidget {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/register');
+                    _navigateTo(context, '/register');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryBlue,
@@ -578,7 +583,7 @@ class _PulseCartButtonState extends State<_PulseCartButton>
         return ScaleTransition(
           scale: _scaleAnimation,
           child: GestureDetector(
-            onTap: () => Navigator.of(context).pushReplacementNamed('/cart'),
+            onTap: () => _navigateTo(context, '/cart'),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
@@ -60,7 +61,7 @@ class UrlHelper {
   /// Constructs product-wise URL path incorporating category and subcategory.
   /// E.g.
   /// /product/pooja-and-spiritual-decor/pooja-thali-sets/silver-plated-shankh-chakra-deepak-set
-  static String productUrl(dynamic product, {String? refCode}) {
+  static String productUrl(dynamic product, {String? refCode, dynamic variation}) {
     String? category;
     String? subCategory;
     String? slugOrName;
@@ -113,6 +114,27 @@ class UrlHelper {
     }
     path += '/$finalProductSlug';
 
+    if (variation != null) {
+      String? varIdentifier;
+      if (variation is ProductVariation) {
+        varIdentifier = (variation.title != null && variation.title!.trim().isNotEmpty)
+            ? variation.title
+            : (variation.modelName ?? variation.sku);
+      } else if (variation is Map) {
+        varIdentifier = (variation['title'] != null && variation['title'].toString().trim().isNotEmpty)
+            ? variation['title'].toString()
+            : (variation['modelName'] ?? variation['size'] ?? variation['sku'])?.toString();
+      } else if (variation is String && variation.trim().isNotEmpty) {
+        varIdentifier = variation;
+      }
+      if (varIdentifier != null && varIdentifier.trim().isNotEmpty) {
+        final s = slugify(varIdentifier);
+        if (s.isNotEmpty) {
+          path += '/$s';
+        }
+      }
+    }
+
     final effectiveRef = (refCode != null && refCode.isNotEmpty)
         ? refCode
         : resellerCode;
@@ -125,20 +147,22 @@ class UrlHelper {
   }
 
   /// Updates browser URL bar without reloading the page.
-  static void updateBrowserUrl(String path, {bool pushState = true}) {
+  static void updateBrowserUrl(String path, {bool pushState = false}) {
     if (!kIsWeb) return;
     try {
-      final currentPath = html.window.location.pathname ?? '';
-      final currentSearch = html.window.location.search ?? '';
-      final fullCurrent = '$currentPath$currentSearch';
-
-      if (fullCurrent == path) return;
-
-      if (pushState) {
-        html.window.history.pushState(null, '', path);
-      } else {
-        html.window.history.replaceState(null, '', path);
-      }
-    } catch (_) {}
+      SystemNavigator.routeInformationUpdated(
+        uri: Uri.parse(path),
+        replace: !pushState,
+      );
+    } catch (_) {
+      try {
+        final currentState = html.window.history.state;
+        if (pushState) {
+          html.window.history.pushState(currentState, '', path);
+        } else {
+          html.window.history.replaceState(currentState, '', path);
+        }
+      } catch (_) {}
+    }
   }
 }
