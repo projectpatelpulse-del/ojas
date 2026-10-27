@@ -144,6 +144,14 @@ const createVendorProduct = async (req, res) => {
 
         const product = await Product.create(productData);
 
+        // Auto-update XML Sitemap in background
+        try {
+            const { generateAndSaveSitemap } = require("../utils/sitemapGenerator");
+            generateAndSaveSitemap().catch(err => console.error("[SitemapAutoUpdate] err:", err.message));
+        } catch (sitemapErr) {
+            console.error("[SitemapAutoUpdate] Trigger error:", sitemapErr.message);
+        }
+
         res.status(201).json({ data: product, message: "Product created successfully" });
     } catch (error) {
         console.error("Vendor product creation full error:", error);
@@ -309,6 +317,15 @@ const updateVendorProduct = async (req, res) => {
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
+        // Auto-update XML Sitemap in background
+        try {
+            const { generateAndSaveSitemap } = require("../utils/sitemapGenerator");
+            generateAndSaveSitemap().catch(err => console.error("[SitemapAutoUpdate] err:", err.message));
+        } catch (sitemapErr) {
+            console.error("[SitemapAutoUpdate] Trigger error:", sitemapErr.message);
+        }
+
         res.status(200).json({ data: updatedProduct, message: "Product updated successfully" });
     } catch (error) {
         console.error("Vendor product update error:", error);
@@ -341,6 +358,15 @@ const deleteVendorProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: "Product not found or unauthorized" });
         }
+
+        // Auto-update XML Sitemap in background
+        try {
+            const { generateAndSaveSitemap } = require("../utils/sitemapGenerator");
+            generateAndSaveSitemap().catch(err => console.error("[SitemapAutoUpdate] err:", err.message));
+        } catch (sitemapErr) {
+            console.error("[SitemapAutoUpdate] Trigger error:", sitemapErr.message);
+        }
+
         res.status(200).json({ message: "Product deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });

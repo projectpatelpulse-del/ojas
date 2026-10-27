@@ -65,6 +65,20 @@ app.get("/api", (req, res) => {
   });
 });
 
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const { generateSitemapXml } = require("./utils/sitemapGenerator");
+    const domain = process.env.FRONTEND_URL || "https://ojasindia.com";
+    const { xml } = await generateSitemapXml(domain);
+    res.setHeader("Content-Type", "application/xml; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return res.status(200).send(xml);
+  } catch (e) {
+    console.error("Dynamic sitemap generation error:", e);
+    return res.status(500).send("Error generating sitemap");
+  }
+});
+
 // Main Routes
 app.use("/api/user", userRoute);
 app.use("/api/admin", adminRoute);

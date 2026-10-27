@@ -180,6 +180,14 @@ const createProduct = async (req, res) => {
             io.emit("admin_data_updated", { type: "product", action: "create", data: product });
         }
 
+        // Auto-update XML Sitemap in background
+        try {
+            const { generateAndSaveSitemap } = require("../utils/sitemapGenerator");
+            generateAndSaveSitemap().catch(err => console.error("[SitemapAutoUpdate] err:", err.message));
+        } catch (sitemapErr) {
+            console.error("[SitemapAutoUpdate] Trigger error:", sitemapErr.message);
+        }
+
         res.status(201).json({ data: product, message: "Product created successfully" });
     } catch (error) {
         console.error("Product creation error stack:", error.stack);
@@ -604,6 +612,14 @@ const updateProduct = async (req, res) => {
             io.emit("admin_data_updated", { type: "product", action: "update", data: updatedProduct });
         }
 
+        // Auto-update XML Sitemap in background
+        try {
+            const { generateAndSaveSitemap } = require("../utils/sitemapGenerator");
+            generateAndSaveSitemap().catch(err => console.error("[SitemapAutoUpdate] err:", err.message));
+        } catch (sitemapErr) {
+            console.error("[SitemapAutoUpdate] Trigger error:", sitemapErr.message);
+        }
+
         res.status(200).json({ data: updatedProduct, message: "Product updated successfully" });
     } catch (error) {
         console.error("Product update error:", error.message);
@@ -650,6 +666,14 @@ const deleteProduct = async (req, res) => {
         const io = req.app.get("io");
         if (io) {
             io.emit("admin_data_updated", { type: "product", action: "delete", id: req.params.id });
+        }
+
+        // Auto-update XML Sitemap in background
+        try {
+            const { generateAndSaveSitemap } = require("../utils/sitemapGenerator");
+            generateAndSaveSitemap().catch(err => console.error("[SitemapAutoUpdate] err:", err.message));
+        } catch (sitemapErr) {
+            console.error("[SitemapAutoUpdate] Trigger error:", sitemapErr.message);
         }
 
         res.status(200).json({ data: product, message: "Product deleted successfully" });

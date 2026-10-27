@@ -6,8 +6,8 @@ const DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://ojasindia.com';
 const API_BASE = process.env.API_BASE_URL || 'https://api.ojasindia.com/api';
 
 function fetchJson(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { timeout: 10000 }, (res) => {
+  return new Promise((resolve) => {
+    https.get(url, { timeout: 15000 }, (res) => {
       let data = '';
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
@@ -41,6 +41,45 @@ function escapeXml(unsafe) {
   });
 }
 
+function slugify(text) {
+  if (!text) return '';
+  let str = String(text).trim().toLowerCase();
+  if (!str) return '';
+  str = str.replace(/&/g, 'and');
+  str = str.replace(/[^a-z0-9]+/g, '-');
+  str = str.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  return str;
+}
+
+function getProductUrl(domain, prod) {
+  const id = prod._id || prod.id || '';
+  const slugOrName = prod.slug || prod.name || prod.title || id;
+  const productSlug = slugify(slugOrName) || (id ? String(id) : 'item');
+
+  let catSlug = '';
+  if (prod.category && prod.category !== 'All') {
+    const catName = typeof prod.category === 'object' ? prod.category.name : prod.category;
+    catSlug = slugify(catName);
+  }
+
+  let subCatSlug = '';
+  if (prod.subCategory && prod.subCategory !== 'All') {
+    const subName = typeof prod.subCategory === 'object' ? prod.subCategory.name : prod.subCategory;
+    subCatSlug = slugify(subName);
+  }
+
+  let p = '/product';
+  if (catSlug) {
+    p += `/${catSlug}`;
+    if (subCatSlug) {
+      p += `/${subCatSlug}`;
+    }
+  }
+  p += `/${productSlug}`;
+
+  return `${domain}${p}`;
+}
+
 function formatDate(dateStr) {
   try {
     const d = dateStr ? new Date(dateStr) : new Date();
@@ -71,6 +110,7 @@ async function generateSitemap() {
   ];
 
   const urls = [...staticPages];
+  const categoryUrlsMap = new Map();
 
   // Fetch dynamic products
   try {
@@ -82,12 +122,52 @@ async function generateSitemap() {
         const id = prod._id || prod.id;
         if (!id) continue;
         const lastmod = formatDate(prod.updatedAt || prod.createdAt);
+        const productUrl = getProductUrl(DOMAIN, prod);
+
         urls.push({
-          loc: `${DOMAIN}/product/${id}`,
+          loc: productUrl,
           lastmod: lastmod,
           changefreq: 'weekly',
           priority: '0.8',
         });
+
+        // Also track unique categories and subcategories
+        if (prod.category && prod.category !== 'All') {
+          const catName = typeof prod.category === 'object' ? prod.category.name : prod.category;
+          const catSlug = slugify(catName);
+          if (catSlug) {
+            const catUrl = `${DOMAIN}/shop/${catSlug}`;
+            if (!categoryUrlsMap.has(catUrl)) {
+              categoryUrlsMap.set(catUrl, {
+                loc: catUrl,
+                lastmod: lastmod,
+                changefreq: 'daily',
+                priority: '0.85',
+              });
+            }
+
+            if (prod.subCategory && prod.subCategory !== 'All') {
+              const subName = typeof prod.subCategory === 'object' ? prod.subCategory.name : prod.subCategory;
+              const subSlug = slugify(subName);
+              if (subSlug) {
+                const subCatUrl = `${DOMAIN}/shop/${catSlug}/${subSlug}`;
+                if (!categoryUrlsMap.has(subCatUrl)) {
+                  categoryUrlsMap.set(subCatUrl, {
+                    loc: subCatUrl,
+                    lastmod: lastmod,
+                    changefreq: 'daily',
+                    priority: '0.8',
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Add unique category / subcategory URLs to sitemap
+      for (const catEntry of categoryUrlsMap.values()) {
+        urls.push(catEntry);
       }
     } else {
       console.warn('[sitemap] No products returned or invalid response structure, using static list.');
@@ -152,4 +232,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { generateSitemap };
+module.exports = { generateSitemap, slugify, getProductUrl };
