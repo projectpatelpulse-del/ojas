@@ -5,9 +5,11 @@ import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
+import 'package:ojas_user/core/models/app_settings.dart';
 import 'package:ojas_user/core/services/support_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ojas_user/core/routes/app_router.dart';
 
 class ContactPage extends StatefulWidget {
@@ -147,7 +149,19 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   Future<void> _launchMaps() async {
-    final Uri uri = Uri.parse('https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7');
+    final settings = SettingsController.instance.settings;
+    final String url = settings.gmbLink.isNotEmpty 
+        ? settings.gmbLink 
+        : 'https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7';
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _launchSocialUrl(String url) async {
+    if (url.trim().isEmpty) return;
+    final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -187,9 +201,13 @@ class _ContactPageState extends State<ContactPage> {
 
               // 4. Info Cards (Moved down to focus on contact options)
               _buildInfoCards(isMobile, isTablet, settings),
+              SizedBox(height: isMobile ? 32 : 48),
+
+              // 5. Social Media & Google Business (GMB) Section
+              _buildSocialSection(isMobile, settings),
               SizedBox(height: isMobile ? 32 : 64),
 
-              // 5. FAQ Section
+              // 6. FAQ Section
               _buildFAQSection(isMobile),
             ],
           ),
@@ -792,6 +810,170 @@ class _ContactPageState extends State<ContactPage> {
     }
 
     return card;
+  }
+
+  Widget _buildSocialSection(bool isMobile, AppSettings settings) {
+    final List<Widget> socialButtons = [];
+
+    // 1. Google Business Profile (GMB)
+    if (settings.gmbLink.isNotEmpty) {
+      socialButtons.add(_buildSocialButton(
+        label: 'Google Business',
+        icon: FontAwesomeIcons.google,
+        brandColor: const Color(0xFF4285F4),
+        onTap: () => _launchSocialUrl(settings.gmbLink),
+      ));
+    }
+
+    // 2. WhatsApp
+    if (settings.whatsappChatLink.isNotEmpty || settings.whatsappNumber.isNotEmpty) {
+      final waUrl = settings.whatsappChatLink.isNotEmpty
+          ? settings.whatsappChatLink
+          : 'https://wa.me/${settings.whatsappNumber.replaceAll(RegExp(r'[^0-9]'), '')}';
+      socialButtons.add(_buildSocialButton(
+        label: 'WhatsApp',
+        icon: FontAwesomeIcons.whatsapp,
+        brandColor: const Color(0xFF25D366),
+        onTap: () => _launchSocialUrl(waUrl),
+      ));
+    }
+
+    // 3. Instagram
+    if (settings.instagramLink.isNotEmpty) {
+      socialButtons.add(_buildSocialButton(
+        label: 'Instagram',
+        icon: FontAwesomeIcons.instagram,
+        brandColor: const Color(0xFFE4405F),
+        onTap: () => _launchSocialUrl(settings.instagramLink),
+      ));
+    }
+
+    // 4. Facebook
+    if (settings.facebookLink.isNotEmpty) {
+      socialButtons.add(_buildSocialButton(
+        label: 'Facebook',
+        icon: FontAwesomeIcons.facebook,
+        brandColor: const Color(0xFF1877F2),
+        onTap: () => _launchSocialUrl(settings.facebookLink),
+      ));
+    }
+
+    // 5. Twitter (X)
+    if (settings.twitterLink.isNotEmpty) {
+      socialButtons.add(_buildSocialButton(
+        label: 'Twitter / X',
+        icon: FontAwesomeIcons.xTwitter,
+        brandColor: const Color(0xFF0F172A),
+        onTap: () => _launchSocialUrl(settings.twitterLink),
+      ));
+    }
+
+    // 6. YouTube
+    if (settings.youtubeLink.isNotEmpty) {
+      socialButtons.add(_buildSocialButton(
+        label: 'YouTube',
+        icon: FontAwesomeIcons.youtube,
+        brandColor: const Color(0xFFFF0000),
+        onTap: () => _launchSocialUrl(settings.youtubeLink),
+      ));
+    }
+
+    // 7. LinkedIn
+    if (settings.linkedinLink.isNotEmpty) {
+      socialButtons.add(_buildSocialButton(
+        label: 'LinkedIn',
+        icon: FontAwesomeIcons.linkedin,
+        brandColor: const Color(0xFF0A66C2),
+        onTap: () => _launchSocialUrl(settings.linkedinLink),
+      ));
+    }
+
+    if (socialButtons.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(maxWidth: 1000),
+      padding: EdgeInsets.all(isMobile ? 24 : 36),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: AppColors.black.withOpacity(0.03), blurRadius: 20)],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Connect With Us On Social Media',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              fontSize: isMobile ? 20 : 26,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Follow our official channels for the latest updates, launches, exclusive offers, and customer reviews.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            alignment: WrapAlignment.center,
+            children: socialButtons,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialButton({
+    required String label,
+    required dynamic icon,
+    required Color brandColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      mouseCursor: SystemMouseCursors.click,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: brandColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: icon is IconData
+                  ? Icon(icon, color: brandColor, size: 16)
+                  : FaIcon(icon as FaIconData, color: brandColor, size: 16),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildFAQSection(bool isMobile) {

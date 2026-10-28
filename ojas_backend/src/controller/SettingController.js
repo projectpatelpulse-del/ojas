@@ -24,6 +24,11 @@ const defaultSettings = {
   twitterLink: "",
   youtubeLink: "",
   linkedinLink: "",
+  gmbLink: "",
+  gmbIcon: "",
+  activePaymentModes: 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD',
+  enableCOD: true,
+  enableOnlinePayment: true,
   defaultCommission: 10,
   navigationMenuItems: 'HOME, FEATURES, DEALS, SHOP, BLOG',
   homeSectionsActive: 'HERO, DAILY_DEALS, SUMMER_SALE, TRENDING, PROMO_GRID, BECOME_VENDOR, JUST_FOR_YOU, LATEST_PRODUCTS, ADS_SUBSCRIBE',
@@ -59,6 +64,18 @@ const getOrCreateSetting = async () => {
     let updated = false;
     if (setting.vendorTermsConditions === undefined) {
       setting.vendorTermsConditions = "";
+      updated = true;
+    }
+    if (setting.activePaymentModes === undefined) {
+      setting.activePaymentModes = "UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD";
+      updated = true;
+    }
+    if (setting.gmbLink === undefined) {
+      setting.gmbLink = "";
+      updated = true;
+    }
+    if (setting.gmbIcon === undefined) {
+      setting.gmbIcon = "";
       updated = true;
     }
     if (updated) {
@@ -129,6 +146,11 @@ const updateSettings = async (req, res) => {
       twitterLink,
       youtubeLink,
       linkedinLink,
+      gmbLink,
+      gmbIcon,
+      activePaymentModes,
+      enableCOD,
+      enableOnlinePayment,
       paymentGatewayKey,
       paymentGatewaySalt,
       delhiveryToken,
@@ -187,6 +209,11 @@ const updateSettings = async (req, res) => {
     if (twitterLink !== undefined) setting.twitterLink = twitterLink;
     if (youtubeLink !== undefined) setting.youtubeLink = youtubeLink;
     if (linkedinLink !== undefined) setting.linkedinLink = linkedinLink;
+    if (gmbLink !== undefined) setting.gmbLink = gmbLink;
+    if (gmbIcon !== undefined) setting.gmbIcon = gmbIcon;
+    if (activePaymentModes !== undefined) setting.activePaymentModes = activePaymentModes;
+    if (enableCOD !== undefined) setting.enableCOD = enableCOD;
+    if (enableOnlinePayment !== undefined) setting.enableOnlinePayment = enableOnlinePayment;
     if (geminiApiKey !== undefined) setting.geminiApiKey = geminiApiKey;
     if (openAiApiKey !== undefined) setting.openAiApiKey = openAiApiKey;
     if (navigationMenuItems !== undefined) setting.navigationMenuItems = navigationMenuItems;

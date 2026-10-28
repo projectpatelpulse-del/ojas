@@ -21,6 +21,11 @@ class AppSettings {
   final String twitterLink;
   final String youtubeLink;
   final String linkedinLink;
+  final String gmbLink;
+  final String gmbIcon;
+  final String activePaymentModes;
+  final bool enableCOD;
+  final bool enableOnlinePayment;
   final String whatsappNumber;
   final String whatsappChatLink;
   final String aboutUsContent;
@@ -68,6 +73,11 @@ class AppSettings {
     required this.twitterLink,
     required this.youtubeLink,
     required this.linkedinLink,
+    this.gmbLink = '',
+    this.gmbIcon = '',
+    this.activePaymentModes = 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD',
+    this.enableCOD = true,
+    this.enableOnlinePayment = true,
     required this.whatsappNumber,
     required this.whatsappChatLink,
     required this.aboutUsContent,
@@ -115,6 +125,11 @@ class AppSettings {
       twitterLink: json['twitterLink'] ?? '',
       youtubeLink: json['youtubeLink'] ?? '',
       linkedinLink: json['linkedinLink'] ?? '',
+      gmbLink: json['gmbLink'] ?? '',
+      gmbIcon: json['gmbIcon'] ?? '',
+      activePaymentModes: json['activePaymentModes'] ?? 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD',
+      enableCOD: json['enableCOD'] ?? true,
+      enableOnlinePayment: json['enableOnlinePayment'] ?? true,
       whatsappNumber: json['whatsappNumber'] ?? '',
       whatsappChatLink: json['whatsappChatLink'] ?? '',
       aboutUsContent: json['aboutUsContent'] ?? '',
@@ -163,6 +178,11 @@ class AppSettings {
       twitterLink: '',
       youtubeLink: '',
       linkedinLink: '',
+      gmbLink: '',
+      gmbIcon: '',
+      activePaymentModes: 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD',
+      enableCOD: true,
+      enableOnlinePayment: true,
       whatsappNumber: '',
       whatsappChatLink: '',
       aboutUsContent: '',

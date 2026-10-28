@@ -108,7 +108,12 @@ class _LatestProductCardState extends State<LatestProductCard> {
                                 'price': widget.product.price,
                                 'images': [widget.product.imageUrl],
                               };
-                              WishlistController.instance.toggleWishlist(productMap);
+                              if (!SessionService.instance.isLoggedIn) {
+                                WishlistController.instance.setPendingProduct(productMap);
+                                AppRouter.push(context, '/login');
+                                return;
+                              }
+                              WishlistController.instance.toggleWishlist(productMap, context: context);
                             },
                             child: Container(
                               padding: const EdgeInsets.all(4),

@@ -5,6 +5,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ojas_user/features/auth/application/auth_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/core/controllers/wishlist_controller.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class LoginForm extends StatefulWidget {
   final VoidCallback onToggle;
@@ -40,7 +42,9 @@ class _LoginFormState extends State<LoginForm> {
           SessionService.instance.setUser(response.user, token: response.token);
           await CartController.instance.loadCart();
           await CartController.instance.processPendingCart();
-          Navigator.of(context).pushReplacementNamed('/welcome', arguments: response.user);
+          await WishlistController.instance.processPendingWishlist();
+          if (!mounted) return;
+          AppRouter.go(context, '/welcome', extra: response.user);
         }
       } else {
         if (mounted) {
@@ -160,7 +164,9 @@ class _LoginFormState extends State<LoginForm> {
                   SessionService.instance.setUser(response.user, token: response.token);
                   await CartController.instance.loadCart();
                   await CartController.instance.processPendingCart();
-                  Navigator.of(context).pushReplacementNamed('/welcome', arguments: response.user);
+                  await WishlistController.instance.processPendingWishlist();
+                  if (!mounted) return;
+                  AppRouter.go(context, '/welcome', extra: response.user);
                 }
               } else {
                 if (mounted) {

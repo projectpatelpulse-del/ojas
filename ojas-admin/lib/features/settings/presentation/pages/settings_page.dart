@@ -41,6 +41,11 @@ class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _twitterController = TextEditingController();
   final TextEditingController _ytController = TextEditingController();
   final TextEditingController _linkedinController = TextEditingController();
+  final TextEditingController _gmbLinkController = TextEditingController();
+  final TextEditingController _gmbIconController = TextEditingController();
+  final TextEditingController _activePaymentModesController = TextEditingController();
+  bool _enableCOD = true;
+  bool _enableOnlinePayment = true;
   // New: Secure Config
   final TextEditingController _paymentKeyController = TextEditingController();
   final TextEditingController _paymentSaltController = TextEditingController();
@@ -118,6 +123,12 @@ class _SettingsPageState extends State<SettingsPage> {
         _twitterController.text = data['twitterLink'] ?? '';
         _ytController.text = data['youtubeLink'] ?? '';
         _linkedinController.text = data['linkedinLink'] ?? '';
+        _gmbLinkController.text = data['gmbLink'] ?? '';
+        _gmbIconController.text = data['gmbIcon'] ?? '';
+        // Payment Modes
+        _activePaymentModesController.text = data['activePaymentModes'] ?? 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD';
+        _enableCOD = data['enableCOD'] ?? true;
+        _enableOnlinePayment = data['enableOnlinePayment'] ?? true;
         // New: Secure Config
         _paymentKeyController.text = data['paymentGatewayKey'] ?? '';
         _paymentSaltController.text = data['paymentGatewaySalt'] ?? '';
@@ -202,6 +213,11 @@ class _SettingsPageState extends State<SettingsPage> {
         'twitterLink': _twitterController.text,
         'youtubeLink': _ytController.text,
         'linkedinLink': _linkedinController.text,
+        'gmbLink': _gmbLinkController.text,
+        'gmbIcon': _gmbIconController.text,
+        'activePaymentModes': _activePaymentModesController.text,
+        'enableCOD': _enableCOD,
+        'enableOnlinePayment': _enableOnlinePayment,
         // New: Secure Config
         'paymentGatewayKey': _paymentKeyController.text,
         'paymentGatewaySalt': _paymentSaltController.text,
@@ -974,7 +990,13 @@ class _SettingsPageState extends State<SettingsPage> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildTextField('LinkedIn URL', _linkedinController),
+          Row(
+            children: [
+              Expanded(child: _buildTextField('LinkedIn URL', _linkedinController)),
+              const SizedBox(width: 20),
+              Expanded(child: _buildTextField('Google Business (GMB) URL', _gmbLinkController, hintText: 'https://maps.app.goo.gl/... or GMB profile link')),
+            ],
+          ),
         ],
       ),
     );
@@ -1457,6 +1479,37 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 20),
           _buildTextField('Gemini API Key', _geminiKeyController),
+          const SizedBox(height: 24),
+          const Divider(height: 1),
+          const SizedBox(height: 20),
+          Text('Payment Modes Configuration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+          const SizedBox(height: 6),
+          Text('Comma-separated list of payment modes displayed in the footer and checkout.', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 12)),
+          const SizedBox(height: 16),
+          _buildTextField('Active Payment Modes (Footer Badges)', _activePaymentModesController, hintText: 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD'),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: CheckboxListTile(
+                  title: const Text('Enable Cash on Delivery (COD)'),
+                  value: _enableCOD,
+                  onChanged: (v) => setState(() => _enableCOD = v ?? true),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              Expanded(
+                child: CheckboxListTile(
+                  title: const Text('Enable Online Payment'),
+                  value: _enableOnlinePayment,
+                  onChanged: (v) => setState(() => _enableOnlinePayment = v ?? true),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -1592,7 +1645,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController? controller, {int maxLines = 1, bool showFormattingToolbar = false}) {
+  Widget _buildTextField(String label, TextEditingController? controller, {int maxLines = 1, bool showFormattingToolbar = false, String? hintText}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1642,6 +1695,8 @@ class _SettingsPageState extends State<SettingsPage> {
           maxLines: maxLines,
           style: GoogleFonts.inter(fontSize: 14),
           decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade400),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: showFormattingToolbar

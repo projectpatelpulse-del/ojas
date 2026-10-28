@@ -6,7 +6,6 @@ import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/home/presentation/widgets/cart_drawer.dart';
-import 'package:ojas_user/core/utils/url_helper.dart';
 import 'package:ojas_user/core/routes/app_router.dart';
 
 class DailyDealCard extends StatelessWidget {
@@ -17,7 +16,6 @@ class DailyDealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double progress = (product.sold ?? 0) / ((product.available ?? 1) + (product.sold ?? 0));
-    final bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return ListenableBuilder(
       listenable: WishlistController.instance,
@@ -161,7 +159,7 @@ class DailyDealCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildImage(isWishlisted),
+                _buildImage(context, isWishlisted),
                 const SizedBox(height: 14),
               content,
             ],
@@ -171,7 +169,7 @@ class DailyDealCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(bool isWishlisted) {
+  Widget _buildImage(BuildContext context, bool isWishlisted) {
     return Stack(
       children: [
         Container(
@@ -240,7 +238,12 @@ class DailyDealCard extends StatelessWidget {
                 'price': product.price,
                 'images': [product.imageUrl],
               };
-              WishlistController.instance.toggleWishlist(productMap);
+              if (!SessionService.instance.isLoggedIn) {
+                WishlistController.instance.setPendingProduct(productMap);
+                AppRouter.push(context, '/login');
+                return;
+              }
+              WishlistController.instance.toggleWishlist(productMap, context: context);
             },
             child: Container(
               padding: const EdgeInsets.all(8),

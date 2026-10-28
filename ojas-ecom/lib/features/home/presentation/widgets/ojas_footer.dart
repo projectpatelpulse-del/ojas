@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
+import 'package:ojas_user/core/models/app_settings.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/services/session_service.dart';
@@ -61,6 +62,11 @@ class OjasFooter extends StatelessWidget {
                       const SizedBox(height: 24),
                       Row(
                         children: [
+                          if (settings.gmbLink.isNotEmpty)
+                            _socialIcon(
+                              FontAwesomeIcons.google, 
+                              onTap: () => _launchURL(settings.gmbLink),
+                            ),
                           if (settings.facebookLink.isNotEmpty)
                             _socialIcon(
                               FontAwesomeIcons.facebook, 
@@ -160,7 +166,7 @@ class OjasFooter extends StatelessWidget {
                       _columnTitle('GET IN TOUCH'),
                       _contactInfo(Icons.phone_outlined, settings.contactPhone),
                       _contactInfo(Icons.email_outlined, settings.contactEmail),
-                      _contactInfo(Icons.location_on_outlined, settings.contactAddress),
+                      _contactInfo(Icons.location_on_outlined, settings.contactAddress, settings.gmbLink),
                     ],
                   ),
                 ),
@@ -179,6 +185,9 @@ class OjasFooter extends StatelessWidget {
                 ),
               ],
             ),
+            
+            // PAYMENT MODES BADGES ROW
+            _buildPaymentBadges(isMobile, settings),
             
             // const SizedBox(height: 48),
             // Divider(color: AppColors.black12, thickness: 1),
@@ -351,7 +360,7 @@ class OjasFooter extends StatelessWidget {
     );
   }
 
-  Widget _contactInfo(IconData icon, String text) {
+  Widget _contactInfo(IconData icon, String text, [String? customUrl]) {
     VoidCallback? onTap;
     if (icon == Icons.phone_outlined) {
       final cleanPhone = text.replaceAll(RegExp(r'[^0-9+]'), '');
@@ -359,7 +368,10 @@ class OjasFooter extends StatelessWidget {
     } else if (icon == Icons.email_outlined) {
       onTap = () => _launchURL('mailto:$text');
     } else if (icon == Icons.location_on_outlined) {
-      onTap = () => _launchURL('https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7');
+      final String targetUrl = (customUrl != null && customUrl.isNotEmpty)
+          ? customUrl
+          : 'https://maps.app.goo.gl/o5DBPxAU2hb2sVqs7';
+      onTap = () => _launchURL(targetUrl);
     }
 
     Widget content = Row(
@@ -392,6 +404,282 @@ class OjasFooter extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: content,
+    );
+  }
+
+  Widget _buildPaymentBadges(bool isMobile, AppSettings settings) {
+    final String activeStr = settings.activePaymentModes.toUpperCase();
+    final bool showAll = activeStr.isEmpty;
+
+    final List<Widget> badges = [];
+
+    // 1. UPI Badge
+    if (showAll || activeStr.contains('UPI')) {
+      badges.add(_paymentBadge(
+        label: 'UPI',
+        icon: Icons.qr_code_2_rounded,
+        iconColor: const Color(0xFF097939),
+        subtext: 'GPay • PhonePe • Paytm',
+      ));
+    }
+
+    // 2. VISA Badge
+    if (showAll || activeStr.contains('VISA')) {
+      badges.add(_paymentBadge(
+        label: 'VISA',
+        customText: 'VISA',
+        textColor: const Color(0xFF1A1F71),
+        isTextLogo: true,
+      ));
+    }
+
+    // 3. Mastercard Badge
+    if (showAll || activeStr.contains('MASTERCARD')) {
+      badges.add(_mastercardBadge());
+    }
+
+    // 4. RuPay Badge
+    if (showAll || activeStr.contains('RUPAY')) {
+      badges.add(_paymentBadge(
+        label: 'RuPay',
+        customText: 'RuPay❯',
+        textColor: const Color(0xFFE35205),
+        isTextLogo: true,
+      ));
+    }
+
+    // 5. Net Banking
+    if (showAll || activeStr.contains('NET_BANKING') || activeStr.contains('NETBANKING') || activeStr.contains('BANK')) {
+      badges.add(_paymentBadge(
+        label: 'Net Banking',
+        icon: Icons.account_balance_outlined,
+        iconColor: const Color(0xFF1E3A8A),
+      ));
+    }
+
+    // 6. Wallets
+    if (showAll || activeStr.contains('WALLET')) {
+      badges.add(_paymentBadge(
+        label: 'Wallets',
+        icon: Icons.account_balance_wallet_outlined,
+        iconColor: const Color(0xFF0284C7),
+      ));
+    }
+
+    // 7. Cash on Delivery
+    if ((showAll || activeStr.contains('COD')) && settings.enableCOD) {
+      badges.add(_paymentBadge(
+        label: 'Cash on Delivery',
+        icon: Icons.local_shipping_outlined,
+        iconColor: const Color(0xFFD97706),
+      ));
+    }
+
+    // 8. 100% Safe & Secure Badge
+    badges.add(_paymentBadge(
+      label: '100% Safe & Secure',
+      icon: Icons.verified_user_outlined,
+      iconColor: const Color(0xFF059669),
+      isHighlight: true,
+    ));
+
+    return Column(
+      children: [
+        const SizedBox(height: 36),
+        Container(
+          height: 1,
+          color: AppColors.cardBorderTint,
+        ),
+        const SizedBox(height: 24),
+        isMobile
+            ? Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.charcoal),
+                      const SizedBox(width: 6),
+                      Text(
+                        '100% SECURE PAYMENT MODES ACCEPTED',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: AppColors.charcoal.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: badges,
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.lock_outline_rounded, size: 15, color: AppColors.charcoal),
+                      const SizedBox(width: 8),
+                      Text(
+                        '100% SECURE PAYMENT MODES:',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: AppColors.charcoal.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: badges,
+                    ),
+                  ),
+                ],
+              ),
+      ],
+    );
+  }
+
+  Widget _mastercardBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.cardBorderTint),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 24,
+            height: 16,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEB001B),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 8,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF79E1B).withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Mastercard',
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E293B),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _paymentBadge({
+    required String label,
+    IconData? icon,
+    Color? iconColor,
+    String? customText,
+    Color? textColor,
+    String? subtext,
+    bool isTextLogo = false,
+    bool isHighlight = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isHighlight ? const Color(0xFFF0FDF4) : AppColors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: isHighlight ? const Color(0xFF86EFAC) : AppColors.cardBorderTint,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 15, color: iconColor ?? AppColors.charcoal),
+            const SizedBox(width: 6),
+          ],
+          if (isTextLogo && customText != null)
+            Text(
+              customText,
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: textColor ?? const Color(0xFF1E293B),
+                letterSpacing: 0.5,
+              ),
+            )
+          else
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isHighlight ? const Color(0xFF166534) : const Color(0xFF1E293B),
+              ),
+            ),
+          if (subtext != null) ...[
+            const SizedBox(width: 4),
+            Text(
+              '($subtext)',
+              style: GoogleFonts.inter(
+                fontSize: 9,
+                color: const Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

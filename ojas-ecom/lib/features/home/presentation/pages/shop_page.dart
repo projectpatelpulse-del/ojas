@@ -1243,7 +1243,14 @@ class _ShopProductCard extends StatelessWidget {
                       top: 10, right: 10,
                       child: _actionButton(
                         isWishlisted ? Icons.favorite : Icons.favorite_border, 
-                        () => WishlistController.instance.toggleWishlist(product),
+                        () {
+                          if (!SessionService.instance.isLoggedIn) {
+                            WishlistController.instance.setPendingProduct(product);
+                            AppRouter.push(context, '/login');
+                            return;
+                          }
+                          WishlistController.instance.toggleWishlist(product, context: context);
+                        },
                         color: isWishlisted ? AppColors.primaryPink : const Color(0xFF475569),
                       ),
                     ),

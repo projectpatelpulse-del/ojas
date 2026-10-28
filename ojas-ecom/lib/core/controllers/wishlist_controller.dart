@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ojas_user/core/routes/app_router.dart';
 import 'package:ojas_user/core/services/api_service.dart';
+import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/auth/application/auth_service.dart';
 
 class WishlistController with ChangeNotifier {
@@ -10,10 +12,24 @@ class WishlistController with ChangeNotifier {
 
   List<dynamic> _wishlistItems = [];
   bool _isLoading = false;
+  dynamic _pendingProduct;
 
   List<dynamic> get wishlistItems => _wishlistItems;
   bool get isLoading => _isLoading;
   int get count => _wishlistItems.length;
+  dynamic get pendingProduct => _pendingProduct;
+
+  void setPendingProduct(dynamic product) {
+    _pendingProduct = product;
+  }
+
+  Future<void> processPendingWishlist() async {
+    if (_pendingProduct != null) {
+      final p = _pendingProduct;
+      _pendingProduct = null;
+      await addToWishlist(p);
+    }
+  }
 
   Future<void> init() async {
     await fetchWishlist();
@@ -50,12 +66,28 @@ class WishlistController with ChangeNotifier {
     }
   }
 
-  bool isWishlisted(String productId) {
-    return _wishlistItems.any((item) => item['_id'] == productId);
+  bool isWishlisted(String? productId) {
+    if (productId == null || productId.isEmpty) return false;
+    return _wishlistItems.any((item) => (item['_id'] ?? item['id'] ?? '').toString() == productId);
   }
 
-  Future<void> toggleWishlist(dynamic product) async {
-    final productId = product['_id'];
+  Future<void> toggleWishlist(dynamic product, {BuildContext? context}) async {
+    final token = await AuthService().getToken();
+    final bool isLoggedIn = SessionService.instance.isLoggedIn && token != null;
+
+    if (!isLoggedIn) {
+      setPendingProduct(product);
+      if (context != null && context.mounted) {
+        AppRouter.push(context, '/login');
+      } else {
+        AppRouter.router.push('/login');
+      }
+      return;
+    }
+
+    final productId = (product is Map ? (product['_id'] ?? product['id']) : product?.id)?.toString();
+    if (productId == null || productId.isEmpty) return;
+
     final isCurrentlyWishlisted = isWishlisted(productId);
 
     if (isCurrentlyWishlisted) {
@@ -65,9 +97,22 @@ class WishlistController with ChangeNotifier {
     }
   }
 
-  Future<void> addToWishlist(dynamic product) async {
+  Future<void> addToWishlist(dynamic product, {BuildContext? context}) async {
     final token = await AuthService().getToken();
-    if (token == null) return;
+    final bool isLoggedIn = SessionService.instance.isLoggedIn && token != null;
+
+    if (!isLoggedIn) {
+      setPendingProduct(product);
+      if (context != null && context.mounted) {
+        AppRouter.push(context, '/login');
+      } else {
+        AppRouter.router.push('/login');
+      }
+      return;
+    }
+
+    final productId = (product is Map ? (product['_id'] ?? product['id']) : product?.id)?.toString();
+    if (productId == null || productId.isEmpty) return;
 
     try {
       final response = await http.post(
@@ -76,7 +121,7 @@ class WishlistController with ChangeNotifier {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode({'productId': product['_id']}),
+        body: json.encode({'productId': productId}),
       );
 
       if (response.statusCode == 200) {

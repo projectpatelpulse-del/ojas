@@ -6,6 +6,8 @@ import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/services/api_service.dart';
+import 'package:ojas_user/core/services/session_service.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class WishlistPage extends StatelessWidget {
   const WishlistPage({super.key});
@@ -53,6 +55,8 @@ class WishlistPage extends StatelessWidget {
                       padding: EdgeInsets.all(100.0),
                       child: CircularProgressIndicator(color: AppColors.primaryPink),
                     ))
+                  else if (!SessionService.instance.isLoggedIn)
+                    _buildNotLoggedInState(context)
                   else if (items.isEmpty)
                     _buildEmptyState(context)
                   else
@@ -64,6 +68,64 @@ class WishlistPage extends StatelessWidget {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNotLoggedInState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 80),
+          Icon(
+            Icons.lock_outline_rounded,
+            size: 120,
+            color: const Color(0xFF94A3B8).withOpacity(0.5),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Sign In to View Wishlist',
+            style: GoogleFonts.outfit(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Please log in to your account to view and manage your saved items.',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 36),
+          ElevatedButton(
+            onPressed: () => AppRouter.push(context, '/login'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryPink,
+              foregroundColor: AppColors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Sign In Now',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward, size: 18),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -98,7 +160,7 @@ class WishlistPage extends StatelessWidget {
           ),
           const SizedBox(height: 48),
           ElevatedButton(
-            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+            onPressed: () => AppRouter.go(context, '/shop'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryPink,
               foregroundColor: AppColors.white,

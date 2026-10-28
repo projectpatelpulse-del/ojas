@@ -1,6 +1,7 @@
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/widgets/ojas_layout.dart';
 import 'package:ojas_user/core/widgets/centered_content.dart';
 import 'package:ojas_user/features/home/domain/models/product_model.dart';
@@ -1666,28 +1667,35 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: _currentStock <= 0 ? null : () => _buyNow(context, product),
-                      icon: const Icon(Icons.flash_on),
-                      label: Text(
-                        _currentStock <= 0 ? 'Out of Stock' : 'Buy Now',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            onPressed: _currentStock <= 0 ? null : () => _buyNow(context, product),
+                            icon: const Icon(Icons.flash_on),
+                            label: Text(
+                              _currentStock <= 0 ? 'Out of Stock' : 'Buy Now',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _currentStock <= 0 ? AppColors.grey : Colors.orange.shade700,
+                              foregroundColor: AppColors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _currentStock <= 0 ? AppColors.grey : Colors.orange.shade700,
-                        foregroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                    ),
+                      const SizedBox(width: 12),
+                      _buildWishlistButton(context, product),
+                    ],
                   ),
                
                 ],
@@ -1743,9 +1751,57 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 16),
+                  _buildWishlistButton(context, product),
                 ],
               ),
       ],
+    );
+  }
+
+  Widget _buildWishlistButton(BuildContext context, ProductModel product) {
+    return ListenableBuilder(
+      listenable: WishlistController.instance,
+      builder: (context, _) {
+        final isWishlisted = WishlistController.instance.isWishlisted(product.id);
+        return Tooltip(
+          message: isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist',
+          child: InkWell(
+            onTap: () {
+              final productMap = {
+                '_id': product.id,
+                'name': product.name,
+                'price': product.price,
+                'images': [product.imageUrl],
+              };
+              if (!SessionService.instance.isLoggedIn) {
+                WishlistController.instance.setPendingProduct(productMap);
+                AppRouter.push(context, '/login');
+                return;
+              }
+              WishlistController.instance.toggleWishlist(productMap, context: context);
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: isWishlisted ? AppColors.primaryPink : const Color(0xFFE2E8F0),
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                color: isWishlisted ? AppColors.primaryPink.withOpacity(0.08) : AppColors.white,
+              ),
+              child: Icon(
+                isWishlisted ? Icons.favorite : Icons.favorite_border_rounded,
+                color: isWishlisted ? AppColors.primaryPink : const Color(0xFF64748B),
+                size: 24,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ojas_user/features/auth/application/auth_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/cart/application/cart_controller.dart';
+import 'package:ojas_user/core/controllers/wishlist_controller.dart';
 import 'package:ojas_user/core/controllers/settings_controller.dart';
 import 'package:ojas_user/core/widgets/scrollable_terms_dialog.dart';
 import 'package:ojas_user/core/routes/app_router.dart';
@@ -151,7 +152,9 @@ class _RegisterFormState extends State<RegisterForm> {
             SessionService.instance.setUser(loginResponse.user, token: loginResponse.token);
             await CartController.instance.loadCart();
             await CartController.instance.processPendingCart();
-            Navigator.of(context).pushReplacementNamed('/welcome', arguments: loginResponse.user);
+            await WishlistController.instance.processPendingWishlist();
+            if (!mounted) return;
+            AppRouter.go(context, '/welcome', extra: loginResponse.user);
           }
         } else {
           if (mounted) {

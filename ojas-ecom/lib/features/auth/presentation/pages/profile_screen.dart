@@ -9,6 +9,7 @@ import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/features/auth/domain/models/user_model.dart';
 import 'package:ojas_user/features/auth/data/services/profile_service.dart';
 import 'package:ojas_user/core/utils/responsive.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class ProfileScreen extends StatelessWidget {
   final UserModel? _initialUser;
@@ -86,14 +87,18 @@ class ProfileScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
-          onTap: () => Navigator.of(context).pushReplacementNamed('/'),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.arrow_back, size: 16, color: Color(0xFF64748B)),
-              const SizedBox(width: 8),
-              Text('Back', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 14)),
-            ],
+          onTap: () => AppRouter.pop(context),
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.arrow_back, size: 16, color: Color(0xFF64748B)),
+                const SizedBox(width: 8),
+                Text('Back', style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 14)),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 20),
@@ -162,7 +167,9 @@ class ProfileScreen extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () async {
                 await SessionService.instance.logout();
-                Navigator.of(context).pushReplacementNamed('/');
+                if (context.mounted) {
+                  AppRouter.go(context, '/');
+                }
               },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFFCA5A5)),
@@ -221,7 +228,7 @@ class ProfileScreen extends StatelessWidget {
       iconColor: const Color(0xFF3B82F6),
       title: 'My Orders',
       subtitle: 'View order history',
-      onTap: () => Navigator.of(context).pushNamed('/orders'),
+      onTap: () => AppRouter.push(context, '/orders'),
     );
     final wishlistAction = _buildQuickActionItem(
       icon: Icons.favorite_border_outlined,
@@ -229,7 +236,7 @@ class ProfileScreen extends StatelessWidget {
       iconColor: const Color(0xFFEC4899),
       title: 'Wishlist',
       subtitle: 'Saved items',
-      onTap: () {},
+      onTap: () => AppRouter.push(context, '/wishlist'),
     );
 
     return _buildSectionCard(
@@ -293,10 +300,15 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
+      mouseCursor: SystemMouseCursors.click,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE2E8F0)), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Row(
           children: [
             Container(
@@ -305,14 +317,30 @@ class ProfileScreen extends StatelessWidget {
               child: Icon(icon, color: iconColor, size: 24),
             ),
             const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B))),
-                const SizedBox(height: 4),
-                Text(subtitle, style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B))),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF94A3B8)),
           ],
         ),
       ),

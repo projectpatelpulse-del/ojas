@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_user/core/constants/app_colors.dart';
 import 'package:ojas_user/features/auth/domain/models/user_model.dart';
+import 'package:ojas_user/core/routes/app_router.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final UserModel user;
@@ -33,7 +34,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     // Auto-redirect to Homepage after a few seconds
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        AppRouter.go(context, '/');
       }
     });
   }
@@ -100,7 +101,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       const SizedBox(height: 36),
                       ElevatedButton.icon(
                         onPressed: () {
-                          Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                          AppRouter.go(context, '/');
                         },
                         icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 20),
                         label: const Text(
@@ -124,7 +125,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       const SizedBox(height: 16),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pushReplacementNamed('/profile', arguments: widget.user);
+                          AppRouter.push(context, '/profile', extra: widget.user);
                         },
                         child: Text(
                           'Go to My Profile',

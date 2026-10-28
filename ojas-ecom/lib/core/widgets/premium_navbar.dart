@@ -401,7 +401,13 @@ class _UserActionSection extends StatelessWidget {
                 _HoverIconAction(
                   icon: Icons.favorite_border, 
                   label: 'Wishlist',
-                  onTap: () => _navigateTo(context, '/wishlist'),
+                  onTap: () {
+                    if (!SessionService.instance.isLoggedIn) {
+                      _navigateTo(context, '/login');
+                    } else {
+                      _navigateTo(context, '/wishlist');
+                    }
+                  },
                 ),
                 if (count > 0)
                   Positioned(

@@ -456,7 +456,13 @@ class _MainNavBarContent extends StatelessWidget {
                 icon: Icons.favorite_border, 
                 label: 'Wishlist', 
                 count: WishlistController.instance.count.toString(), 
-                onTap: () => AppRouter.push(context, '/wishlist'),
+                onTap: () {
+                  if (!SessionService.instance.isLoggedIn) {
+                    AppRouter.push(context, '/login');
+                  } else {
+                    AppRouter.push(context, '/wishlist');
+                  }
+                },
               );
             },
           ),

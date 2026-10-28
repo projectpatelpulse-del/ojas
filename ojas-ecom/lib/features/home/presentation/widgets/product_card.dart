@@ -118,7 +118,12 @@ class _ProductCardState extends State<ProductCard> {
                                 'price': widget.product.price,
                                 'images': [widget.product.imageUrl],
                               };
-                              WishlistController.instance.toggleWishlist(productMap);
+                              if (!SessionService.instance.isLoggedIn) {
+                                WishlistController.instance.setPendingProduct(productMap);
+                                AppRouter.push(context, '/login');
+                                return;
+                              }
+                              WishlistController.instance.toggleWishlist(productMap, context: context);
                             },
                             constraints: const BoxConstraints(),
                             padding: const EdgeInsets.all(8),

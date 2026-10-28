@@ -275,7 +275,13 @@ class _MobileDrawer extends StatelessWidget {
               return _DrawerItem(
                 title: 'WISHLIST ${count > 0 ? "($count)" : ""}', 
                 icon: Icons.favorite_border, 
-                onTap: () => AppRouter.push(context, '/wishlist'),
+                onTap: () {
+                  if (!SessionService.instance.isLoggedIn) {
+                    AppRouter.push(context, '/login');
+                  } else {
+                    AppRouter.push(context, '/wishlist');
+                  }
+                },
               );
             },
           ),

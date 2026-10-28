@@ -96,6 +96,28 @@ const settingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  // Google My Business (GMB)
+  gmbLink: {
+    type: String,
+    default: ''
+  },
+  gmbIcon: {
+    type: String,
+    default: ''
+  },
+  // Payment Modes
+  activePaymentModes: {
+    type: String,
+    default: 'UPI, VISA, MASTERCARD, RUPAY, NET_BANKING, WALLETS, COD'
+  },
+  enableCOD: {
+    type: Boolean,
+    default: true
+  },
+  enableOnlinePayment: {
+    type: Boolean,
+    default: true
+  },
   defaultCommission: {
     type: Number,
     default: 10
