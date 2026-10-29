@@ -276,9 +276,9 @@ class _SocialLoginButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            icon is IconData
-                ? Icon(icon as IconData, color: color, size: 20)
-                : FaIcon(icon as FaIconData, color: color, size: 20),
+            icon is FaIconData
+                ? FaIcon(icon as FaIconData, color: color, size: 20)
+                : Icon(icon as IconData, color: color, size: 20),
             const SizedBox(width: 15),
             Text(
               text,

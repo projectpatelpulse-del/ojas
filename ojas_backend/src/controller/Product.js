@@ -429,7 +429,7 @@ const getProduct = async (req, res) => {
         const productObj = product.toObject();
         const vendor = await Vendor.findOne({ user: product.user?._id });
 
-        const commissionRate = vendor ? (vendor.commissionRate || 0) : 0;
+        const commissionRate = vendor ? (vendor.commissionRate || 10) : 10;
         const gstRate = productObj.gst || 0;
 
         if (productObj.discountPrice > 0) {

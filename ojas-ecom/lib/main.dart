@@ -22,10 +22,10 @@ void main() async {
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: "AIzaSyAwVn4qQ_2QeJ6qZ6Z6Z6Z6Z6Z6Z6Z6Z6",
-        authDomain: "ojas-india.firebaseapp.com",
-        projectId: "ojas-india",
-        storageBucket: "ojas-india.appspot.com",
+        apiKey: "AIzaSyC2StOCcAiACVKZg1G4d1k-zyl1YxctVcQ",
+        authDomain: "ojas-app-d0bc6.firebaseapp.com",
+        projectId: "ojas-app-d0bc6",
+        storageBucket: "ojas-app-d0bc6.firebasestorage.app",
         messagingSenderId: "25163277339",
         appId: "1:25163277339:web:90cc45ebf7f2189b4bc4be",
         measurementId: "G-ZYKJ1CH89N",

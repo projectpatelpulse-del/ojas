@@ -11,7 +11,7 @@ build_one() {
   local href="$2"
   local dest="$3"
   echo "=== Building $dir (base-href $href) ==="
-  (cd "$ROOT/$dir" && flutter build web --release --base-href "$href")
+  (cd "$ROOT/$dir" && flutter build web --release --no-tree-shake-icons --base-href "$href")
   rm -rf "$dest"
   mkdir -p "$dest"
   cp -R "$ROOT/$dir/build/web/." "$dest/"

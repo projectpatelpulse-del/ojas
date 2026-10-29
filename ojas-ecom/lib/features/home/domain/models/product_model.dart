@@ -78,7 +78,7 @@ class ProductVariation {
     final String? rawSize = map['size']?.toString().trim();
     final String? rawModelName = map['modelName']?.toString().trim();
     return ProductVariation(
-      id: map['_id'] ?? '',
+      id: (map['_id'] ?? map['id'] ?? '').toString(),
       title: map['title'],
       modelName: (rawModelName != null && rawModelName.isNotEmpty) ? rawModelName : ((rawSize != null && rawSize.isNotEmpty) ? rawSize : null),
       size: (rawSize != null && rawSize.isNotEmpty) ? rawSize : null,

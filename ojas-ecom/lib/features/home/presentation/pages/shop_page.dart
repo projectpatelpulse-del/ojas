@@ -42,7 +42,7 @@ class _ShopPageState extends State<ShopPage> {
   final TextEditingController _searchTextController = TextEditingController();
 
   int _currentPage = 1;
-  int _pageSize = 50;
+  int _pageSize = 20;
   bool _hasResolvedCategories = false;
 
   @override
@@ -691,7 +691,7 @@ class _ShopPageState extends State<ShopPage> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
-          value: _pageSize,
+          value: [20, 40, 100].contains(_pageSize) ? _pageSize : 20,
           isDense: true,
           dropdownColor: AppColors.white,
           icon: const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFF64748B)),
@@ -700,7 +700,7 @@ class _ShopPageState extends State<ShopPage> {
             color: const Color(0xFF1E293B),
             fontWeight: FontWeight.w500,
           ),
-          items: [20, 50, 100].map((v) {
+          items: [20, 40, 100].map((v) {
             return DropdownMenuItem(
               value: v, 
               child: Text('Show $v', style: GoogleFonts.inter(color: const Color(0xFF1E293B))),

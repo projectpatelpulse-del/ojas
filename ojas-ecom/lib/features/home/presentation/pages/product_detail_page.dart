@@ -74,9 +74,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _isLoading = widget.product == null && widget.productId != null;
     if (widget.product != null) {
       _initProductDetails(widget.product!);
-      if (widget.refCode != null) {
-        _fetchProductDetails();
-      }
+      _fetchProductDetails();
     } else if (widget.productId != null) {
       _fetchProductDetails();
     } else {
@@ -209,7 +207,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           _initProductDetails(fetched);
           _isLoading = false;
         });
-        if (widget.refCode == null) return;
       } catch (_) {}
     }
 
@@ -1759,27 +1756,70 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  ProductVariation? _resolveSelectedVariation(ProductModel p) {
+    if (p.variations.isEmpty) return null;
+    if (_selectedVariationTitle != null && _selectedVariationTitle!.isNotEmpty) {
+      try {
+        return p.variations.firstWhere((v) => v.title == _selectedVariationTitle);
+      } catch (_) {}
+    }
+    if (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) {
+      try {
+        return p.variations.firstWhere(
+          (v) =>
+              (_selectedColor == null || v.color == _selectedColor) &&
+              (_selectedSize == null || v.modelName == _selectedSize) &&
+              (_selectedMaterial == null || v.material == _selectedMaterial) &&
+              (_selectedWeight == null || v.weightStr == _selectedWeight),
+        );
+      } catch (_) {}
+    }
+    return p.variations.first;
+  }
+
   Widget _buildWishlistButton(BuildContext context, ProductModel product) {
     return ListenableBuilder(
       listenable: WishlistController.instance,
       builder: (context, _) {
-        final isWishlisted = WishlistController.instance.isWishlisted(product.id);
+        final currentVar = _resolveSelectedVariation(product);
+        final String? varId = currentVar?.id;
+        final isWishlisted = WishlistController.instance.isWishlisted(product.id, variationId: varId);
+
         return Tooltip(
           message: isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist',
           child: InkWell(
             onTap: () {
+              final String? varTitle = currentVar?.title ??
+                  (currentVar != null
+                      ? [
+                          if (currentVar.color != null && currentVar.color!.isNotEmpty) currentVar.color,
+                          if (currentVar.modelName != null && currentVar.modelName!.isNotEmpty) currentVar.modelName,
+                          if (currentVar.size != null && currentVar.size!.isNotEmpty) currentVar.size,
+                          if (currentVar.material != null && currentVar.material!.isNotEmpty) currentVar.material,
+                          if (currentVar.weightStr != null && currentVar.weightStr!.isNotEmpty) currentVar.weightStr,
+                        ].join(' / ')
+                      : null);
+
               final productMap = {
                 '_id': product.id,
                 'name': product.name,
-                'price': product.price,
-                'images': [product.imageUrl],
+                'price': currentVar != null && currentVar.price > 0 ? currentVar.price : product.price,
+                'images': currentVar != null && currentVar.image != null && currentVar.image!.isNotEmpty
+                    ? [currentVar.image!]
+                    : [product.imageUrl],
+                'variationId': varId,
+                'variationTitle': varTitle,
               };
               if (!SessionService.instance.isLoggedIn) {
                 WishlistController.instance.setPendingProduct(productMap);
                 AppRouter.push(context, '/login');
                 return;
               }
-              WishlistController.instance.toggleWishlist(productMap, context: context);
+              WishlistController.instance.toggleWishlist(
+                productMap,
+                variationId: varId,
+                context: context,
+              );
             },
             borderRadius: BorderRadius.circular(12),
             child: Container(
@@ -2083,18 +2123,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 */
 
   Future<bool> _addToCart(BuildContext context, ProductModel p, {bool showDrawer = true}) async {
-      final ProductVariation? selectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && p.variations.isNotEmpty
-        ? p.variations.firstWhere(
-            (v) =>
-                (_selectedColor == null || v.color == _selectedColor) &&
-                (_selectedSize == null || v.modelName == _selectedSize) &&
-                (_selectedMaterial == null || v.material == _selectedMaterial) &&
-                (_selectedWeight == null || v.weightStr == _selectedWeight),
-            orElse: () => p.variations.first,
-          )
-        : null;
-      final String? variationId = selectedVar?.id;
-      final int effMoq = p.getEffectiveMoq(selectedVar);
+    final ProductVariation? selectedVar = _resolveSelectedVariation(p);
+    final String? variationId = selectedVar?.id;
+    final int effMoq = p.getEffectiveMoq(selectedVar);
 
     if (!SessionService.instance.isLoggedIn) {
       CartController.instance.setPendingItem(p.id, effMoq);
@@ -2117,16 +2148,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> _buyNow(BuildContext context, ProductModel p) async {
     if (!SessionService.instance.isLoggedIn) {
-      final ProductVariation? selectedVar = (_selectedColor != null || _selectedSize != null || _selectedMaterial != null || _selectedWeight != null) && p.variations.isNotEmpty
-          ? p.variations.firstWhere(
-              (v) =>
-                  (_selectedColor == null || v.color == _selectedColor) &&
-                  (_selectedSize == null || v.modelName == _selectedSize) &&
-                  (_selectedMaterial == null || v.material == _selectedMaterial) &&
-                  (_selectedWeight == null || v.weightStr == _selectedWeight),
-              orElse: () => p.variations.first,
-            )
-          : null;
+      final ProductVariation? selectedVar = _resolveSelectedVariation(p);
       final int effMoq = p.getEffectiveMoq(selectedVar);
       CartController.instance.setPendingItem(p.id, effMoq);
       AppRouter.push(context, '/login');

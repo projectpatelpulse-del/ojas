@@ -101,7 +101,7 @@ exports.createOrder = async (req, res) => {
             }
 
             const vendor = await Vendor.findOne({ user: vendorId });
-            const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
+            const commissionPercent = vendor ? (vendor.commissionRate || 10) : 10;
             const gstPercent = product.gst || 0;
 
             const pricing = calculateProductPricing(basePrice, commissionPercent, gstPercent);

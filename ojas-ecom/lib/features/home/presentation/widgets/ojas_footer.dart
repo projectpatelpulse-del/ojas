@@ -695,11 +695,9 @@ class OjasFooter extends StatelessWidget {
           color: AppColors.charcoal.withOpacity(0.08),
           shape: BoxShape.circle,
         ),
-        child: icon is IconData
-            // ? Icon(icon as IconData, color: AppColors.black87, size: 18)
-            // : FaIcon(icon as FaIconData, color: AppColors.black87, size: 18),
-            ? Icon(icon as IconData, color: AppColors.charcoal, size: 18)
-            : FaIcon(icon as FaIconData, color: AppColors.charcoal, size: 18),
+        child: icon is FaIconData
+            ? FaIcon(icon, color: AppColors.charcoal, size: 18)
+            : Icon(icon as IconData, color: AppColors.charcoal, size: 18),
       ),
     );
   }

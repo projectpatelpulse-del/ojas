@@ -45,7 +45,7 @@ const processCartItems = async (items) => {
     const vendors = await Vendor.find({ user: { $in: vendorUserIds } }).select("user commissionRate");
     const commissionMap = {};
     vendors.forEach(v => {
-        commissionMap[v.user.toString()] = v.commissionRate || 0;
+        commissionMap[v.user.toString()] = v.commissionRate || 10;
     });
 
     const processed = await Promise.all(items.map(async (item) => {
@@ -55,7 +55,7 @@ const processCartItems = async (items) => {
         // Convert mongoose doc to plain object if needed
         const productObj = typeof p.toObject === "function" ? p.toObject() : { ...p };
 
-        const commissionRate = commissionMap[productObj.user?.toString()] || 0;
+        const commissionRate = commissionMap[productObj.user?.toString()] || 10;
         const gstRate = productObj.gst || 0;
 
         let markupAmount = 0;
@@ -417,39 +417,238 @@ const removeFromCart = async (req, res) => {
 
 // --- Wishlist Controllers ---
 
+const formatWishlist = async (wishlist) => {
+    if (!wishlist || !Array.isArray(wishlist)) return [];
+
+    // Collect all vendor user IDs for commission lookup
+    const vendorUserIds = [
+        ...new Set(
+            wishlist
+                .map(item => {
+                    if (!item) return null;
+                    const prod = item.product || (item.name ? item : null);
+                    return prod?.user?.toString();
+                })
+                .filter(Boolean)
+        )
+    ];
+
+    const vendors = await Vendor.find({ user: { $in: vendorUserIds } }).select("user commissionRate");
+    const commissionMap = {};
+    vendors.forEach(v => {
+        commissionMap[v.user.toString()] = v.commissionRate || 10;
+    });
+
+    const formatted = wishlist.map(item => {
+        if (!item) return null;
+        
+        let prod = item.product ? (item.product.toObject ? item.product.toObject() : item.product) : null;
+        if (!prod && item.name) {
+            prod = item.toObject ? item.toObject() : item;
+        }
+        if (!prod) return null;
+
+        const commissionRate = commissionMap[prod.user?.toString()] || 10;
+        const gstRate = prod.gst || 0;
+
+        // 1. Calculate pricing for base product
+        let baseSellingPrice = prod.price;
+        let baseDiscountPrice = prod.discountPrice || 0;
+
+        if (prod.discountPrice > 0) {
+            const pricingDiscount = calculateProductPricing(prod.discountPrice, commissionRate, gstRate);
+            const pricingRegular = calculateProductPricing(prod.price, commissionRate, gstRate);
+            baseSellingPrice = pricingDiscount.sellingPrice;
+            baseDiscountPrice = pricingDiscount.sellingPrice;
+        } else {
+            const pricing = calculateProductPricing(prod.price, commissionRate, gstRate);
+            baseSellingPrice = pricing.sellingPrice;
+            baseDiscountPrice = 0;
+        }
+
+        // 2. Calculate pricing for all variations
+        let updatedVariations = [];
+        if (prod.variations && prod.variations.length > 0) {
+            updatedVariations = prod.variations.map(v => {
+                const vObj = typeof v.toObject === "function" ? v.toObject() : { ...v };
+                const varRawPrice = (vObj.price || vObj.price === 0) ? vObj.price : v.price;
+                const varPricing = calculateProductPricing(varRawPrice, commissionRate, gstRate);
+                let updatedVar = { ...vObj, price: varPricing.sellingPrice };
+                const oldPriceVal = vObj.oldPrice || v.oldPrice;
+                if (oldPriceVal > 0) {
+                    const varOldPricing = calculateProductPricing(oldPriceVal, commissionRate, gstRate);
+                    updatedVar.oldPrice = varOldPricing.sellingPrice;
+                }
+                return updatedVar;
+            });
+        }
+
+        const variationId = item.variationId ? String(item.variationId) : null;
+        let selectedVar = null;
+
+        if (variationId && updatedVariations.length > 0) {
+            selectedVar = updatedVariations.find(v => (v._id?.toString() === variationId || v.id?.toString() === variationId));
+        }
+
+        // Build a human-friendly variation title
+        let variationTitle = null;
+        if (selectedVar) {
+            if (selectedVar.title) {
+                variationTitle = selectedVar.title;
+            } else {
+                const parts = [];
+                if (selectedVar.color) parts.push(selectedVar.color);
+                if (selectedVar.modelName || selectedVar.size) parts.push(selectedVar.modelName || selectedVar.size);
+                if (selectedVar.material) parts.push(selectedVar.material);
+                if (selectedVar.weightStr) parts.push(selectedVar.weightStr);
+                variationTitle = parts.join(" / ");
+            }
+        }
+
+        // Selected images: if variation has image, use variation image first
+        let itemImages = prod.images || [];
+        if (selectedVar && selectedVar.image) {
+            itemImages = [selectedVar.image, ...itemImages.filter(img => img !== selectedVar.image)];
+        } else if (selectedVar && selectedVar.images && selectedVar.images.length > 0) {
+            itemImages = [...selectedVar.images, ...itemImages];
+        }
+
+        const finalPrice = selectedVar ? selectedVar.price : baseSellingPrice;
+        const finalDiscountPrice = selectedVar ? (selectedVar.discountPrice || 0) : baseDiscountPrice;
+
+        console.log(`[Backend Wishlist] Item: "${prod.name}" (_id: ${prod._id}) | Var: "${variationTitle || 'Base Product'}" (${variationId || 'None'}) | Raw Price: ₹${prod.price} -> Selling Price: ₹${finalPrice} (Vendor Commission: ${commissionRate}%)`);
+
+        return {
+            ...prod,
+            _id: prod._id,
+            productId: prod._id,
+            wishlistEntryId: item._id ? item._id.toString() : undefined,
+            variationId: variationId,
+            selectedVariation: selectedVar,
+            variationTitle: variationTitle,
+            price: finalPrice,
+            discountPrice: finalDiscountPrice,
+            images: itemImages,
+            variations: updatedVariations,
+        };
+    }).filter(Boolean);
+
+    return formatted;
+};
+
 const addToWishlist = async (req, res) => {
     try {
-        const { productId } = req.body;
-        const user = await User.findById(req.user.id);
+        const { productId, variationId } = req.body;
+        console.log(`[Backend Wishlist] addToWishlist -> User: ${req.user.id}, ProductId: ${productId}, VariationId: ${variationId || 'None'}`);
+        if (!productId) {
+            return res.status(400).json({ message: "Product ID is required" });
+        }
 
-        if (!user.wishlist.includes(productId)) {
-            user.wishlist.push(productId);
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const varId = variationId ? String(variationId) : null;
+
+        // Check if item already exists in wishlist
+        const exists = (user.wishlist || []).some(item => {
+            if (!item) return false;
+            const pId = (item.product ? item.product._id || item.product : (item._id || item)).toString();
+            const vId = item.variationId ? String(item.variationId) : null;
+            return pId === productId.toString() && vId === varId;
+        });
+
+        if (!exists) {
+            user.wishlist.push({ product: productId, variationId: varId });
+            user.markModified('wishlist');
             await user.save();
         }
 
-        res.status(200).json({ message: "Added to wishlist", data: user.wishlist });
+        const updatedUser = await User.findById(req.user.id).populate("wishlist.product");
+        const formattedWishlist = await formatWishlist(updatedUser.wishlist);
+        res.status(200).json({ message: "Added to wishlist", data: formattedWishlist });
     } catch (error) {
+        console.error("addToWishlist error:", error);
         res.status(500).json({ message: error.message });
     }
 };
 
 const getWishlist = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).populate("wishlist");
-        res.status(200).json({ data: user.wishlist });
+        let user;
+        try {
+            user = await User.findById(req.user.id).populate("wishlist.product");
+        } catch (popErr) {
+            user = await User.findById(req.user.id);
+        }
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Normalize old format if necessary
+        let needsMigration = false;
+        const normalized = [];
+
+        for (let item of (user.wishlist || [])) {
+            if (item && item.product) {
+                normalized.push(item);
+            } else if (item) {
+                const pId = item._id || item;
+                const prod = await Product.findById(pId);
+                if (prod) {
+                    normalized.push({ product: prod, variationId: null });
+                }
+                needsMigration = true;
+            }
+        }
+
+        if (needsMigration) {
+            user.wishlist = normalized.map(i => ({
+                product: i.product._id || i.product,
+                variationId: i.variationId || null
+            }));
+            user.markModified('wishlist');
+            await user.save();
+        }
+
+        const formattedWishlist = await formatWishlist(normalized);
+        console.log(`[Backend Wishlist] getWishlist -> User: ${req.user.id}, Total Items: ${formattedWishlist.length}`);
+        res.status(200).json({ data: formattedWishlist });
     } catch (error) {
+        console.error("getWishlist error:", error);
         res.status(500).json({ message: error.message });
     }
 };
 
 const removeFromWishlist = async (req, res) => {
     try {
-        const { productId } = req.body;
+        const { productId, variationId } = req.body;
+        console.log(`[Backend Wishlist] removeFromWishlist -> User: ${req.user.id}, ProductId: ${productId}, VariationId: ${variationId || 'All'}`);
+        if (!productId) {
+            return res.status(400).json({ message: "Product ID is required" });
+        }
+
         const user = await User.findById(req.user.id);
-        user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const varId = variationId !== undefined && variationId !== null && variationId !== "" ? String(variationId) : null;
+
+        user.wishlist = (user.wishlist || []).filter(item => {
+            if (!item) return false;
+            const pId = (item.product ? item.product._id || item.product : (item._id || item)).toString();
+            const vId = item.variationId ? String(item.variationId) : null;
+
+            if (varId !== null) {
+                return !(pId === productId.toString() && vId === varId);
+            }
+            return pId !== productId.toString();
+        });
+
+        user.markModified('wishlist');
         await user.save();
-        res.status(200).json({ message: "Removed from wishlist", data: user.wishlist });
+
+        const updatedUser = await User.findById(req.user.id).populate("wishlist.product");
+        const formattedWishlist = await formatWishlist(updatedUser.wishlist);
+        res.status(200).json({ message: "Removed from wishlist", data: formattedWishlist });
     } catch (error) {
+        console.error("removeFromWishlist error:", error);
         res.status(500).json({ message: error.message });
     }
 };

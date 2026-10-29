@@ -27,7 +27,8 @@ class WishlistController with ChangeNotifier {
     if (_pendingProduct != null) {
       final p = _pendingProduct;
       _pendingProduct = null;
-      await addToWishlist(p);
+      final String? varId = p is Map ? p['variationId']?.toString() : null;
+      await addToWishlist(p, variationId: varId);
     }
   }
 
@@ -57,26 +58,65 @@ class WishlistController with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _wishlistItems = data['data'] ?? [];
+        _logWishlistState('WISHLIST LOADED FROM SERVER');
       }
     } catch (e) {
-      debugPrint('Error fetching wishlist: $e');
+      debugPrint('[WishlistController] Error fetching wishlist: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  bool isWishlisted(String? productId) {
-    if (productId == null || productId.isEmpty) return false;
-    return _wishlistItems.any((item) => (item['_id'] ?? item['id'] ?? '').toString() == productId);
+  void _logWishlistState(String header) {
+    debugPrint('\n==================== [$header: ${_wishlistItems.length} ITEMS] ====================');
+    if (_wishlistItems.isEmpty) {
+      debugPrint('Wishlist is empty.');
+    } else {
+      for (int i = 0; i < _wishlistItems.length; i++) {
+        final it = _wishlistItems[i];
+        final pName = it['name'] ?? 'Unknown Product';
+        final pId = (it['productId'] ?? it['_id'] ?? it['id'])?.toString();
+        final vId = it['variationId']?.toString() ?? 'None (Base Product)';
+        final vTitle = it['variationTitle']?.toString() ?? 'None';
+        final price = it['price'];
+        final discPrice = it['discountPrice'];
+        debugPrint('  #$i "$pName" (Product ID: $pId)');
+        debugPrint('     -> Variation: "$vTitle" (Variation ID: $vId)');
+        debugPrint('     -> Display Price: ₹$price (Discount: ₹$discPrice)');
+      }
+    }
+    debugPrint('========================================================================\n');
   }
 
-  Future<void> toggleWishlist(dynamic product, {BuildContext? context}) async {
+  bool isWishlisted(String? productId, {String? variationId}) {
+    if (productId == null || productId.isEmpty) return false;
+    return _wishlistItems.any((item) {
+      final itemProdId = (item['productId'] ?? item['_id'] ?? item['id'] ?? '').toString();
+      if (itemProdId != productId) return false;
+
+      if (variationId != null && variationId.isNotEmpty) {
+        final itemVarId = item['variationId']?.toString();
+        return itemVarId == variationId;
+      }
+      return true;
+    });
+  }
+
+  Future<void> toggleWishlist(dynamic product, {String? variationId, BuildContext? context}) async {
     final token = await AuthService().getToken();
     final bool isLoggedIn = SessionService.instance.isLoggedIn && token != null;
 
+    final effectiveVarId = variationId ?? (product is Map ? product['variationId']?.toString() : null);
+    final productId = (product is Map ? (product['productId'] ?? product['_id'] ?? product['id']) : product?.id)?.toString();
+
+    debugPrint('[WishlistController] toggleWishlist requested -> Product ID: $productId, Variation ID: $effectiveVarId');
+
     if (!isLoggedIn) {
-      setPendingProduct(product);
+      setPendingProduct({
+        if (product is Map) ...product else 'product': product,
+        if (effectiveVarId != null) 'variationId': effectiveVarId,
+      });
       if (context != null && context.mounted) {
         AppRouter.push(context, '/login');
       } else {
@@ -85,24 +125,31 @@ class WishlistController with ChangeNotifier {
       return;
     }
 
-    final productId = (product is Map ? (product['_id'] ?? product['id']) : product?.id)?.toString();
     if (productId == null || productId.isEmpty) return;
 
-    final isCurrentlyWishlisted = isWishlisted(productId);
+    final isCurrentlyWishlisted = isWishlisted(productId, variationId: effectiveVarId);
 
     if (isCurrentlyWishlisted) {
-      await removeFromWishlist(productId);
+      await removeFromWishlist(productId, variationId: effectiveVarId);
     } else {
-      await addToWishlist(product);
+      await addToWishlist(product, variationId: effectiveVarId);
     }
   }
 
-  Future<void> addToWishlist(dynamic product, {BuildContext? context}) async {
+  Future<void> addToWishlist(dynamic product, {String? variationId, BuildContext? context}) async {
     final token = await AuthService().getToken();
     final bool isLoggedIn = SessionService.instance.isLoggedIn && token != null;
 
+    final effectiveVarId = variationId ?? (product is Map ? product['variationId']?.toString() : null);
+    final productId = (product is Map ? (product['productId'] ?? product['_id'] ?? product['id']) : product?.id)?.toString();
+
+    debugPrint('[WishlistController] addToWishlist -> Product ID: $productId, Variation ID: $effectiveVarId');
+
     if (!isLoggedIn) {
-      setPendingProduct(product);
+      setPendingProduct({
+        if (product is Map) ...product else 'product': product,
+        if (effectiveVarId != null) 'variationId': effectiveVarId,
+      });
       if (context != null && context.mounted) {
         AppRouter.push(context, '/login');
       } else {
@@ -111,7 +158,6 @@ class WishlistController with ChangeNotifier {
       return;
     }
 
-    final productId = (product is Map ? (product['_id'] ?? product['id']) : product?.id)?.toString();
     if (productId == null || productId.isEmpty) return;
 
     try {
@@ -121,21 +167,32 @@ class WishlistController with ChangeNotifier {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode({'productId': productId}),
+        body: json.encode({
+          'productId': productId,
+          if (effectiveVarId != null && effectiveVarId.isNotEmpty) 'variationId': effectiveVarId,
+        }),
       );
 
       if (response.statusCode == 200) {
-        // Optimistic update or refresh
-        await fetchWishlist();
+        final data = json.decode(response.body);
+        if (data['data'] != null && data['data'] is List) {
+          _wishlistItems = data['data'];
+          _logWishlistState('WISHLIST UPDATED AFTER ADD');
+          notifyListeners();
+        } else {
+          await fetchWishlist();
+        }
       }
     } catch (e) {
-      debugPrint('Error adding to wishlist: $e');
+      debugPrint('[WishlistController] Error adding to wishlist: $e');
     }
   }
 
-  Future<void> removeFromWishlist(String productId) async {
+  Future<void> removeFromWishlist(String productId, {String? variationId}) async {
     final token = await AuthService().getToken();
     if (token == null) return;
+
+    debugPrint('[WishlistController] removeFromWishlist -> Product ID: $productId, Variation ID: $variationId');
 
     try {
       final response = await http.post(
@@ -144,15 +201,24 @@ class WishlistController with ChangeNotifier {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode({'productId': productId}),
+        body: json.encode({
+          'productId': productId,
+          if (variationId != null && variationId.isNotEmpty) 'variationId': variationId,
+        }),
       );
 
       if (response.statusCode == 200) {
-        // Optimistic update or refresh
-        await fetchWishlist();
+        final data = json.decode(response.body);
+        if (data['data'] != null && data['data'] is List) {
+          _wishlistItems = data['data'];
+          _logWishlistState('WISHLIST UPDATED AFTER REMOVE');
+          notifyListeners();
+        } else {
+          await fetchWishlist();
+        }
       }
     } catch (e) {
-      debugPrint('Error removing from wishlist: $e');
+      debugPrint('[WishlistController] Error removing from wishlist: $e');
     }
   }
 }

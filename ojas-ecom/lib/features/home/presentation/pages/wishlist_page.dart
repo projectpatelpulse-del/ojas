@@ -8,6 +8,7 @@ import 'package:ojas_user/features/cart/application/cart_controller.dart';
 import 'package:ojas_user/core/services/api_service.dart';
 import 'package:ojas_user/core/services/session_service.dart';
 import 'package:ojas_user/core/routes/app_router.dart';
+import 'package:ojas_user/core/utils/responsive.dart';
 
 class WishlistPage extends StatelessWidget {
   const WishlistPage({super.key});
@@ -189,14 +190,18 @@ class WishlistPage extends StatelessWidget {
   }
 
   Widget _buildWishlistGrid(BuildContext context, List<dynamic> items) {
+    final isMobile = Responsive.isMobile(context);
+    final isTablet = Responsive.isTablet(context);
+    final crossAxisCount = isMobile ? 1 : (isTablet ? 2 : 4);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        childAspectRatio: 0.7,
-        crossAxisSpacing: 24,
-        mainAxisSpacing: 24,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: isMobile ? 0.95 : 0.65,
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -213,6 +218,19 @@ class _WishlistItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String? productId = (product['productId'] ?? product['_id'])?.toString();
+    final String? variationId = product['variationId']?.toString();
+    final String? variationTitle = product['variationTitle']?.toString();
+
+    final imageList = product['images'];
+    final String imageUrl = (imageList != null && imageList is List && imageList.isNotEmpty)
+        ? imageList[0].toString()
+        : (product['image'] ?? '').toString();
+
+    final double price = ((product['discountPrice'] != null && product['discountPrice'] > 0)
+        ? product['discountPrice']
+        : (product['price'] ?? 0)).toDouble();
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -235,13 +253,23 @@ class _WishlistItemCard extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(
-                  ApiService.formatImageUrl(
-                    product['images'] != null && product['images'].isNotEmpty 
-                        ? product['images'][0] 
-                        : (product['image'] ?? '')
+                InkWell(
+                  onTap: () {
+                    if (productId != null) {
+                      AppRouter.push(
+                        context,
+                        '/product/$productId${variationId != null ? "?variation=$variationId" : ""}',
+                        extra: product,
+                      );
+                    }
+                  },
+                  child: Image.network(
+                    ApiService.formatImageUrl(imageUrl),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.image_not_supported_outlined, color: AppColors.grey),
+                    ),
                   ),
-                  fit: BoxFit.cover,
                 ),
                 Positioned(
                   top: 12,
@@ -250,7 +278,14 @@ class _WishlistItemCard extends StatelessWidget {
                     backgroundColor: AppColors.white,
                     child: IconButton(
                       icon: const Icon(Icons.favorite, color: AppColors.primaryPink),
-                      onPressed: () => WishlistController.instance.removeFromWishlist(product['_id']),
+                      onPressed: () {
+                        if (productId != null) {
+                          WishlistController.instance.removeFromWishlist(
+                            productId,
+                            variationId: variationId,
+                          );
+                        }
+                      },
                     ),
                   ),
                 ),
@@ -261,7 +296,7 @@ class _WishlistItemCard extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(14.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -269,19 +304,51 @@ class _WishlistItemCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        product['name'] ?? 'Product Name',
-                        style: GoogleFonts.outfit(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1E293B),
+                      InkWell(
+                        onTap: () {
+                          if (productId != null) {
+                            AppRouter.push(
+                              context,
+                              '/product/$productId${variationId != null ? "?variation=$variationId" : ""}',
+                              extra: product,
+                            );
+                          }
+                        },
+                        child: Text(
+                          product['name'] ?? 'Product Name',
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1E293B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
+                      if (variationTitle != null && variationTitle.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryPink.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AppColors.primaryPink.withOpacity(0.2)),
+                          ),
+                          child: Text(
+                            variationTitle,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryPink,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 4),
                       Text(
-                        '₹${product['price'] ?? 0}',
+                        '₹${price.toStringAsFixed(0)}',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -290,24 +357,34 @@ class _WishlistItemCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                    SizedBox(
+                  SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () async {
-                        final productId = product['_id'];
                         if (productId == null) return;
 
-                        // 1. Add to Cart
-                        final success = await CartController.instance.addToCart(productId);
-                        
+                        debugPrint('[WishlistPage] "Move to Cart" clicked -> Product ID: $productId, Variation ID: $variationId ("$variationTitle")');
+
+                        // 1. Add to Cart with the exact variation!
+                        final success = await CartController.instance.addToCart(
+                          productId,
+                          variationId: variationId,
+                        );
+
                         if (success) {
-                          // 2. Remove from Wishlist
-                          await WishlistController.instance.removeFromWishlist(productId);
-                          
+                          // 2. Remove from Wishlist with the exact variation!
+                          await WishlistController.instance.removeFromWishlist(
+                            productId,
+                            variationId: variationId,
+                          );
+
                           if (context.mounted) {
+                            final label = variationTitle != null && variationTitle.isNotEmpty
+                                ? '${product['name'] ?? 'Item'} ($variationTitle)'
+                                : '${product['name'] ?? 'Item'}';
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('${product['name'] ?? 'Item'} moved to cart!'),
+                                content: Text('$label moved to cart!'),
                                 backgroundColor: AppColors.successGreen,
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -327,7 +404,7 @@ class _WishlistItemCard extends StatelessWidget {
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppColors.primaryPink),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       child: Text(

@@ -957,9 +957,9 @@ class _ContactPageState extends State<ContactPage> {
                 color: brandColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: icon is IconData
-                  ? Icon(icon, color: brandColor, size: 16)
-                  : FaIcon(icon as FaIconData, color: brandColor, size: 16),
+              child: icon is FaIconData
+                  ? FaIcon(icon as FaIconData, color: brandColor, size: 16)
+                  : Icon(icon as IconData, color: brandColor, size: 16),
             ),
             const SizedBox(width: 12),
             Text(

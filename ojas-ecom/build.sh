@@ -20,7 +20,7 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 # 6. Build the web app
-flutter build web --release --base-href /
+flutter build web --release --no-tree-shake-icons --base-href /
 
 # Ensure static sitemap and robots are present in build output
 cp web/robots.txt build/web/robots.txt 2>/dev/null || true

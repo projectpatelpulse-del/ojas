@@ -26,7 +26,7 @@ exports.addToCart = async (req, res) => {
     const basePrice = (selectedVar && selectedVar.price) ? selectedVar.price : ((product.discountPrice > 0) ? product.discountPrice : product.price);
 
     const vendor = await Vendor.findOne({ user: product.user });
-    const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
+    const commissionPercent = vendor ? (vendor.commissionRate || 10) : 10;
     const gstPercent = product.gst || 0;
 
     const pricing = calculateProductPricing(basePrice, commissionPercent, gstPercent);
@@ -137,7 +137,7 @@ exports.updateCartItem = async (req, res) => {
 
       const basePrice = (selectedVar && selectedVar.price) ? selectedVar.price : ((product.discountPrice > 0) ? product.discountPrice : product.price);
       const vendor = await Vendor.findOne({ user: product.user });
-      const commissionPercent = vendor ? (vendor.commissionRate || 0) : 0;
+      const commissionPercent = vendor ? (vendor.commissionRate || 10) : 10;
       const gstPercent = product.gst || 0;
 
       const pricing = calculateProductPricing(basePrice, commissionPercent, gstPercent);
