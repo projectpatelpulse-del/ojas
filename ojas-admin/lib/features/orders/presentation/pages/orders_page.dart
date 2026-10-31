@@ -12,6 +12,7 @@ import 'package:ojas_admin/features/orders/presentation/widgets/shipping_label_d
 import 'package:ojas_admin/features/orders/presentation/widgets/assign_delhivery_dialog.dart';
 import 'package:ojas_admin/features/orders/presentation/widgets/manual_tracking_dialog.dart';
 import 'package:ojas_admin/features/orders/presentation/widgets/admin_order_details_dialog.dart';
+import 'package:ojas_admin/features/orders/presentation/widgets/cancel_order_dialog.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -37,17 +38,19 @@ class _OrdersPageState extends State<OrdersPage> {
     'Shipped',
     'Delivered',
     'Cancelled',
+    'Rejected',
     'Escalated',
   ];
 
-  String _getEffectiveStatus(Map<String, dynamic> o) {
-    final String rawStatus = o['status'] ?? 'Pending';
-    final String pickupStatus = o['pickupStatus'] ?? 'Pending';
+  String _getEffectiveStatus(dynamic o) {
+    if (o is! Map) return 'PENDING';
+    final String rawStatus = (o['status'] ?? 'Pending').toString();
+    final String pickupStatus = (o['pickupStatus'] ?? 'Pending').toString();
     String effectiveStatus = rawStatus;
     if (rawStatus.toUpperCase() == 'READY_TO_DISPATCH') {
       return 'READY TO DISPATCH';
     }
-    if (!['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'ESCALATED'].contains(rawStatus.toUpperCase())) {
+    if (!['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'REJECTED', 'ESCALATED'].contains(rawStatus.toUpperCase())) {
       if (pickupStatus == 'Pickup Requested') {
         effectiveStatus = 'SHIPMENT REQUESTED';
       } else if (pickupStatus == 'Pickup Scheduled') {
@@ -99,9 +102,13 @@ class _OrdersPageState extends State<OrdersPage> {
               }
               return eff == selected;
             }());
-            bool matchesSearch = _searchQuery.isEmpty || 
-                (o['orderId']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-                (o['user']?['name']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+            bool matchesSearch = _searchQuery.isEmpty || (() {
+              final query = _searchQuery.toLowerCase();
+              final oId = o['orderId']?.toString().toLowerCase() ?? '';
+              final uName = (o['user'] is Map && o['user']['name'] != null) ? o['user']['name'].toString().toLowerCase() : '';
+              final sName = (o['shippingAddress'] is Map && o['shippingAddress']['name'] != null) ? o['shippingAddress']['name'].toString().toLowerCase() : '';
+              return oId.contains(query) || uName.contains(query) || sName.contains(query);
+            }());
             return matchesStatus && matchesSearch;
           }).toList();
 
@@ -280,15 +287,28 @@ class _OrdersPageState extends State<OrdersPage> {
                                 separatorBuilder: (_, __) => const Divider(height: 1),
                                 itemBuilder: (context, index) {
                                   final o = orders[index];
-                                  debugPrint('--- Admin/Vendor Order [${o['orderId']}] Tracking URL: ${o['trackingUrl']} ---');
-                                  final String oId = o['orderId'] ?? 'ID';
-                                  final String customer = o['user'] != null ? o['user']['name'] : 'Guest';
-                                  final String vendor = o['vendor'] != null ? (o['vendor']['storeName'] ?? o['vendor']['name']) : 'Admin';
-                                  final List items = o['items'] ?? [];
-                                  final double total = (o['totalAmount'] ?? 0).toDouble();
-                                  final String status = o['status'] ?? 'Pending';
+                                  final String oId = (o['orderId'] ?? 'ID').toString();
+                                  String customer = 'Guest';
+                                  if (o['user'] != null && o['user'] is Map && o['user']['name'] != null && o['user']['name'].toString().trim().isNotEmpty) {
+                                    customer = o['user']['name'].toString();
+                                  } else if (o['shippingAddress'] != null && o['shippingAddress'] is Map && o['shippingAddress']['name'] != null && o['shippingAddress']['name'].toString().trim().isNotEmpty) {
+                                    customer = o['shippingAddress']['name'].toString();
+                                  }
+                                  String vendor = 'Admin';
+                                  if (o['vendor'] != null && o['vendor'] is Map) {
+                                    final vName = o['vendor']['storeName'] ?? o['vendor']['name'] ?? o['vendor']['shopName'];
+                                    if (vName != null && vName.toString().trim().isNotEmpty) {
+                                      vendor = vName.toString();
+                                    }
+                                  }
+                                  final List items = o['items'] is List ? o['items'] : [];
+                                  final double total = (o['totalAmount'] is num) ? (o['totalAmount'] as num).toDouble() : 0.0;
+                                  final String status = (o['status'] ?? 'Pending').toString();
                                   final String effectiveStatus = _getEffectiveStatus(o);
-                                  final String date = o['createdAt'] != null ? DateTime.parse(o['createdAt'].toString()).toString().split(' ')[0] : '-';
+                                  final String date = o['createdAt'] != null
+                                      ? (DateTime.tryParse(o['createdAt'].toString())?.toLocal().toString().split(' ')[0] ?? '-')
+                                      : '-';
+                                  final String awbStr = (o['awb'] ?? '-').toString();
 
                                   return Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -314,7 +334,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                                 Expanded(
                                                   flex: 2, 
                                                   child: Text(
-                                                    o['awb'] ?? '-', 
+                                                    awbStr, 
                                                     style: GoogleFonts.inter(fontSize: 12, color: Colors.blue.shade700, fontWeight: FontWeight.bold),
                                                     overflow: TextOverflow.ellipsis,
                                                   ),
@@ -465,7 +485,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                                   constraints: const BoxConstraints(),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                if (o['trackingUrl'] != null && o['trackingUrl'].toString().isNotEmpty)
+                                                if (o['trackingUrl'] != null && o['trackingUrl'].toString().isNotEmpty) ...[
                                                   IconButton(
                                                     icon: const Icon(Icons.open_in_new, size: 20, color: Colors.blue),
                                                     tooltip: 'Track Package',
@@ -480,6 +500,33 @@ class _OrdersPageState extends State<OrdersPage> {
                                                       }
                                                     },
                                                   ),
+                                                  const SizedBox(width: 8),
+                                                ],
+                                                IconButton(
+                                                  onPressed: (status.toLowerCase() != 'cancelled' && status.toLowerCase() != 'rejected')
+                                                      ? () {
+                                                          showDialog(
+                                                            context: context,
+                                                            builder: (context) => CancelOrderDialog(
+                                                              order: o,
+                                                              controller: _controller,
+                                                            ),
+                                                          );
+                                                        }
+                                                      : null,
+                                                  icon: Icon(
+                                                    Icons.cancel_outlined, 
+                                                    size: 20, 
+                                                    color: (status.toLowerCase() != 'cancelled' && status.toLowerCase() != 'rejected')
+                                                        ? Colors.red.shade600
+                                                        : Colors.grey.withOpacity(0.3),
+                                                  ),
+                                                  tooltip: (status.toLowerCase() != 'cancelled' && status.toLowerCase() != 'rejected')
+                                                      ? 'Cancel or Reject Order'
+                                                      : 'Order already ${status.toLowerCase()}',
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -529,7 +576,7 @@ class _OrdersPageState extends State<OrdersPage> {
     if (s == 'SHIPPED' || s == 'OUT_FOR_DELIVERY') {
       color = Colors.blue;
     } else if (s == 'DELIVERED') color = Colors.green;
-    else if (s == 'CANCELLED') color = Colors.red;
+    else if (s == 'CANCELLED' || s == 'REJECTED') color = Colors.red;
     else if (s == 'PROCESSING') color = Colors.indigo;
     else if (s == 'ESCALATED') color = Colors.deepOrange;
     else if (s == 'SHIPMENT REQUESTED' || s == 'PICKUP REQUESTED') color = Colors.purple;

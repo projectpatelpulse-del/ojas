@@ -76,11 +76,12 @@ class OrderController extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateOrderStatus(String orderId, String status) async {
+  Future<bool> updateOrderStatus(String orderId, String status, {String? reason}) async {
     try {
       final response = await _apiService.dio.put('/order/status', data: {
         'orderId': orderId,
         'status': status.toUpperCase(),
+        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
       });
       if (response.statusCode == 200) {
         await fetchAllOrders();
@@ -91,6 +92,10 @@ class OrderController extends ChangeNotifier {
       debugPrint('Update order status error: $e');
       return false;
     }
+  }
+
+  Future<bool> cancelOrRejectOrder(String orderId, {required String status, String? reason}) async {
+    return updateOrderStatus(orderId, status, reason: reason);
   }
 
   Future<Map<String, dynamic>> assignDelhivery(String orderId, {Map<String, dynamic>? data}) async {

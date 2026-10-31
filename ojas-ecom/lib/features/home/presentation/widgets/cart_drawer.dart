@@ -310,12 +310,14 @@ class _CartDrawerState extends State<CartDrawer> {
     if (product == null) return const SizedBox();
 
     final String name = product['name'] ?? 'Product';
-    double price =
-        (product['discountPrice'] != null && product['discountPrice'] > 0
+    final double itemSellingPrice = (item['sellingPrice'] ?? item['price'] ?? 0).toDouble();
+    double price = itemSellingPrice > 0
+        ? itemSellingPrice
+        : ((product['discountPrice'] != null && product['discountPrice'] > 0
                 ? product['discountPrice']
                 : (product['price'] ?? 0))
-            .toDouble();
-    final double oldPrice = (product['price'] ?? 0).toDouble();
+            .toDouble());
+    final double oldPrice = (item['originalPrice'] ?? product['price'] ?? 0).toDouble();
     final String imageUrl =
         product['image'] ?? 'https://via.placeholder.com/150';
     final int quantity = item['quantity'] ?? 1;

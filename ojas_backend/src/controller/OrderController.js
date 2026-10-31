@@ -423,38 +423,97 @@ exports.getVendorOrders = async (req, res) => {
     }
 };
 
-// Update Order Status (for Vendor)
+// Update Order Status (for Vendor or Admin)
 exports.updateOrderStatus = async (req, res) => {
     try {
         const updaterId = (req.user || req.admin).id;
         const isAdmin = !!req.admin;
-        const { orderId, status } = req.body;
+        const { orderId, status, reason, cancelReason } = req.body;
 
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
 
-        // Check authorization: ONLY the vendor can update their own orders. Admin is forbidden.
-        if (isAdmin) {
-            return res.status(403).json({ message: "Administrators cannot change order statuses. Only vendors can manage their order fulfillment." });
-        }
-
-        if (order.vendor.toString() !== updaterId) {
+        // Authorization: Admin can update any order. Vendors can only update their own orders.
+        if (!isAdmin && order.vendor.toString() !== updaterId) {
             return res.status(403).json({ message: "Not authorized to update this order" });
         }
 
-        // Prevent updating status if it's already 'DELIVERED'
-        if (order.status === "DELIVERED") {
+        const oldStatus = order.status;
+        const upperStatus = typeof status === 'string' ? status.toUpperCase() : status;
+
+        const validStatuses = [
+            "CREATED", "PAYMENT_PENDING", "PAID", "PROCESSING", 
+            "READY_TO_DISPATCH", "SHIPPED", "OUT_FOR_DELIVERY", 
+            "DELIVERED", "CANCELLED", "REJECTED", "ESCALATED"
+        ];
+        if (!validStatuses.includes(upperStatus)) {
+            return res.status(400).json({ success: false, message: `Invalid status: ${status}` });
+        }
+
+        // If order is already cancelled or rejected, prevent re-cancelling
+        if ((oldStatus === "CANCELLED" || oldStatus === "REJECTED") && (upperStatus === "CANCELLED" || upperStatus === "REJECTED")) {
+            return res.status(400).json({
+                success: false,
+                message: `Order is already ${oldStatus.toLowerCase()}.`
+            });
+        }
+
+        // Prevent vendors from updating status if already DELIVERED
+        if (oldStatus === "DELIVERED" && !isAdmin) {
             return res.status(400).json({
                 success: false,
                 message: "Cannot change status of an order that is already delivered."
             });
         }
 
-        const oldStatus = order.status;
-        const upperStatus = typeof status === 'string' ? status.toUpperCase() : status;
+        // If admin cancels/rejects an already DELIVERED order, revert vendor wallet & earnings
+        if (oldStatus === "DELIVERED" && (upperStatus === "CANCELLED" || upperStatus === "REJECTED")) {
+            const vendor = await Vendor.findOne({ user: order.vendor });
+            if (vendor && order.vendorEarning) {
+                vendor.walletBalance = Math.max(0, (vendor.walletBalance || 0) - order.vendorEarning);
+                vendor.totalEarnings = Math.max(0, (vendor.totalEarnings || 0) - (order.totalAmount || 0));
+                await vendor.save();
+            }
+        }
+
         order.status = upperStatus;
+
+        // Handling Cancellation or Rejection (by Admin or Vendor)
+        if (upperStatus === "CANCELLED" || upperStatus === "REJECTED") {
+            const effectiveReason = reason || cancelReason || (upperStatus === "REJECTED" ? "Rejected by Admin" : "Cancelled by Admin");
+            order.cancelReason = effectiveReason;
+            order.cancelledBy = isAdmin ? "ADMIN" : "VENDOR";
+            order.cancelledAt = new Date();
+
+            // 1. Restock products & variations
+            if (order.items && order.items.length > 0) {
+                for (const item of order.items) {
+                    const pId = item.product?._id || item.product;
+                    const qty = Number(item.quantity || 1);
+                    if (pId) {
+                        await Product.findByIdAndUpdate(pId, { $inc: { stock: qty } });
+                        if (item.variationId) {
+                            await Product.updateOne(
+                                { _id: pId, "variations._id": item.variationId },
+                                { $inc: { "variations.$.stock": qty } }
+                            ).catch(() => {});
+                        }
+                    }
+                }
+            }
+
+            // 2. Cancel reseller commission if any
+            order.commissionStatus = "cancelled";
+
+            // 3. Update payment status
+            if (order.paymentMethod === "ONLINE" && order.paymentStatus === "SUCCESS") {
+                order.paymentStatus = "REFUNDED";
+            } else {
+                order.paymentStatus = "CANCELLED";
+            }
+        }
 
         // OTP Generation when status transitions to OUT_FOR_DELIVERY
         if (upperStatus === "OUT_FOR_DELIVERY" && oldStatus !== "OUT_FOR_DELIVERY") {
@@ -501,12 +560,22 @@ exports.updateOrderStatus = async (req, res) => {
         const WhatsAppService = require("../service/WhatsAppService");
         WhatsAppService.sendOrderStatusUpdateMessage(order, upperStatus).catch(err => console.error("[WhatsApp] Status update failed:", err));
 
-        // Note: Product stock is now deducted upon order placement (checkout) rather than on delivery.
-
-        res.status(200).json({ success: true, order });
+        res.status(200).json({ success: true, message: `Order status updated to ${upperStatus}`, order });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+};
+
+// Cancel Order endpoint
+exports.cancelOrder = async (req, res) => {
+    req.body.status = req.body.status || "CANCELLED";
+    return exports.updateOrderStatus(req, res);
+};
+
+// Reject Order endpoint
+exports.rejectOrder = async (req, res) => {
+    req.body.status = "REJECTED";
+    return exports.updateOrderStatus(req, res);
 };
 
 // Get All Orders (for Admin)
@@ -1008,6 +1077,8 @@ module.exports = {
     getUserOrders: exports.getUserOrders,
     getVendorOrders: exports.getVendorOrders,
     updateOrderStatus: exports.updateOrderStatus,
+    cancelOrder: exports.cancelOrder,
+    rejectOrder: exports.rejectOrder,
     getAllOrders: exports.getAllOrders,
     updateOrderTracking: exports.updateOrderTracking,
     verifyDeliveryOtp: exports.verifyDeliveryOtp,

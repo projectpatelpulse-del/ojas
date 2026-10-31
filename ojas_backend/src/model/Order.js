@@ -48,8 +48,21 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["CREATED", "PAYMENT_PENDING", "PAID", "PROCESSING", "READY_TO_DISPATCH", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "ESCALATED"],
+            enum: ["CREATED", "PAYMENT_PENDING", "PAID", "PROCESSING", "READY_TO_DISPATCH", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED", "REJECTED", "ESCALATED"],
             default: "CREATED",
+        },
+        cancelReason: {
+            type: String,
+            default: null,
+        },
+        cancelledBy: {
+            type: String,
+            enum: ["ADMIN", "VENDOR", "USER", "SYSTEM", null],
+            default: null,
+        },
+        cancelledAt: {
+            type: Date,
+            default: null,
         },
         paymentMethod: {
             type: String,

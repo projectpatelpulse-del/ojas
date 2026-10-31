@@ -100,9 +100,12 @@ class CartController extends ChangeNotifier {
     for (var item in _items) {
       final product = item['product'];
       if (product != null && product is Map) {
-        double price = (product['discountPrice'] != null && product['discountPrice'] > 0 
-            ? product['discountPrice'] 
-            : (product['price'] ?? 0)).toDouble();
+        final double itemSellingPrice = (item['sellingPrice'] ?? item['price'] ?? 0).toDouble();
+        double price = itemSellingPrice > 0 
+            ? itemSellingPrice 
+            : ((product['discountPrice'] != null && product['discountPrice'] > 0 
+                ? product['discountPrice'] 
+                : (product['price'] ?? 0)).toDouble());
             
         int quantity = item['quantity'] ?? 1;
         int moq = product['moq'] ?? 1;

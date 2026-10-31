@@ -3,12 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ojas_admin/features/orders/application/order_controller.dart';
 import 'package:ojas_admin/core/services/api_service.dart';
 import 'package:ojas_admin/core/utils/delivery_challan_helper.dart';
-import 'package:ojas_admin/core/services/invoice_service.dart';
-import 'package:ojas_admin/features/orders/presentation/widgets/shipping_label_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dio/dio.dart' as dio;
-import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:ojas_admin/features/orders/presentation/widgets/cancel_order_dialog.dart';
 
 class AdminOrderDetailsDialog extends StatefulWidget {
   final dynamic order;
@@ -192,8 +191,8 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
       elevation: 24,
       clipBehavior: Clip.antiAlias,
       child: Container(
-        width: 900,
-        height: 720,
+        width: (MediaQuery.of(context).size.width * 0.9).clamp(840.0, 980.0),
+        height: 740,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -202,7 +201,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
           children: [
             // Gorgeous Premium Header
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -213,7 +212,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.indigo.shade500.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
@@ -225,30 +224,32 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                     child: const Icon(
                       Icons.shield_outlined,
                       color: Color(0xFF818CF8),
-                      size: 24,
+                      size: 22,
                     ),
                   ),
-                  const SizedBox(width: 18),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 10,
+                          runSpacing: 4,
                           children: [
                             Text(
                               'Admin Order Inspection',
                               style: GoogleFonts.outfit(
-                                fontSize: 22,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
-                                letterSpacing: 0.5,
+                                letterSpacing: 0.3,
                               ),
                             ),
-                            const SizedBox(width: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                                horizontal: 9,
+                                vertical: 3,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF6366F1).withOpacity(0.2),
@@ -262,7 +263,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                               child: Text(
                                 widget.order['orderId'] ?? 'ID',
                                 style: GoogleFonts.inter(
-                                  fontSize: 12,
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
                                   color: const Color(0xFFC7D2FE),
                                 ),
@@ -270,11 +271,13 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
-                          'Fulfillment Vendor: ${widget.order['vendor'] != null ? (widget.order['vendor']['storeName'] ?? widget.order['vendor']['name']) : "Master Admin"}',
+                          'Fulfillment Vendor: ${widget.order['vendor'] != null && widget.order['vendor'] is Map ? (widget.order['vendor']['storeName'] ?? widget.order['vendor']['name'] ?? widget.order['vendor']['shopName'] ?? "Master Admin") : "Master Admin"}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                            fontSize: 13,
+                            fontSize: 12,
                             color: const Color(0xFF94A3B8),
                             fontWeight: FontWeight.w500,
                           ),
@@ -282,19 +285,7 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                       ],
                     ),
                   ),
-
-                  // const SizedBox(width: 16),
-                  // ElevatedButton.icon(
-                  //   onPressed: () => InvoiceService.generateAndDownloadInvoice(Map<String, dynamic>.from(widget.order)),
-                  //   icon: const Icon(Icons.download, size: 16),
-                  //   label: const Text('Download Invoice'),
-                  //   style: ElevatedButton.styleFrom(
-                  //     backgroundColor: Colors.indigo.shade600,
-                  //     foregroundColor: Colors.white,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  //   ),
-                  // ),
+                  const SizedBox(width: 10),
                   if (widget.order['vendorInvoiceUrl'] != null && widget.order['vendorInvoiceUrl'].toString().isNotEmpty) ...[
                     ElevatedButton.icon(
                       onPressed: () async {
@@ -309,41 +300,73 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                           }
                         }
                       },
-                      icon: const Icon(Icons.receipt, size: 16),
-                      label: const Text('Vendor Invoice'),
+                      icon: const Icon(Icons.receipt, size: 14),
+                      label: Text('Vendor Invoice', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade600,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                   ],
                   OutlinedButton.icon(
                     onPressed: () => DeliveryChallanHelper.generateAndDownload(
                       context,
                       Map<String, dynamic>.from(widget.order),
                     ),
-                    icon: const Icon(Icons.receipt_long, size: 16),
-                    label: const Text('Download Challan'),
+                    icon: const Icon(Icons.receipt_long, size: 14),
+                    label: Text('Download Challan', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
                       side: const BorderSide(color: Colors.white54),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        horizontal: 12,
+                        vertical: 10,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  if (status.toUpperCase() != 'CANCELLED' && status.toUpperCase() != 'REJECTED') ...[
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (dialogCtx) => CancelOrderDialog(
+                            order: widget.order,
+                            controller: widget.controller,
+                            onSuccess: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.cancel_outlined, size: 14),
+                      label: Text('Cancel / Reject', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF4444),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 8),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white60),
+                    icon: const Icon(Icons.close, color: Colors.white60, size: 20),
                     hoverColor: Colors.white10,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
@@ -365,6 +388,10 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                           children: [
                             if (isEscalated) ...[
                               _buildEscalationBanner(),
+                              const SizedBox(height: 24),
+                            ],
+                            if (status.toUpperCase() == 'CANCELLED' || status.toUpperCase() == 'REJECTED') ...[
+                              _buildCancellationBanner(status.toUpperCase()),
                               const SizedBox(height: 24),
                             ],
 
@@ -476,7 +503,8 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                             const SizedBox(height: 28),
 
                             if (status.toUpperCase() != 'DELIVERED' &&
-                                status.toUpperCase() != 'CANCELLED') ...[
+                                status.toUpperCase() != 'CANCELLED' &&
+                                status.toUpperCase() != 'REJECTED') ...[
                               const Divider(color: Color(0xFFE2E8F0)),
                               const SizedBox(height: 20),
 
@@ -630,6 +658,127 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
     );
   }
 
+  Widget _buildCancellationBanner(String currentStatus) {
+    final bool isRejected = currentStatus == 'REJECTED';
+    final String reason = widget.order['cancelReason'] ?? 'No reason recorded';
+    final String cancelledBy = widget.order['cancelledBy'] ?? 'ADMIN';
+    final dynamic cancelledAtRaw = widget.order['cancelledAt'];
+    String dateStr = '';
+    if (cancelledAtRaw != null) {
+      try {
+        final d = DateTime.parse(cancelledAtRaw.toString()).toLocal();
+        dateStr = ' on ${DateFormat('dd MMM yyyy, hh:mm a').format(d)}';
+      } catch (_) {}
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFFCA5A5).withOpacity(0.6),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEE2E2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.cancel_outlined,
+                  color: Color(0xFFEF4444),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                isRejected ? 'ORDER REJECTED' : 'ORDER CANCELLED',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: const Color(0xFF991B1B),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.2)),
+                ),
+                child: Text(
+                  'By $cancelledBy$dateStr',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFB91C1C),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFEE2E2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reason:',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF991B1B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  reason,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF15803D)),
+              const SizedBox(width: 6),
+              Text(
+                'Product inventory has been restored to catalog.',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF15803D),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCustomerCard() {
     return Container(
       width: double.infinity,
@@ -654,16 +803,24 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: const Color(0xFF6366F1).withOpacity(0.1),
-                child: Text(
-                  widget.order['user'] != null
-                      ? widget.order['user']['name']
-                            .substring(0, 1)
-                            .toUpperCase()
-                      : 'G',
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF6366F1),
-                  ),
+                child: Builder(
+                  builder: (_) {
+                    String initial = 'G';
+                    if (widget.order['user'] != null && widget.order['user'] is Map && widget.order['user']['name'] != null) {
+                      final n = widget.order['user']['name'].toString().trim();
+                      if (n.isNotEmpty) initial = n.substring(0, 1).toUpperCase();
+                    } else if (widget.order['shippingAddress'] != null && widget.order['shippingAddress'] is Map && widget.order['shippingAddress']['name'] != null) {
+                      final n = widget.order['shippingAddress']['name'].toString().trim();
+                      if (n.isNotEmpty) initial = n.substring(0, 1).toUpperCase();
+                    }
+                    return Text(
+                      initial,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF6366F1),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 14),
@@ -671,20 +828,30 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.order['user'] != null
-                          ? widget.order['user']['name']
-                          : 'Guest Customer',
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: const Color(0xFF1E293B),
-                      ),
+                    Builder(
+                      builder: (_) {
+                        String name = 'Guest Customer';
+                        if (widget.order['user'] != null && widget.order['user'] is Map && widget.order['user']['name'] != null) {
+                          final n = widget.order['user']['name'].toString().trim();
+                          if (n.isNotEmpty) name = n;
+                        } else if (widget.order['shippingAddress'] != null && widget.order['shippingAddress'] is Map && widget.order['shippingAddress']['name'] != null) {
+                          final n = widget.order['shippingAddress']['name'].toString().trim();
+                          if (n.isNotEmpty) name = n;
+                        }
+                        return Text(
+                          name,
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: const Color(0xFF1E293B),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.order['user'] != null
-                          ? widget.order['user']['email']
+                      (widget.order['user'] != null && widget.order['user'] is Map && widget.order['user']['email'] != null)
+                          ? widget.order['user']['email'].toString()
                           : '-',
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -704,9 +871,11 @@ class _AdminOrderDetailsDialogState extends State<AdminOrderDetailsDialog> {
               const Icon(Icons.phone, size: 16, color: Color(0xFF64748B)),
               const SizedBox(width: 10),
               Text(
-                widget.order['user'] != null
-                    ? widget.order['user']['mobile']
-                    : '-',
+                (widget.order['user'] != null && widget.order['user'] is Map && widget.order['user']['mobile'] != null)
+                    ? widget.order['user']['mobile'].toString()
+                    : ((widget.order['shippingAddress'] != null && widget.order['shippingAddress'] is Map && widget.order['shippingAddress']['phone'] != null)
+                        ? widget.order['shippingAddress']['phone'].toString()
+                        : '-'),
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: const Color(0xFF334155),

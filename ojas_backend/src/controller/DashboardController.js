@@ -28,7 +28,7 @@ const getDashboardStats = async (req, res) => {
         ]);
         const totalRevenue = totalRevenueResult.length > 0 ? totalRevenueResult[0].total : 0;
 
-        const totalOrders = await Order.countDocuments({ status: { $ne: "CANCELLED" } });
+        const totalOrders = await Order.countDocuments({ status: { $nin: ["CANCELLED", "REJECTED"] } });
         const activeVendors = await Vendor.countDocuments({ status: "approved" });
         const totalCustomers = await User.countDocuments({ role: "user" });
 
@@ -48,8 +48,8 @@ const getDashboardStats = async (req, res) => {
         const revenueChange = revLastMonth === 0 ? (revThisMonth > 0 ? 100 : 0) : ((revThisMonth - revLastMonth) / revLastMonth) * 100;
 
         // Orders This Month vs Last Month
-        const ordersThisMonth = await Order.countDocuments({ status: { $ne: "CANCELLED" }, createdAt: { $gte: firstDayThisMonth } });
-        const ordersLastMonth = await Order.countDocuments({ status: { $ne: "CANCELLED" }, createdAt: { $gte: firstDayLastMonth, $lt: firstDayThisMonth } });
+        const ordersThisMonth = await Order.countDocuments({ status: { $nin: ["CANCELLED", "REJECTED"] }, createdAt: { $gte: firstDayThisMonth } });
+        const ordersLastMonth = await Order.countDocuments({ status: { $nin: ["CANCELLED", "REJECTED"] }, createdAt: { $gte: firstDayLastMonth, $lt: firstDayThisMonth } });
         const ordersChange = ordersLastMonth === 0 ? (ordersThisMonth > 0 ? 100 : 0) : ((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100;
 
         // Vendors Change

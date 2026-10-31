@@ -291,15 +291,20 @@ ${directChatLink}`;
                 break;
 
             case 'CANCELLED':
+            case 'REJECTED':
+                const isRejected = statusUpper === 'REJECTED';
+                const actionWord = isRejected ? 'rejected' : 'cancelled';
+                const actionTitle = isRejected ? 'Order Rejected' : 'Order Cancelled';
                 const refundInfo = (order.paymentMethod === 'ONLINE' && order.paymentStatus === 'SUCCESS')
                     ? `\n💳 Your refund has been initiated and will reflect in your account within 5-7 business days.`
                     : '';
+                const reasonInfo = order.cancelReason ? `\n📝 Reason: *${order.cancelReason}*` : '';
 
                 message = 
-`❌ *Order Cancelled - OJAS*
+`❌ *${actionTitle} - OJAS*
 
 Dear *${customerName}*,
-Your order *#${orderIdStr}* has been cancelled.${refundInfo}
+Your order *#${orderIdStr}* has been ${actionWord}.${reasonInfo}${refundInfo}
 
 If you believe this was an error or need further help, please chat with us:
 ${directChatLink}`;

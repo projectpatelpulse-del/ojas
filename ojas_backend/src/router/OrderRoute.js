@@ -4,6 +4,8 @@ const {
     getUserOrders, 
     getVendorOrders, 
     updateOrderStatus,
+    cancelOrder,
+    rejectOrder,
     getAllOrders,
     updateOrderTracking,
     verifyDeliveryOtp,
@@ -30,6 +32,8 @@ router.get("/user", auth, getUserOrders);
 router.get("/vendor", auth, getVendorOrders);
 router.get("/all", adminAuth, getAllOrders);
 router.put("/status", flexibleAuth, updateOrderStatus);
+router.put("/cancel", flexibleAuth, cancelOrder);
+router.put("/reject", flexibleAuth, rejectOrder);
 router.put("/tracking", flexibleAuth, updateOrderTracking);
 
 router.post("/verify-delivery-otp", flexibleAuth, verifyDeliveryOtp);
